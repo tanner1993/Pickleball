@@ -1,0 +1,6 @@
+framework module Pods_Pickleball {
+  umbrella header "Pods-Pickleball-umbrella.h"
+
+  export *
+  module * { export * }
+}

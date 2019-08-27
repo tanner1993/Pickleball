@@ -12,9 +12,13 @@
 		77BBB028231499C3006CB608 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB026231499C3006CB608 /* Main.storyboard */; };
 		77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB029231499C5006CB608 /* Assets.xcassets */; };
 		77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */; };
+		77BBB03523158E65006CB608 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB03423158E65006CB608 /* GoogleService-Info.plist */; };
+		D0867C5D0983E79C84F51214 /* Pods_Pickleball.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A845BD4606939F9EBD065D5 /* Pods_Pickleball.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		51B4A506C24EFF9E64DE1F52 /* Pods-Pickleball.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pickleball.release.xcconfig"; path = "Target Support Files/Pods-Pickleball/Pods-Pickleball.release.xcconfig"; sourceTree = "<group>"; };
+		6C244CDC5FF815B094A81B61 /* Pods-Pickleball.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pickleball.debug.xcconfig"; path = "Target Support Files/Pods-Pickleball/Pods-Pickleball.debug.xcconfig"; sourceTree = "<group>"; };
 		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77BBB022231499C3006CB608 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77BBB024231499C3006CB608 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -22,6 +26,8 @@
 		77BBB029231499C5006CB608 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		77BBB02C231499C5006CB608 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		77BBB02E231499C5006CB608 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		77BBB03423158E65006CB608 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		9A845BD4606939F9EBD065D5 /* Pods_Pickleball.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pickleball.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -29,6 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D0867C5D0983E79C84F51214 /* Pods_Pickleball.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -40,6 +47,8 @@
 			children = (
 				77BBB021231499C3006CB608 /* Pickleball */,
 				77BBB020231499C3006CB608 /* Products */,
+				7A37089CDB92539A7A0C8CF2 /* Pods */,
+				A20C0AA1F89D4ACB5FCE6A35 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -60,8 +69,27 @@
 				77BBB029231499C5006CB608 /* Assets.xcassets */,
 				77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */,
 				77BBB02E231499C5006CB608 /* Info.plist */,
+				77BBB03423158E65006CB608 /* GoogleService-Info.plist */,
 			);
 			path = Pickleball;
+			sourceTree = "<group>";
+		};
+		7A37089CDB92539A7A0C8CF2 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				6C244CDC5FF815B094A81B61 /* Pods-Pickleball.debug.xcconfig */,
+				51B4A506C24EFF9E64DE1F52 /* Pods-Pickleball.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		A20C0AA1F89D4ACB5FCE6A35 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9A845BD4606939F9EBD065D5 /* Pods_Pickleball.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -71,9 +99,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 77BBB031231499C5006CB608 /* Build configuration list for PBXNativeTarget "Pickleball" */;
 			buildPhases = (
+				687A6D592FF3D526CD38F77B /* [CP] Check Pods Manifest.lock */,
 				77BBB01B231499C3006CB608 /* Sources */,
 				77BBB01C231499C3006CB608 /* Frameworks */,
 				77BBB01D231499C3006CB608 /* Resources */,
+				AAF744E00C01A6E92E6A60EC /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -123,12 +153,55 @@
 			buildActionMask = 2147483647;
 			files = (
 				77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */,
+				77BBB03523158E65006CB608 /* GoogleService-Info.plist in Resources */,
 				77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */,
 				77BBB028231499C3006CB608 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		687A6D592FF3D526CD38F77B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Pickleball-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AAF744E00C01A6E92E6A60EC /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Pickleball/Pods-Pickleball-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Pickleball/Pods-Pickleball-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Pickleball/Pods-Pickleball-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		77BBB01B231499C3006CB608 /* Sources */ = {
@@ -280,6 +353,7 @@
 		};
 		77BBB032231499C5006CB608 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6C244CDC5FF815B094A81B61 /* Pods-Pickleball.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
@@ -298,6 +372,7 @@
 		};
 		77BBB033231499C5006CB608 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 51B4A506C24EFF9E64DE1F52 /* Pods-Pickleball.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
