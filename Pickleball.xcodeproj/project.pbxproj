@@ -14,7 +14,7 @@
 		77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */; };
 		77BBB03523158E65006CB608 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB03423158E65006CB608 /* GoogleService-Info.plist */; };
 		77BBB0372315A6BA006CB608 /* TourneyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB0362315A6BA006CB608 /* TourneyTableViewCell.swift */; };
-		77BBB0392319E5C5006CB608 /* TourneyLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB0382319E5C5006CB608 /* TourneyLayout.swift */; };
+		77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB0382319E5C5006CB608 /* TourneyStandings.swift */; };
 		D0867C5D0983E79C84F51214 /* Pods_Pickleball.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A845BD4606939F9EBD065D5 /* Pods_Pickleball.framework */; };
 /* End PBXBuildFile section */
 
@@ -30,7 +30,7 @@
 		77BBB02E231499C5006CB608 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		77BBB03423158E65006CB608 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		77BBB0362315A6BA006CB608 /* TourneyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyTableViewCell.swift; sourceTree = "<group>"; };
-		77BBB0382319E5C5006CB608 /* TourneyLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyLayout.swift; sourceTree = "<group>"; };
+		77BBB0382319E5C5006CB608 /* TourneyStandings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyStandings.swift; sourceTree = "<group>"; };
 		9A845BD4606939F9EBD065D5 /* Pods_Pickleball.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pickleball.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -70,7 +70,7 @@
 				77BBB022231499C3006CB608 /* AppDelegate.swift */,
 				77BBB024231499C3006CB608 /* TableofTourneys.swift */,
 				77BBB026231499C3006CB608 /* Main.storyboard */,
-				77BBB0382319E5C5006CB608 /* TourneyLayout.swift */,
+				77BBB0382319E5C5006CB608 /* TourneyStandings.swift */,
 				77BBB029231499C5006CB608 /* Assets.xcassets */,
 				77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */,
 				77BBB0362315A6BA006CB608 /* TourneyTableViewCell.swift */,
@@ -215,7 +215,7 @@
 			files = (
 				77BBB025231499C3006CB608 /* TableofTourneys.swift in Sources */,
 				77BBB0372315A6BA006CB608 /* TourneyTableViewCell.swift in Sources */,
-				77BBB0392319E5C5006CB608 /* TourneyLayout.swift in Sources */,
+				77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */,
 				77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
