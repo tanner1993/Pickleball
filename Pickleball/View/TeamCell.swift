@@ -1,47 +1,30 @@
 //
-//  TourneyLayout.swift
+//  TeamCell.swift
 //  Pickleball
 //
-//  Created by Tanner Rozier on 8/30/19.
+//  Created by Tanner Rozier on 9/3/19.
 //  Copyright © 2019 TannerRozier. All rights reserved.
 //
 
 import UIKit
 
-class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        print(view.frame.width)
-        
-        navigationItem.title = "Tournament 1"
-        
-        collectionView?.backgroundColor = UIColor.white
-        
-        collectionView?.register(TeamCell.self, forCellWithReuseIdentifier: "CellID")
-    }
-    
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
-    }
-    
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CellID", for: indexPath)
-        cell.backgroundColor = UIColor.blue
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 80)
-    }
-
-}
-
-class TeamCell: UICollectionViewCell {
+class BaseCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
     }
+    
+    func setupViews() {
+        
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+}
+
+class TeamCell: BaseCell {
     
     let TeamDuo: UILabel = {
         let label = UILabel()
@@ -86,11 +69,12 @@ class TeamCell: UICollectionViewCell {
         return label
     }()
     
-    func setupViews() {
+    override func setupViews() {
         addSubview(TeamDuo)
         addSubview(TeamRank)
         addSubview(Wins)
         addSubview(Losses)
+        //addConstraint(NSLayoutConstraint(item: TeamRank, attribute: .top, relatedBy: .equal, toItem: topAnchor, attribute: .bottom, multiplier: 1, constant: 4))
         addConstraintsWithFormat(format: "H:|-4-[v0(70)]-4-[v1]-4-|", views: TeamRank, TeamDuo)
         addConstraintsWithFormat(format: "V:|-4-[v0]-28-|", views: TeamDuo)
         addConstraintsWithFormat(format: "V:|-5-[v0]-5-|", views: TeamRank)
@@ -104,20 +88,4 @@ class TeamCell: UICollectionViewCell {
         addConstraint(NSLayoutConstraint(item: Losses, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 0, constant: 20))
     }
     
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-extension UIView {
-    func addConstraintsWithFormat(format: String, views: UIView...) {
-        var viewsDictionary = [String: UIView]()
-        for (index, view) in views.enumerated() {
-            let key = "v\(index)"
-            viewsDictionary[key] = view
-        }
-
-        addConstraints(NSLayoutConstraint.constraints(withVisualFormat: format, options: NSLayoutConstraint.FormatOptions(), metrics: nil, views: viewsDictionary))
-
-    }
 }

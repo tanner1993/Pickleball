@@ -19,8 +19,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
+        
         let layout = UICollectionViewFlowLayout()
         window?.rootViewController = UINavigationController(rootViewController: TourneyStandings(collectionViewLayout: layout))
+        
+        UINavigationBar.appearance().barTintColor = UIColor.gray
+        
+        UINavigationBar.appearance().shadowImage = UIImage()
+        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default)
+        
         return true
     }
 
