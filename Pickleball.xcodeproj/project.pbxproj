@@ -18,6 +18,7 @@
 		77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB03E231EE5BE006CB608 /* TourneyMenuBar.swift */; };
 		77BBB041231EEEFC006CB608 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB040231EEEFC006CB608 /* Extensions.swift */; };
 		77BBB043231EEF8D006CB608 /* TeamCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB042231EEF8D006CB608 /* TeamCell.swift */; };
+		77BBB0452320838F006CB608 /* Team.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB0442320838F006CB608 /* Team.swift */; };
 		D0867C5D0983E79C84F51214 /* Pods_Pickleball.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A845BD4606939F9EBD065D5 /* Pods_Pickleball.framework */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		77BBB03E231EE5BE006CB608 /* TourneyMenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyMenuBar.swift; sourceTree = "<group>"; };
 		77BBB040231EEEFC006CB608 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		77BBB042231EEF8D006CB608 /* TeamCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamCell.swift; sourceTree = "<group>"; };
+		77BBB0442320838F006CB608 /* Team.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Team.swift; sourceTree = "<group>"; };
 		9A845BD4606939F9EBD065D5 /* Pods_Pickleball.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pickleball.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -109,6 +111,7 @@
 		77BBB03C231EE566006CB608 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				77BBB0442320838F006CB608 /* Team.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -258,6 +261,7 @@
 				77BBB041231EEEFC006CB608 /* Extensions.swift in Sources */,
 				77BBB0372315A6BA006CB608 /* TourneyTableViewCell.swift in Sources */,
 				77BBB043231EEF8D006CB608 /* TeamCell.swift in Sources */,
+				77BBB0452320838F006CB608 /* Team.swift in Sources */,
 				77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */,
 				77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */,
 				77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */,

@@ -10,6 +10,15 @@ import UIKit
 
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
+    var teams: [Team] = {
+        var Team1 = Team()
+        Team1.TeamPair = "Tanner and Scott"
+        Team1.Wins = 5
+        Team1.Losses = 0
+        
+        return [Team1]
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "Tournament 1"
