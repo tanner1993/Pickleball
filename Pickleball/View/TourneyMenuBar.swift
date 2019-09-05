@@ -9,6 +9,9 @@
 import UIKit
 
 class TourneyMenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    
+    var tourneystandings: TourneyStandings?
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return 3
     }
@@ -54,12 +57,18 @@ class TourneyMenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelega
         collection2View.selectItem(at: selectedIndexPath as IndexPath, animated: false, scrollPosition: [])
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
 }
 
 class MenuCell: BaseCell {
+    
     
     let CellLabels: UILabel = {
         let lb = UILabel()
@@ -84,6 +93,7 @@ class MenuCell: BaseCell {
             CellBar.backgroundColor = isHighlighted ? UIColor.black : UIColor.white
         }
     }
+    
     override var isSelected: Bool {
         didSet {
             CellLabels.textColor = isSelected ? UIColor.black : UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)

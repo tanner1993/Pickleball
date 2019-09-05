@@ -9,6 +9,17 @@
 import UIKit
 
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+    
+//    let changepagebutton: UIButton = {
+//        let cpb = UIButton()
+//        cpb.backgroundColor = UIColor.blue
+//        cpb.translatesAutoresizingMaskIntoConstraints = false
+//        cpb.addTarget(self, action: #selector(cpbAction), for: UIControl.Event.touchUpInside)
+//        return cpb
+//    }()
+//    @objc func cpbAction(sender: UIButton!) {
+//        print("Button tapped")
+//    }
 
     var teams: [Team] = {
         var Team1 = Team()
@@ -28,6 +39,16 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+        
+        setupTitle()
+        setupCollectionView()
+        setupTourneyMenuBar()
+        
+    }
+    
+    private func setupTitle() {
         navigationItem.title = "Tournament 1"
         navigationController?.navigationBar.isTranslucent = false
         
@@ -36,25 +57,27 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         titleLabel.textColor = UIColor.black
         titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
         navigationItem.titleView = titleLabel
-        
-        collectionView?.register(TeamCell.self, forCellWithReuseIdentifier: "CellID")
-        
-        collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
-        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
-        setupTourneyMenuBar()
     }
     
-    let menusBar: TourneyMenuBar = {
-        let mb = TourneyMenuBar()
-        mb.translatesAutoresizingMaskIntoConstraints = false
-        return mb
-    }()
+    private func setupCollectionView() {
+        collectionView?.register(TeamCell.self, forCellWithReuseIdentifier: "CellID")
+        collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+        collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+    }
     
-    private func setupTourneyMenuBar() {
+    func setupTourneyMenuBar() {
+        let menusBar: TourneyMenuBar = {
+            let mb = TourneyMenuBar()
+            mb.tourneystandings = self
+            mb.translatesAutoresizingMaskIntoConstraints = false
+            return mb
+        }()
         view.addSubview(menusBar)
         view.addConstraintsWithFormat(format: "H:|[v0]|", views: menusBar)
         view.addConstraintsWithFormat(format: "V:|[v0(35)]", views: menusBar)
     }
+    
     
     
 
