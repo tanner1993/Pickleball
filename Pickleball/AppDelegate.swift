@@ -23,7 +23,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let layout = UICollectionViewFlowLayout()
         window?.rootViewController = UINavigationController(rootViewController: TourneyStandings(collectionViewLayout: layout))
         
-        UINavigationBar.appearance().barTintColor = UIColor.gray
+        UINavigationBar.appearance().barTintColor = UIColor.white
         
         UINavigationBar.appearance().shadowImage = UIImage()
         UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default)

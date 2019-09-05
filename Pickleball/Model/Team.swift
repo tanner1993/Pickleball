@@ -10,6 +10,7 @@ import UIKit
 
 class Team: NSObject {
     var TeamPair: String?
-    var Wins: Int?
-    var Losses: Int?
+    var Wins: String?
+    var Losses: String?
+    var Rank: String?
 }

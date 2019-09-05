@@ -66,19 +66,19 @@ class MenuCell: BaseCell {
         lb.text = "Nothin"
         lb.font = UIFont.boldSystemFont(ofSize: 15)
         lb.textAlignment = .center
-        lb.textColor = UIColor.init(displayP3Red: 13/255, green: 80/255, blue: 80/255, alpha: 1)
+        lb.textColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         lb.translatesAutoresizingMaskIntoConstraints = false
         return lb
     }()
     
     override var isHighlighted: Bool {
         didSet {
-            CellLabels.textColor = isHighlighted ? UIColor.white : UIColor.init(displayP3Red: 13/255, green: 80/255, blue: 80/255, alpha: 1)
+            CellLabels.textColor = isHighlighted ? UIColor.black : UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         }
     }
     override var isSelected: Bool {
         didSet {
-            CellLabels.textColor = isSelected ? UIColor.white : UIColor.init(displayP3Red: 13/255, green: 80/255, blue: 80/255, alpha: 1)
+            CellLabels.textColor = isSelected ? UIColor.black : UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         }
     }
     
@@ -89,6 +89,6 @@ class MenuCell: BaseCell {
         addConstraintsWithFormat(format: "V:[v0(20)]", views: CellLabels)
         addConstraint(NSLayoutConstraint(item: CellLabels, attribute: .centerX, relatedBy: .equal, toItem: self, attribute: .centerX, multiplier: 1, constant: 0))
         addConstraint(NSLayoutConstraint(item: CellLabels, attribute: .centerY, relatedBy: .equal, toItem: self, attribute: .centerY, multiplier: 1, constant: 0))
-        backgroundColor = UIColor.green
+        backgroundColor = UIColor.white
     }
 }

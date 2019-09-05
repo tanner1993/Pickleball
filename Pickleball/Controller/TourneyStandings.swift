@@ -13,10 +13,17 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     var teams: [Team] = {
         var Team1 = Team()
         Team1.TeamPair = "Tanner and Scott"
-        Team1.Wins = 5
-        Team1.Losses = 0
+        Team1.Wins = "Wins: 5"
+        Team1.Losses = "Losses: 0"
+        Team1.Rank = "1"
         
-        return [Team1]
+        var Team2 = Team()
+        Team2.TeamPair = "Keili and Kim"
+        Team2.Wins = "Wins: 0"
+        Team2.Losses = "Losses: 5"
+        Team2.Rank = "2"
+        
+        return [Team1, Team2]
     }()
     
     override func viewDidLoad() {
@@ -26,11 +33,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         
         let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: view.frame.width - 32, height: view.frame.height))
         titleLabel.text = "Tourney 1 Overall"
-        titleLabel.textColor = UIColor.white
-        titleLabel.font = UIFont.systemFont(ofSize: 20)
+        titleLabel.textColor = UIColor.black
+        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
         navigationItem.titleView = titleLabel
-        
-        //collectionView?.backgroundColor = UIColor.white
         
         collectionView?.register(TeamCell.self, forCellWithReuseIdentifier: "CellID")
         
@@ -41,16 +46,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     let menusBar: TourneyMenuBar = {
         let mb = TourneyMenuBar()
-        mb.backgroundColor = UIColor.brown
         mb.translatesAutoresizingMaskIntoConstraints = false
         return mb
     }()
     
     private func setupTourneyMenuBar() {
         view.addSubview(menusBar)
-        view.bringSubviewToFront(menusBar)
-        menusBar.tintColor = UIColor.brown
-        menusBar.backgroundColor = UIColor.brown
         view.addConstraintsWithFormat(format: "H:|[v0]|", views: menusBar)
         view.addConstraintsWithFormat(format: "V:|[v0(35)]", views: menusBar)
     }
@@ -59,12 +60,13 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
 
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        return teams.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CellID", for: indexPath)
-        cell.backgroundColor = UIColor.blue
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CellID", for: indexPath) as! TeamCell
+        cell.team = teams[indexPath.item]
+        cell.backgroundColor = UIColor.white
         return cell
     }
     

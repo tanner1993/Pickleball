@@ -26,9 +26,18 @@ class BaseCell: UICollectionViewCell {
 
 class TeamCell: BaseCell {
     
+    var team: Team? {
+        didSet {
+            TeamDuo.text = team?.TeamPair
+            Wins.text = team?.Wins
+            Losses.text = team?.Losses
+            TeamRank.text = team?.Rank
+        }
+    }
+    
     let TeamDuo: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.purple
+        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.layer.cornerRadius = 24
         label.layer.masksToBounds = true
@@ -39,7 +48,7 @@ class TeamCell: BaseCell {
     }()
     let TeamRank: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.purple
+        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.layer.cornerRadius = 35
         label.layer.masksToBounds = true
@@ -50,7 +59,7 @@ class TeamCell: BaseCell {
     }()
     let Wins: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.green
+        label.backgroundColor = UIColor.init(displayP3Red: 0/255, green: 250/255, blue: 154/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.layer.cornerRadius = 10
         label.layer.masksToBounds = true
@@ -60,7 +69,7 @@ class TeamCell: BaseCell {
     }()
     let Losses: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.red
+        label.backgroundColor = UIColor.init(displayP3Red: 240/255, green: 128/255, blue: 128/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.layer.cornerRadius = 10
         label.layer.masksToBounds = true
