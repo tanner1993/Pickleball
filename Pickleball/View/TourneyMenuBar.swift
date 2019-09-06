@@ -107,12 +107,12 @@ class MenuCell: BaseCell {
 //        return cb
 //    }()
     
-    override var isHighlighted: Bool {
-        didSet {
-            CellLabels.textColor = isHighlighted ? UIColor.black : UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
-            //CellBar.backgroundColor = isHighlighted ? UIColor.black : UIColor.white
-        }
-    }
+//    override var isHighlighted: Bool {
+//        didSet {
+//            CellLabels.textColor = isHighlighted ? UIColor.black : UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+//            //CellBar.backgroundColor = isHighlighted ? UIColor.black : UIColor.white
+//        }
+//    }
     
     override var isSelected: Bool {
         didSet {

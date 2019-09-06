@@ -21,21 +21,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
 //        print("Button tapped")
 //    }
 
-    var teams: [Team] = {
-        var Team1 = Team()
-        Team1.TeamPair = "Tanner and Scott"
-        Team1.Wins = "Wins: 5"
-        Team1.Losses = "Losses: 0"
-        Team1.Rank = "1"
-        
-        var Team2 = Team()
-        Team2.TeamPair = "Keili and Kim"
-        Team2.Wins = "Wins: 0"
-        Team2.Losses = "Losses: 5"
-        Team2.Rank = "2"
-        
-        return [Team1, Team2]
-    }()
+    let cellId = "cellId"
+    let rmCellId = "rmCellId"
+    let threeSectionTitles = ["Overall", "Recent Matches", "My Matches"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,7 +46,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
         navigationItem.titleView = titleLabel
     }
-    let cellId = "cellId"
     private func setupCollectionView() {
         
         if let flowLayout = collectionView?.collectionViewLayout as? UICollectionViewFlowLayout {
@@ -67,7 +54,10 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         }
         
         //collectionView?.register(TeamCell.self, forCellWithReuseIdentifier: "CellID")
-        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellId)
+        //collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView?.register(FeedCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView?.register(MatchCell.self, forCellWithReuseIdentifier: rmCellId)
+        
         collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
         collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
@@ -77,6 +67,14 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     func scrollToMenuIndex(menuIndex: Int) {
         let indexPath = NSIndexPath(item: menuIndex, section: 0)
         collectionView?.scrollToItem(at: indexPath as IndexPath, at: [], animated: true)
+        
+        setTitleForIndex(index: menuIndex)
+    }
+    
+    private func setTitleForIndex(index: Int) {
+        if let titleLabels = navigationItem.titleView as? UILabel {
+            titleLabels.text = threeSectionTitles[index]
+        }
     }
     
     lazy var menusBar: TourneyMenuBar = {
@@ -102,6 +100,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         
         let indexPath = NSIndexPath(item: Int(index), section: 0)
         menusBar.collectionView.selectItem(at: indexPath as IndexPath, animated: true, scrollPosition:[])
+        
+        setTitleForIndex(index: Int(index))
+        
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -109,32 +110,21 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        if indexPath.item == 1 {
+            return collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath)
+        }
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
-        let cellcolors: [UIColor] = [.white, .blue, .black]
-        cell.backgroundColor = cellcolors[indexPath.item]
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: view.frame.height)
+        return CGSize(width: view.frame.width, height: view.frame.height - 35)
     }
     
 
     
-//    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        return teams.count
-//    }
-//
-//    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CellID", for: indexPath) as! TeamCell
-//        cell.team = teams[indexPath.item]
-//        cell.backgroundColor = UIColor.white
-//        return cell
-//    }
-//
-//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-//        return CGSize(width: view.frame.width, height: 80)
-//    }
 
 }
 

@@ -24,7 +24,7 @@ class BaseCell: UICollectionViewCell {
     
 }
 
-class TeamCell: BaseCell {
+class TeamCell: FeedCell {
     
     var team: Team? {
         didSet {
@@ -96,5 +96,6 @@ class TeamCell: BaseCell {
         addConstraint(NSLayoutConstraint(item: Losses, attribute: .left, relatedBy: .equal, toItem: TeamDuo, attribute: .centerX, multiplier: 1, constant: 10))
         addConstraint(NSLayoutConstraint(item: Losses, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 0, constant: 20))
     }
+    
     
 }
