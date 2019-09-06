@@ -58,44 +58,83 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
         navigationItem.titleView = titleLabel
     }
-    
+    let cellId = "cellId"
     private func setupCollectionView() {
-        collectionView?.register(TeamCell.self, forCellWithReuseIdentifier: "CellID")
+        
+        if let flowLayout = collectionView?.collectionViewLayout as? UICollectionViewFlowLayout {
+            flowLayout.scrollDirection = .horizontal
+            flowLayout.minimumLineSpacing = 0
+        }
+        
+        //collectionView?.register(TeamCell.self, forCellWithReuseIdentifier: "CellID")
+        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
         collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+        collectionView?.isPagingEnabled = true
     }
     
-    func setupTourneyMenuBar() {
-        let menusBar: TourneyMenuBar = {
-            let mb = TourneyMenuBar()
-            mb.tourneystandings = self
-            mb.translatesAutoresizingMaskIntoConstraints = false
-            return mb
-        }()
+    func scrollToMenuIndex(menuIndex: Int) {
+        let indexPath = NSIndexPath(item: menuIndex, section: 0)
+        collectionView?.scrollToItem(at: indexPath as IndexPath, at: [], animated: true)
+    }
+    
+    lazy var menusBar: TourneyMenuBar = {
+        let mb = TourneyMenuBar()
+        mb.tourneystandings = self
+        mb.translatesAutoresizingMaskIntoConstraints = false
+        return mb
+    }()
+    
+    private func setupTourneyMenuBar() {
+        
         view.addSubview(menusBar)
         view.addConstraintsWithFormat(format: "H:|[v0]|", views: menusBar)
         view.addConstraintsWithFormat(format: "V:|[v0(35)]", views: menusBar)
     }
     
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        menusBar.horizontalBarLeftAnchorConstraint?.constant = scrollView.contentOffset.x / 3
+    }
     
-    
-
+    override func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        let index = targetContentOffset.pointee.x / view.frame.width
+        
+        let indexPath = NSIndexPath(item: Int(index), section: 0)
+        menusBar.collectionView.selectItem(at: indexPath as IndexPath, animated: true, scrollPosition:[])
+    }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return teams.count
+        return 3
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CellID", for: indexPath) as! TeamCell
-        cell.team = teams[indexPath.item]
-        cell.backgroundColor = UIColor.white
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
+        let cellcolors: [UIColor] = [.white, .blue, .black]
+        cell.backgroundColor = cellcolors[indexPath.item]
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 80)
+        return CGSize(width: view.frame.width, height: view.frame.height)
     }
+    
+
+    
+//    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+//        return teams.count
+//    }
+//
+//    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CellID", for: indexPath) as! TeamCell
+//        cell.team = teams[indexPath.item]
+//        cell.backgroundColor = UIColor.white
+//        return cell
+//    }
+//
+//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+//        return CGSize(width: view.frame.width, height: 80)
+//    }
 
 }
 
