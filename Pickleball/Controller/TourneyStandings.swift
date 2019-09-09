@@ -7,19 +7,11 @@
 //
 
 import UIKit
+import Firebase
+import FirebaseAuth
 
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
-//    let changepagebutton: UIButton = {
-//        let cpb = UIButton()
-//        cpb.backgroundColor = UIColor.blue
-//        cpb.translatesAutoresizingMaskIntoConstraints = false
-//        cpb.addTarget(self, action: #selector(cpbAction), for: UIControl.Event.touchUpInside)
-//        return cpb
-//    }()
-//    @objc func cpbAction(sender: UIButton!) {
-//        print("Button tapped")
-//    }
 
     let cellId = "cellId"
     let rmCellId = "rmCellId"
@@ -28,6 +20,10 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        // user loged in?
+        if Auth.auth().currentUser?.uid == nil {
+            perform(#selector(handleLogout), with: nil, afterDelay: 0)
+        }
         
         setupLogout()
         setupTitle()
@@ -41,6 +37,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         
     }
     @objc func handleLogout() {
+        do {
+            try Auth.auth().signOut()
+        } catch let logoutError {
+            print(logoutError)
+        }
+        
         let loginController = LoginPage()
         present(loginController, animated: true, completion: nil)
     }
