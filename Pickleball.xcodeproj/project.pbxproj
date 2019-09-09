@@ -10,6 +10,9 @@
 		7718BD6E2322CC710004777C /* FeedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD6D2322CC710004777C /* FeedCell.swift */; };
 		7718BD702322D4EC0004777C /* MatchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD6F2322D4EC0004777C /* MatchCell.swift */; };
 		7718BD722323019E0004777C /* RecentMatchesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD712323019E0004777C /* RecentMatchesCell.swift */; };
+		7718BD74232332600004777C /* Match.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD73232332600004777C /* Match.swift */; };
+		7718BD7623256F890004777C /* LoginPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD7523256F890004777C /* LoginPage.swift */; };
+		7718BD782326C6C30004777C /* FirebaseAuth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7718BD772326C6C30004777C /* FirebaseAuth.framework */; };
 		77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB022231499C3006CB608 /* AppDelegate.swift */; };
 		77BBB025231499C3006CB608 /* TableofTourneys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB024231499C3006CB608 /* TableofTourneys.swift */; };
 		77BBB028231499C3006CB608 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB026231499C3006CB608 /* Main.storyboard */; };
@@ -31,6 +34,9 @@
 		7718BD6D2322CC710004777C /* FeedCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCell.swift; sourceTree = "<group>"; };
 		7718BD6F2322D4EC0004777C /* MatchCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchCell.swift; sourceTree = "<group>"; };
 		7718BD712323019E0004777C /* RecentMatchesCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentMatchesCell.swift; sourceTree = "<group>"; };
+		7718BD73232332600004777C /* Match.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Match.swift; sourceTree = "<group>"; };
+		7718BD7523256F890004777C /* LoginPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginPage.swift; sourceTree = "<group>"; };
+		7718BD772326C6C30004777C /* FirebaseAuth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FirebaseAuth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77BBB022231499C3006CB608 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77BBB024231499C3006CB608 /* TableofTourneys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableofTourneys.swift; sourceTree = "<group>"; };
@@ -53,6 +59,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7718BD782326C6C30004777C /* FirebaseAuth.framework in Frameworks */,
 				D0867C5D0983E79C84F51214 /* Pods_Pickleball.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -113,6 +120,7 @@
 			children = (
 				77BBB024231499C3006CB608 /* TableofTourneys.swift */,
 				77BBB0382319E5C5006CB608 /* TourneyStandings.swift */,
+				7718BD7523256F890004777C /* LoginPage.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -121,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				77BBB0442320838F006CB608 /* Team.swift */,
+				7718BD73232332600004777C /* Match.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -145,6 +154,7 @@
 		A20C0AA1F89D4ACB5FCE6A35 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				7718BD772326C6C30004777C /* FirebaseAuth.framework */,
 				9A845BD4606939F9EBD065D5 /* Pods_Pickleball.framework */,
 			);
 			name = Frameworks;
@@ -272,11 +282,13 @@
 				77BBB0372315A6BA006CB608 /* TourneyTableViewCell.swift in Sources */,
 				77BBB043231EEF8D006CB608 /* TeamCell.swift in Sources */,
 				7718BD722323019E0004777C /* RecentMatchesCell.swift in Sources */,
+				7718BD7623256F890004777C /* LoginPage.swift in Sources */,
 				7718BD702322D4EC0004777C /* MatchCell.swift in Sources */,
 				77BBB0452320838F006CB608 /* Team.swift in Sources */,
 				77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */,
 				77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */,
 				77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */,
+				7718BD74232332600004777C /* Match.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -29,11 +29,20 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         super.viewDidLoad()
         
         
-        
+        setupLogout()
         setupTitle()
         setupCollectionView()
         setupTourneyMenuBar()
         
+    }
+    
+    private func setupLogout() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
+        
+    }
+    @objc func handleLogout() {
+        let loginController = LoginPage()
+        present(loginController, animated: true, completion: nil)
     }
     
     private func setupTitle() {

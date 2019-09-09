@@ -11,20 +11,16 @@ import UIKit
 class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
 
-    var teams: [Team] = {
-    var Team1 = Team()
-    Team1.TeamPair = "Tanner and Scott"
-    Team1.Wins = "Wins: 5"
-    Team1.Losses = "Losses: 0"
-    Team1.Rank = "1"
+    var matches: [Match] = {
+    var match1 = Match()
+    match1.TeamPairBetter = "Tanner and Scott"
+    match1.TeamPairWorse = "Keili and Kim"
     
-    var Team2 = Team()
-    Team2.TeamPair = "Keili and Kim"
-    Team2.Wins = "Wins: 0"
-    Team2.Losses = "Losses: 5"
-    Team2.Rank = "2"
+    var match2 = Match()
+    match2.TeamPairBetter = "Jim and Joe"
+    match2.TeamPairWorse = "Bob and Bill"
     
-    return [Team1, Team2]
+    return [match1, match2]
 }()
 
 lazy var collectionView: UICollectionView = {
@@ -54,12 +50,12 @@ override func setupViews() {
 
     
 func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    return teams.count
+    return matches.count
 }
 
 func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! RecentMatchesCell
-    cell.team = teams[indexPath.item]
+    cell.team = matches[indexPath.item]
     cell.backgroundColor = UIColor.white
     return cell
 }
