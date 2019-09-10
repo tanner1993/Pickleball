@@ -20,22 +20,44 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // user loged in?
-        if Auth.auth().currentUser?.uid == nil {
-            perform(#selector(handleLogout), with: nil, afterDelay: 0)
-        }
+        checkIfUserLoggedIn()
         
-        setupLogout()
+
+        setupNavBarButtons()
         setupTitle()
         setupCollectionView()
         setupTourneyMenuBar()
         
     }
+    func checkIfUserLoggedIn() {
+        if Auth.auth().currentUser?.uid == nil {
+            perform(#selector(handleLogout), with: nil, afterDelay: 0)
+        } else {
+            let uid = Auth.auth().currentUser?.uid
+            Database.database().reference().child("users").child(uid!).observeSingleEvent(of: .value, with: {(snapshot) in
+                if let dictionary = snapshot.value as? [String: AnyObject] {
+                    print(dictionary["name"] as? String)
+                    print(dictionary["email"] as? String)
+                }
+            })
+        }
+    }
     
-    private func setupLogout() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
+    
+    private func setupNavBarButtons() {
+        let logoutButton = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
+        let enterTourneyButton = UIBarButtonItem(title: "Enter", style: .plain, target: self, action: #selector(handleEnterTourney))
+        navigationItem.rightBarButtonItems = [logoutButton, enterTourneyButton]
+    }
+    
+    @objc func handleEnterTourney() {
+        
+        let chooseTeammatePage = ListOfPotentialTeammates()
+        let chooseNavController = UINavigationController(rootViewController: chooseTeammatePage)
+        present(chooseNavController, animated: true, completion: nil)
         
     }
+    
     @objc func handleLogout() {
         do {
             try Auth.auth().signOut()
