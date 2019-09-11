@@ -51,8 +51,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     @objc func handleEnterTourney() {
-        
-        let chooseTeammatePage = ListOfPotentialTeammates()
+        let layout = UICollectionViewFlowLayout()
+        let chooseTeammatePage = SelectTeammate(collectionViewLayout: layout)
         let chooseNavController = UINavigationController(rootViewController: chooseTeammatePage)
         present(chooseNavController, animated: true, completion: nil)
         
