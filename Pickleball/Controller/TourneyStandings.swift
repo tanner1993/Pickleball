@@ -12,7 +12,7 @@ import FirebaseAuth
 
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
-
+    let tourneystatus = 1
     let cellId = "cellId"
     let rmCellId = "rmCellId"
     let threeSectionTitles = ["Overall", "Recent Matches", "My Matches"]
@@ -72,9 +72,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     private func setupTitle() {
         navigationItem.title = "Tournament 1"
         navigationController?.navigationBar.isTranslucent = false
-        
-        let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: view.frame.width - 32, height: view.frame.height))
-        titleLabel.text = "Tourney 1 Overall"
+        let widthofscreen = Int(view.frame.width)
+        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+        titleLabel.text = "Tourney Name"
         titleLabel.textColor = UIColor.black
         titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
         navigationItem.titleView = titleLabel
@@ -86,8 +86,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             flowLayout.minimumLineSpacing = 0
         }
         
-        //collectionView?.register(TeamCell.self, forCellWithReuseIdentifier: "CellID")
-        //collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.register(FeedCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.register(MatchCell.self, forCellWithReuseIdentifier: rmCellId)
         
@@ -101,14 +99,14 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let indexPath = NSIndexPath(item: menuIndex, section: 0)
         collectionView?.scrollToItem(at: indexPath as IndexPath, at: [], animated: true)
         
-        setTitleForIndex(index: menuIndex)
+        //setTitleForIndex(index: menuIndex)
     }
     
-    private func setTitleForIndex(index: Int) {
-        if let titleLabels = navigationItem.titleView as? UILabel {
-            titleLabels.text = threeSectionTitles[index]
-        }
-    }
+//    private func setTitleForIndex(index: Int) {
+//        if let titleLabels = navigationItem.titleView as? UILabel {
+//            titleLabels.text = threeSectionTitles[index]
+//        }
+//    }
     
     lazy var menusBar: TourneyMenuBar = {
         let mb = TourneyMenuBar()
@@ -134,7 +132,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let indexPath = NSIndexPath(item: Int(index), section: 0)
         menusBar.collectionView.selectItem(at: indexPath as IndexPath, animated: true, scrollPosition:[])
         
-        setTitleForIndex(index: Int(index))
+        //setTitleForIndex(index: Int(index))
         
     }
     

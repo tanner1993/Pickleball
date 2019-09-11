@@ -17,12 +17,21 @@ class TourneyMenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelega
         return 3
     }
     
+    let tourneystatus = 1
     let cellID = "CellID"
-    let displayNames = ["Overall", "Recent Matches", "My Matches"]
+    let displayNames0 = ["Reg. Teams", "Enter Tourney", "More Info"]
+    let displayNames1 = ["Overall", "Recent Matches", "My Matches"]
+    
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! MenuCell
-        cell.CellLabels.text = displayNames[indexPath.row]
+        if tourneystatus == 0 {
+            cell.CellLabels.text = displayNames0[indexPath.row]
+        } else if tourneystatus == 1 {
+            cell.CellLabels.text = displayNames1[indexPath.row]
+        } else if tourneystatus == 2 {
+            cell.CellLabels.text = displayNames1[indexPath.row]
+        }
         return cell
     }
     

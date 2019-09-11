@@ -11,4 +11,5 @@ import UIKit
 class Player: NSObject {
     var name: String?
     var email: String?
+    var id: String?
 }
