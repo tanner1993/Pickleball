@@ -20,8 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
         
-        let layout = UICollectionViewFlowLayout()
-        window?.rootViewController = UINavigationController(rootViewController: TourneyStandings(collectionViewLayout: layout))
+        window?.rootViewController = UINavigationController(rootViewController: StartupPage())
         
         UINavigationBar.appearance().barTintColor = UIColor.white
         

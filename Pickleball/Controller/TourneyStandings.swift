@@ -50,6 +50,10 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         navigationItem.rightBarButtonItems = [logoutButton, enterTourneyButton]
     }
     
+    @objc func handleReturn() {
+        dismiss(animated: true, completion: nil)
+    }
+    
     @objc func handleEnterTourney() {
         let layout = UICollectionViewFlowLayout()
         let chooseTeammatePage = SelectTeammate(collectionViewLayout: layout)
