@@ -18,6 +18,12 @@ class StartupPage: UIViewController {
     
     func setupNavBarButtons() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "View Tourney", style: .plain, target: self, action: #selector(handleViewTourney))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Notifications", style: .plain, target: self, action: #selector(handleViewNotifications))
+    }
+    @objc func handleViewNotifications() {
+        let layout = UICollectionViewFlowLayout()
+        let NotificationsPage = Notifications(collectionViewLayout: layout)
+        navigationController?.pushViewController(NotificationsPage, animated: true)
     }
     
     @objc func handleViewTourney() {
