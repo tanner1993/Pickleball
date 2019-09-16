@@ -89,6 +89,13 @@ class LoginPage: UIViewController {
         return sc
     }()
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        nameTextField.resignFirstResponder()
+        emailTextField.resignFirstResponder()
+        passwordTextField.resignFirstResponder()
+        self.view.endEditing(true)
+    }
+    
     @objc func handleLogRegChange() {
         let title = loginRegSegControl.titleForSegment(at: loginRegSegControl.selectedSegmentIndex)
         registerButton.setTitle(title, for: .normal)
@@ -117,7 +124,37 @@ class LoginPage: UIViewController {
         setupLoginRegSeg()
         setupLoginImageView()
         setupRegisterButton()
+        setupKeyboardObservers()
     }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func handleKeyboardWillShow(notification: NSNotification) {
+        let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+        let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+        let height =  (keyboardFrame?.height)! - 150
+        inputsContainerViewCenterYAnchor?.constant = -height
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc func handleKeyboardWillHide(notification: NSNotification) {
+        inputsContainerViewCenterYAnchor?.constant = 65
+        let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
     
     @objc func handleLoginOrRegister() {
         if loginRegSegControl.selectedSegmentIndex == 0 {
@@ -198,11 +235,13 @@ class LoginPage: UIViewController {
     var nameTextFieldHeightAnchor: NSLayoutConstraint?
     var emailTextFieldHeightAnchor: NSLayoutConstraint?
     var passwordTextFieldHeightAnchor: NSLayoutConstraint?
+    var inputsContainerViewCenterYAnchor: NSLayoutConstraint?
     
     func setupContainerView() {
         view.addSubview(inputsContainerView)
         inputsContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        inputsContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 65).isActive = true
+        inputsContainerViewCenterYAnchor = inputsContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 65)
+        inputsContainerViewCenterYAnchor?.isActive = true
         inputsContainerView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         inputsContainerViewHeightAnchor = inputsContainerView.heightAnchor.constraint(equalToConstant: 150)
         inputsContainerViewHeightAnchor?.isActive = true
