@@ -67,11 +67,11 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let uid = Auth.auth().currentUser!.uid
-        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        let ref = Database.database().reference().child("notifications")
         let selectedplayer = players[indexPath.item].id
-        let teamref = ref.childByAutoId()
-        let values = ["player1": uid, "player2": selectedplayer, "rank": 1, "wins": 0, "losses": 0, "active": 0] as [String : Any]
-        teamref.updateChildValues(values, withCompletionBlock: {
+        let teamFormationRef = ref.childByAutoId()
+        let values = ["player1": uid, "player2": selectedplayer, "active": 0, "tourneyId": "tourney1"] as [String : Any]
+        teamFormationRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
             if let error = error {
@@ -80,7 +80,7 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
             }
             
             let userNotificationsRef = Database.database().reference().child("user-notifications").child(uid)
-            if let notificationId = teamref.key {
+            if let notificationId = teamFormationRef.key {
                 userNotificationsRef.updateChildValues([notificationId: 1])
                 if let recipientInvite = selectedplayer {
                     let recipientNotificationsRef = Database.database().reference().child("user-notifications").child(recipientInvite)
