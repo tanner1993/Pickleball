@@ -13,4 +13,6 @@ class Invitation: NSObject {
     var player2: String?
     var tourneyid: String?
     var active: String?
+    var invitationId: String?
+    var rejection: String?
 }

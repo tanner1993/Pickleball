@@ -16,6 +16,7 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
 
     var invitations = [Invitation]()
     let cellId = "cellId"
+    var rejectTag = -1
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,10 +44,13 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
                         let player2Id = value["player2"] as? String ?? "Player not found"
                         let active = value["active"] as? String ?? "active not found"
                         let tourneyId = value["tourneyId"] as? String ?? "Tourney not found"
+                        let rejection = value["rejection"] as? String ?? "rejection not found"
                         invitation.player1 = player1Id
                         invitation.player2 = player2Id
                         invitation.active = active
                         invitation.tourneyid = tourneyId
+                        invitation.invitationId = notificationId
+                        invitation.rejection = rejection
                         self.invitations.append(invitation)
                         DispatchQueue.main.async { self.collectionView.reloadData() }
                     }
@@ -92,7 +96,21 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! InvitationCell
         let invitation = invitations[indexPath.item]
         let uid = Auth.auth().currentUser?.uid
-        if uid == invitation.player1 {
+        if invitation.rejection == "1" {
+            if let player2 = invitation.player2 {
+                let ref = Database.database().reference().child("users").child(player2)
+                ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value as? [String: AnyObject] {
+                        let player2name = value["name"] as? String
+                        cell.invitationText.text = "\(player2name ?? "") has rejected playing with you in \(invitation.tourneyid ?? "")"
+                        cell.rejectButton.isHidden = true
+                        cell.dismissButton.isHidden = false
+                        cell.dismissButton.tag = indexPath.item
+                        cell.dismissButton.addTarget(self, action: #selector(self.handleDismiss), for: .touchUpInside)
+                    }
+                })
+            }
+        } else if uid == invitation.player1 {
             if let player2 = invitation.player2 {
                 let ref = Database.database().reference().child("users").child(player2)
                 ref.observeSingleEvent(of: .value, with: {(snapshot) in
@@ -100,6 +118,7 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
                         let player2name = value["name"] as? String
                         cell.invitationText.text = "You have invited \(player2name ?? "") to play with you in \(invitation.tourneyid ?? "")"
                         cell.rejectButton.isHidden = true
+                        cell.dismissButton.isHidden = true
                     }
                 })
             }
@@ -112,6 +131,9 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
                         let player1name = value["name"] as? String
                         cell.invitationText.text = "\(player1name ?? "") has invited you to play with them in \(invitation.tourneyid ?? "")"
                         cell.rejectButton.isHidden = false
+                        cell.dismissButton.isHidden = true
+                        cell.rejectButton.tag = indexPath.item
+                        cell.rejectButton.addTarget(self, action: #selector(self.handleInvitationReject), for: .touchUpInside)
                     }
                 })
             }
@@ -130,6 +152,49 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
         return CGSize(width: view.frame.width, height: 120)
     }
     
+    @objc func handleInvitationReject(sender: UIButton) {
+        rejectTag = sender.tag
+        print(rejectTag)
+        let newalert = UIAlertController(title: "Confirm", message: "Are you sure you want to reject?", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+        newalert.addAction(UIAlertAction(title: "Confirm", style: UIAlertAction.Style.default, handler: handleRejectConfirmed))
+        self.present(newalert, animated: true, completion: nil)
+    }
+    
+    @objc func handleDismiss(sender: UIButton) {
+        rejectTag = sender.tag
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let invitation = invitations[rejectTag]
+        guard let invitationId = invitation.invitationId else{
+            return
+        }
+        
+        let deleteUserNotIdRef = Database.database().reference().child("user-notifications").child(uid).child(invitationId)
+        deleteUserNotIdRef.removeValue()
+        let deleteNotificationIdRef = Database.database().reference().child("notifications").child(invitationId)
+        deleteNotificationIdRef.removeValue()
+        invitations.remove(at: rejectTag)
+        collectionView.reloadData()
+    }
+    
+    func handleRejectConfirmed(action: UIAlertAction) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let invitation = invitations[rejectTag]
+        guard let invitationId = invitation.invitationId else{
+            return
+        }
+
+        let deleteUserNotIdRef = Database.database().reference().child("user-notifications").child(uid).child(invitationId)
+        deleteUserNotIdRef.removeValue()
+        let changeNotificationIdRef = Database.database().reference().child("notifications").child(invitationId)
+        changeNotificationIdRef.updateChildValues(["rejection": "1"])
+        invitations.remove(at: rejectTag)
+        collectionView.reloadData()
+    }
 
 
 }
@@ -157,7 +222,18 @@ class InvitationCell: BaseCell {
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
-        //button.addTarget(self, action: #selector(handleLoginOrRegister), for: .touchUpInside)
+        return button
+    }()
+    
+    let dismissButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+        button.setTitle("Dismiss", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 5
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -178,6 +254,7 @@ class InvitationCell: BaseCell {
     override func setupViews() {
         addSubview(invitationText)
         addSubview(rejectButton)
+        addSubview(dismissButton)
         invitationText.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         invitationText.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
         invitationText.widthAnchor.constraint(equalTo: widthAnchor, constant: -8).isActive = true
@@ -186,6 +263,10 @@ class InvitationCell: BaseCell {
         rejectButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 4).isActive = true
         rejectButton.widthAnchor.constraint(equalToConstant: 75).isActive = true
         rejectButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        dismissButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -75).isActive = true
+        dismissButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 4).isActive = true
+        dismissButton.widthAnchor.constraint(equalToConstant: 75).isActive = true
+        dismissButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
         //addConstraintsWithFormat(format: "H:|-4-[v0]-4-|", views: invitationText)
         //addConstraintsWithFormat(format: "V:|-4-[v0]-4-|", views: invitationText)
     }

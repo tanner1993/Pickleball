@@ -70,7 +70,7 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
         let ref = Database.database().reference().child("notifications")
         let selectedplayer = players[indexPath.item].id
         let teamFormationRef = ref.childByAutoId()
-        let values = ["player1": uid, "player2": selectedplayer, "active": 0, "tourneyId": "tourney1"] as [String : Any]
+        let values = ["player1": uid, "player2": selectedplayer, "active": 0, "tourneyId": "tourney1", "rejection": "0"] as [String : Any]
         teamFormationRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
