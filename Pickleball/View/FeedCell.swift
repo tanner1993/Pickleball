@@ -7,24 +7,12 @@
 //
 
 import UIKit
+import Firebase
+import FirebaseAuth
 
 class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
-    var teams: [Team] = {
-        var Team1 = Team()
-        Team1.TeamPair = "Tanner and Scott"
-        Team1.Wins = "Wins: 5"
-        Team1.Losses = "Losses: 0"
-        Team1.Rank = "1"
-        
-        var Team2 = Team()
-        Team2.TeamPair = "Keili and Kim"
-        Team2.Wins = "Wins: 0"
-        Team2.Losses = "Losses: 5"
-        Team2.Rank = "2"
-        
-        return [Team1, Team2]
-    }()
+    var teams = [Team]()
     
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -38,9 +26,33 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     
     let cellId = "cellId"
     
+    func observeTourneyTeams() {
+        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        ref.observe(.childAdded, with: { (snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                let team = Team()
+                let player1Id = value["player1"] as? String ?? "Player not found"
+                let player2Id = value["player2"] as? String ?? "Player not found"
+                let rank = value["rank"] as? Int ?? 100
+                let wins = value["wins"] as? Int ?? -1
+                let losses = value["losses"] as? Int ?? -1
+                
+                
+                team.player2 = player2Id
+                team.player1 = player1Id
+                team.rank = rank
+                team.wins = wins
+                team.losses = losses
+                self.teams.append(team)
+                DispatchQueue.main.async { self.collectionView.reloadData() }
+            }
+            
+        }, withCancel: nil)
+    }
+    
     override func setupViews() {
         super.setupViews()
-        
+        observeTourneyTeams()
         backgroundColor = .black
         
         addSubview(collectionView)

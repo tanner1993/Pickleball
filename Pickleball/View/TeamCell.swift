@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import Firebase
+import FirebaseAuth
 
 class BaseCell: UICollectionViewCell {
     override init(frame: CGRect) {
@@ -28,25 +30,52 @@ class TeamCell: FeedCell {
     
     var team: Team? {
         didSet {
-            TeamDuo.text = team?.TeamPair
-            Wins.text = team?.Wins
-            Losses.text = team?.Losses
-            TeamRank.text = team?.Rank
+            let player1ref = Database.database().reference().child("users").child(team?.player1 ?? "nope")
+            player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? [String: AnyObject] {
+                    self.player1.text = value["name"] as? String
+                }
+            })
+            
+            let player2ref = Database.database().reference().child("users").child(team?.player2 ?? "nope")
+            player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? [String: AnyObject] {
+                    self.player2.text = value["name"] as? String
+                }
+            })
+            //player1.text = team?.player1
+            //player2.text = team?.player2
+            wins.text = "Wins: \(team?.wins ?? -1)"
+            losses.text = "Losses: \(team?.losses ?? -1)"
+            teamRank.text = "\(team?.rank ?? -1)"
         }
     }
     
-    let TeamDuo: UILabel = {
+    let player1: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.layer.cornerRadius = 24
         label.layer.masksToBounds = true
-        label.text = "Teammate 1 & Teammate 2"
+        label.text = "Teammate 1"
         label.font = UIFont.boldSystemFont(ofSize: 20)
         label.textAlignment = .center
         return label
     }()
-    let TeamRank: UILabel = {
+    
+    let player2: UILabel = {
+        let label = UILabel()
+        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.layer.cornerRadius = 24
+        label.layer.masksToBounds = true
+        label.text = "Teammate 2"
+        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let teamRank: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -57,7 +86,7 @@ class TeamCell: FeedCell {
         label.textAlignment = .center
         return label
     }()
-    let Wins: UILabel = {
+    let wins: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor.init(displayP3Red: 0/255, green: 250/255, blue: 154/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -67,7 +96,7 @@ class TeamCell: FeedCell {
         label.textAlignment = .center
         return label
     }()
-    let Losses: UILabel = {
+    let losses: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor.init(displayP3Red: 240/255, green: 128/255, blue: 128/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -79,22 +108,35 @@ class TeamCell: FeedCell {
     }()
     
     override func setupViews() {
-        addSubview(TeamDuo)
-        addSubview(TeamRank)
-        addSubview(Wins)
-        addSubview(Losses)
-        //addConstraint(NSLayoutConstraint(item: TeamRank, attribute: .top, relatedBy: .equal, toItem: topAnchor, attribute: .bottom, multiplier: 1, constant: 4))
-        addConstraintsWithFormat(format: "H:|-4-[v0(70)]-4-[v1]-4-|", views: TeamRank, TeamDuo)
-        addConstraintsWithFormat(format: "V:|-4-[v0]-28-|", views: TeamDuo)
-        addConstraintsWithFormat(format: "V:|-5-[v0]-5-|", views: TeamRank)
-        addConstraint(NSLayoutConstraint(item: Wins, attribute: .top, relatedBy: .equal, toItem: TeamDuo, attribute: .bottom, multiplier: 1, constant: 4))
-        addConstraint(NSLayoutConstraint(item: Wins, attribute: .right, relatedBy: .equal, toItem: TeamDuo, attribute: .centerX, multiplier: 1, constant: -10))
-        addConstraint(NSLayoutConstraint(item: Wins, attribute: .left, relatedBy: .equal, toItem: TeamDuo, attribute: .centerX, multiplier: 1, constant: -125))
-        addConstraint(NSLayoutConstraint(item: Wins, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 0, constant: 20))
-        addConstraint(NSLayoutConstraint(item: Losses, attribute: .top, relatedBy: .equal, toItem: TeamDuo, attribute: .bottom, multiplier: 1, constant: 4))
-        addConstraint(NSLayoutConstraint(item: Losses, attribute: .right, relatedBy: .equal, toItem: TeamDuo, attribute: .centerX, multiplier: 1, constant: 125))
-        addConstraint(NSLayoutConstraint(item: Losses, attribute: .left, relatedBy: .equal, toItem: TeamDuo, attribute: .centerX, multiplier: 1, constant: 10))
-        addConstraint(NSLayoutConstraint(item: Losses, attribute: .height, relatedBy: .equal, toItem: self, attribute: .height, multiplier: 0, constant: 20))
+        addSubview(teamRank)
+        teamRank.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
+        teamRank.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        teamRank.widthAnchor.constraint(equalToConstant: 70).isActive = true
+        teamRank.heightAnchor.constraint(equalToConstant: 70).isActive = true
+        
+        addSubview(player1)
+        player1.leftAnchor.constraint(equalTo: teamRank.rightAnchor, constant: 4).isActive = true
+        player1.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
+        player1.widthAnchor.constraint(equalToConstant: ((frame.width - 74) / 2) - 6).isActive = true
+        player1.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        
+        addSubview(player2)
+        player2.leftAnchor.constraint(equalTo: player1.rightAnchor, constant: 4).isActive = true
+        player2.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
+        player2.widthAnchor.constraint(equalToConstant: ((frame.width - 74) / 2) - 6).isActive = true
+        player2.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        
+        addSubview(wins)
+        wins.rightAnchor.constraint(equalTo: player1.rightAnchor, constant: -4).isActive = true
+        wins.topAnchor.constraint(equalTo: player1.bottomAnchor, constant: 4).isActive = true
+        wins.leftAnchor.constraint(equalTo: player1.leftAnchor, constant: 4).isActive = true
+        wins.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        addSubview(losses)
+        losses.rightAnchor.constraint(equalTo: player2.rightAnchor, constant: -4).isActive = true
+        losses.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
+        losses.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 4).isActive = true
+        losses.heightAnchor.constraint(equalToConstant: 20).isActive = true
     }
     
     

@@ -25,10 +25,20 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
 
         setupNavBarButtons()
         setupTitle()
+        observeTourneyTeams()
         setupCollectionView()
         setupTourneyMenuBar()
         
     }
+    
+    func observeTourneyTeams() {
+        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        ref.observe(.childAdded, with: { (snapshot) in
+            print(snapshot)
+            
+        }, withCancel: nil)
+    }
+    
     func checkIfUserLoggedIn() {
         if Auth.auth().currentUser?.uid == nil {
             perform(#selector(handleLogout), with: nil, afterDelay: 0)
