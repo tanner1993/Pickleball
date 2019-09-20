@@ -50,9 +50,14 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         }, withCancel: nil)
     }
     
+    func observeUsersTeam() {
+        
+    }
+    
     override func setupViews() {
         super.setupViews()
         observeTourneyTeams()
+        observeUsersTeam()
         backgroundColor = .black
         
         addSubview(collectionView)
@@ -69,9 +74,21 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TeamCell
+        let uid = Auth.auth().currentUser?.uid
         cell.team = teams[indexPath.item]
-        cell.backgroundColor = UIColor.white
+        if cell.team?.player1 == uid || cell.team?.player2 == uid {
+            cell.backgroundColor = .gray
+            cell.challengeButton.isHidden = true
+        } else {
+            cell.backgroundColor = UIColor.white
+            cell.challengeButton.isHidden = false
+            cell.challengeButton.addTarget(self, action: #selector(handleChallengeInvitation), for: .touchUpInside)
+        }
         return cell
+    }
+    
+    @objc func handleChallengeInvitation() {
+        
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import FirebaseAuth
+import Firebase
 
 class StartupPage: UIViewController {
 
@@ -19,6 +21,12 @@ class StartupPage: UIViewController {
     func setupNavBarButtons() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "View Tourney", style: .plain, target: self, action: #selector(handleViewTourney))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Notifications", style: .plain, target: self, action: #selector(handleViewNotifications))
+        let uid = Auth.auth().currentUser?.uid
+        Database.database().reference().child("users").child(uid!).observeSingleEvent(of: .value, with: {(snapshot) in
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                self.navigationItem.title = dictionary["name"] as? String
+            }
+        })
     }
     @objc func handleViewNotifications() {
         let layout = UICollectionViewFlowLayout()

@@ -86,6 +86,7 @@ class TeamCell: FeedCell {
         label.textAlignment = .center
         return label
     }()
+    
     let wins: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor.init(displayP3Red: 0/255, green: 250/255, blue: 154/255, alpha: 1)
@@ -96,6 +97,7 @@ class TeamCell: FeedCell {
         label.textAlignment = .center
         return label
     }()
+    
     let losses: UILabel = {
         let label = UILabel()
         label.backgroundColor = UIColor.init(displayP3Red: 240/255, green: 128/255, blue: 128/255, alpha: 1)
@@ -105,6 +107,18 @@ class TeamCell: FeedCell {
         label.text = "Losses: 1"
         label.textAlignment = .center
         return label
+    }()
+    
+    let challengeButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = UIColor(r: 150, g: 0, b: 0)
+        button.setTitle("Challenge", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 5
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
     override func setupViews() {
@@ -127,16 +141,22 @@ class TeamCell: FeedCell {
         player2.heightAnchor.constraint(equalToConstant: 48).isActive = true
         
         addSubview(wins)
-        wins.rightAnchor.constraint(equalTo: player1.rightAnchor, constant: -4).isActive = true
+        wins.rightAnchor.constraint(equalTo: player1.centerXAnchor, constant: -2).isActive = true
         wins.topAnchor.constraint(equalTo: player1.bottomAnchor, constant: 4).isActive = true
-        wins.leftAnchor.constraint(equalTo: player1.leftAnchor, constant: 4).isActive = true
+        wins.leftAnchor.constraint(equalTo: player1.leftAnchor, constant: 0).isActive = true
         wins.heightAnchor.constraint(equalToConstant: 20).isActive = true
         
         addSubview(losses)
-        losses.rightAnchor.constraint(equalTo: player2.rightAnchor, constant: -4).isActive = true
+        losses.rightAnchor.constraint(equalTo: player1.rightAnchor, constant: 0).isActive = true
         losses.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
-        losses.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 4).isActive = true
+        losses.leftAnchor.constraint(equalTo: player1.centerXAnchor, constant: 2).isActive = true
         losses.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        addSubview(challengeButton)
+        challengeButton.rightAnchor.constraint(equalTo: player2.rightAnchor, constant: 0).isActive = true
+        challengeButton.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
+        challengeButton.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 2).isActive = true
+        challengeButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
     }
     
     
