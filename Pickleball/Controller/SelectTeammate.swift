@@ -12,6 +12,7 @@ import FirebaseAuth
 
 class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
+    var invitations = [Invitation]()
     var players = [Player]()
     let cellId = "cellId"
     override func viewDidLoad() {
@@ -50,7 +51,9 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
                     player.name = name
                     player.email = email
                     player.id = child.key
-                    self.players.append(player)
+                    if player.id != Auth.auth().currentUser?.uid {
+                        self.players.append(player)
+                    }
                     DispatchQueue.main.async { self.collectionView.reloadData() }
                 }
             }

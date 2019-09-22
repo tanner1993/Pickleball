@@ -12,6 +12,8 @@ import FirebaseAuth
 
 class LoginPage: UIViewController {
     
+    var startupPage: StartupPage?
+    
     let loginImageView: UIImageView = {
         let image = UIImageView()
         image.image = UIImage(named: "loginimage")
@@ -174,6 +176,7 @@ class LoginPage: UIViewController {
                 print(error)
                 return
             }
+            self.startupPage?.setupUserNavBarTitle()
             
             self.dismiss(animated: true, completion: nil)
             print("Yay! You've logged in")

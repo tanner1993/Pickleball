@@ -12,26 +12,44 @@ import Firebase
 
 class StartupPage: UIViewController {
 
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        checkIfUserLoggedIn()
         setupNavBar()
         setupNavBarButtons()
     }
     
     func setupNavBarButtons() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "View Tourney", style: .plain, target: self, action: #selector(handleViewTourney))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Notifications", style: .plain, target: self, action: #selector(handleViewNotifications))
-        let uid = Auth.auth().currentUser?.uid
-        Database.database().reference().child("users").child(uid!).observeSingleEvent(of: .value, with: {(snapshot) in
-            if let dictionary = snapshot.value as? [String: AnyObject] {
-                self.navigationItem.title = dictionary["name"] as? String
-            }
-        })
+        let logoutButton = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
+        let notificationButton = UIBarButtonItem(title: "Notifs", style: .plain, target: self, action: #selector(handleViewNotifications))
+        navigationItem.rightBarButtonItems = [logoutButton, notificationButton]
     }
     @objc func handleViewNotifications() {
         let layout = UICollectionViewFlowLayout()
         let NotificationsPage = Notifications(collectionViewLayout: layout)
         navigationController?.pushViewController(NotificationsPage, animated: true)
+    }
+    
+    func checkIfUserLoggedIn() {
+        if Auth.auth().currentUser?.uid == nil {
+            perform(#selector(handleLogout), with: nil, afterDelay: 0)
+        } else {
+            setupUserNavBarTitle()
+        }
+    }
+    
+    @objc func handleLogout() {
+        do {
+            try Auth.auth().signOut()
+        } catch let logoutError {
+            print(logoutError)
+        }
+        
+        let loginController = LoginPage()
+        loginController.startupPage = self
+        present(loginController, animated: true, completion: nil)
     }
     
     @objc func handleViewTourney() {
@@ -45,6 +63,17 @@ class StartupPage: UIViewController {
     func setupNavBar() {
         UINavigationBar.appearance().barTintColor = UIColor.white
         navigationController?.navigationBar.isTranslucent = false
+    }
+    
+    func setupUserNavBarTitle() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        Database.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: {(snapshot) in
+            if let dictionary = snapshot.value as? [String: AnyObject] {
+                self.navigationItem.title = dictionary["name"] as? String
+            }
+        })
     }
 
 }

@@ -19,45 +19,16 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        checkIfUserLoggedIn()
-        
 
         setupNavBarButtons()
         setupTitle()
-        observeTourneyTeams()
         setupCollectionView()
         setupTourneyMenuBar()
         
     }
     
-    func observeTourneyTeams() {
-        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
-        ref.observe(.childAdded, with: { (snapshot) in
-            print(snapshot)
-            
-        }, withCancel: nil)
-    }
-    
-    func checkIfUserLoggedIn() {
-        if Auth.auth().currentUser?.uid == nil {
-            perform(#selector(handleLogout), with: nil, afterDelay: 0)
-        } else {
-            let uid = Auth.auth().currentUser?.uid
-            Database.database().reference().child("users").child(uid!).observeSingleEvent(of: .value, with: {(snapshot) in
-                if let dictionary = snapshot.value as? [String: AnyObject] {
-                    print(dictionary["name"] as? String)
-                    print(dictionary["email"] as? String)
-                }
-            })
-        }
-    }
-    
-    
     private func setupNavBarButtons() {
-        let logoutButton = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
-        let enterTourneyButton = UIBarButtonItem(title: "Enter", style: .plain, target: self, action: #selector(handleEnterTourney))
-        navigationItem.rightBarButtonItems = [logoutButton, enterTourneyButton]
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Enter", style: .plain, target: self, action: #selector(handleEnterTourney))
     }
     
     @objc func handleReturn() {
@@ -70,17 +41,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let chooseNavController = UINavigationController(rootViewController: chooseTeammatePage)
         present(chooseNavController, animated: true, completion: nil)
         
-    }
-    
-    @objc func handleLogout() {
-        do {
-            try Auth.auth().signOut()
-        } catch let logoutError {
-            print(logoutError)
-        }
-        
-        let loginController = LoginPage()
-        present(loginController, animated: true, completion: nil)
     }
     
     private func setupTitle() {
