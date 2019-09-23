@@ -11,8 +11,9 @@ import Firebase
 import FirebaseAuth
 
 class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-    
+
     var teams = [Team]()
+    var cellTag = -1
     
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -23,6 +24,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         cv.delegate = self
         return cv
     }()
+
     
     let cellId = "cellId"
     
@@ -50,19 +52,17 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         }, withCancel: nil)
     }
     
-    func observeUsersTeam() {
-        
-    }
     
     override func setupViews() {
         super.setupViews()
         observeTourneyTeams()
-        observeUsersTeam()
         backgroundColor = .black
         
         addSubview(collectionView)
-        addConstraintsWithFormat(format: "H:|[v0]|", views: collectionView)
-        addConstraintsWithFormat(format: "V:|[v0]|", views: collectionView)
+        collectionView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        collectionView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        collectionView.heightAnchor.constraint(equalToConstant: frame.height).isActive = true
+        collectionView.widthAnchor.constraint(equalToConstant: frame.width).isActive = true
         
         collectionView.register(TeamCell.self, forCellWithReuseIdentifier: cellId)
         
@@ -79,16 +79,33 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         if cell.team?.player1 == uid || cell.team?.player2 == uid {
             cell.backgroundColor = .gray
             cell.challengeButton.isHidden = true
+            cell.challengeConfirmButton.isHidden = true
         } else {
             cell.backgroundColor = UIColor.white
-            cell.challengeButton.isHidden = false
-            cell.challengeButton.addTarget(self, action: #selector(handleChallengeInvitation), for: .touchUpInside)
+            print(cellTag)
+            print(indexPath.item)
+            if cellTag == indexPath.item {
+                cell.challengeConfirmButton.isHidden = false
+                cell.challengeConfirmButton.tag = indexPath.item
+                cell.challengeConfirmButton.addTarget(self, action: #selector(handleChallengeConfirmed), for: .touchUpInside)
+                cell.challengeButton.isHidden = true
+            } else {
+                cell.challengeConfirmButton.isHidden = true
+                cell.challengeButton.isHidden = false
+                cell.challengeButton.tag = indexPath.item
+                cell.challengeButton.addTarget(self, action: #selector(handleChallengeInvitation), for: .touchUpInside)
+            }
         }
         return cell
     }
     
-    @objc func handleChallengeInvitation() {
-        
+    @objc func handleChallengeConfirmed() {
+        print("challenge confirmed")
+    }
+    
+    @objc func handleChallengeInvitation(sender: UIButton) {
+        cellTag = sender.tag
+        collectionView.reloadData()
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

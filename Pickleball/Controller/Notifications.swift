@@ -10,8 +10,6 @@ import UIKit
 import Firebase
 import FirebaseAuth
 
-private let reuseIdentifier = "Cell"
-
 class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
     var invitations = [Invitation]()
@@ -36,7 +34,7 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
         ref.observe(.childAdded, with: { (snapshot) in
             let notificationId = snapshot.key
             let notificationReference = Database.database().reference().child("notifications").child(notificationId)
-            
+
             notificationReference.observeSingleEvent(of: .value, with: {(snapshot) in
                     if let value = snapshot.value as? NSDictionary {
                         let invitation = Invitation()
@@ -54,10 +52,10 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
                         self.invitations.append(invitation)
                         DispatchQueue.main.async { self.collectionView.reloadData() }
                     }
-                
+
                 print(snapshot)
             }, withCancel: nil)
-            
+
             }, withCancel: nil)
     }
     

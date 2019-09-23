@@ -12,7 +12,11 @@ import FirebaseAuth
 
 class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
+    
     var invitations = [Invitation]()
+    var teams = [Team]()
+    var alreadyInvitedPlayers = [String]()
+    var alreadyInvitedYouPlayers = [String]()
     var players = [Player]()
     let cellId = "cellId"
     override func viewDidLoad() {
@@ -23,10 +27,116 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
         
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        oberveUserNotifications()
+        observeTourneyTeams()
         setupCollectionView()
         setupNavBar()
         setupNavBarButtons()
         fetchUsers()
+    }
+    
+    func findAlreadyInvitedUsers(selectedPlayer: String) -> Int{
+        let uid = Auth.auth().currentUser?.uid
+        var match = 0
+        print(invitations)
+        for index in invitations {
+            if index.tourneyid == "tourney1" {
+                switch uid {
+                case index.player1:
+                    if let player2 = index.player2 {
+                        alreadyInvitedPlayers.append(player2)
+                    }
+                
+                case index.player2:
+                    if let player1 = index.player1 {
+                        alreadyInvitedYouPlayers.append(player1)
+                    }
+                    
+                default:
+                    print("nobody")
+                }
+                
+                
+            }
+        }
+        print(alreadyInvitedPlayers)
+        for index in alreadyInvitedPlayers {
+            if index == selectedPlayer {
+                match = 1
+                break
+            }
+        }
+        
+        for index in alreadyInvitedYouPlayers {
+            if index == selectedPlayer {
+                match = 2
+                break
+            }
+        }
+        
+        for index in teams {
+            if index.player1 == selectedPlayer || index.player2 == selectedPlayer {
+                match = 3
+                break
+            }
+        }
+        
+        return match
+    }
+    
+    func oberveUserNotifications() {
+        invitations.removeAll()
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user-notifications").child(uid)
+        ref.observe(.childAdded, with: { (snapshot) in
+            let notificationId = snapshot.key
+            let notificationReference = Database.database().reference().child("notifications").child(notificationId)
+            
+            notificationReference.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? NSDictionary {
+                    let invitation = Invitation()
+                    let player1Id = value["player1"] as? String ?? "Player not found"
+                    let player2Id = value["player2"] as? String ?? "Player not found"
+                    let active = value["active"] as? String ?? "active not found"
+                    let tourneyId = value["tourneyId"] as? String ?? "Tourney not found"
+                    let rejection = value["rejection"] as? String ?? "rejection not found"
+                    invitation.player1 = player1Id
+                    invitation.player2 = player2Id
+                    invitation.active = active
+                    invitation.tourneyid = tourneyId
+                    invitation.invitationId = notificationId
+                    invitation.rejection = rejection
+                    self.invitations.append(invitation)
+                }
+                
+                print(snapshot)
+            }, withCancel: nil)
+            
+        }, withCancel: nil)
+    }
+    func observeTourneyTeams() {
+        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        ref.observe(.childAdded, with: { (snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                let team = Team()
+                let player1Id = value["player1"] as? String ?? "Player not found"
+                let player2Id = value["player2"] as? String ?? "Player not found"
+                let rank = value["rank"] as? Int ?? 100
+                let wins = value["wins"] as? Int ?? -1
+                let losses = value["losses"] as? Int ?? -1
+                
+                
+                team.player2 = player2Id
+                team.player1 = player1Id
+                team.rank = rank
+                team.wins = wins
+                team.losses = losses
+                self.teams.append(team)
+            }
+            
+        }, withCancel: nil)
     }
     
     func setupCollectionView() {
@@ -69,34 +179,54 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let uid = Auth.auth().currentUser!.uid
-        let ref = Database.database().reference().child("notifications")
-        let selectedplayer = players[indexPath.item].id
-        let teamFormationRef = ref.childByAutoId()
-        let values = ["player1": uid, "player2": selectedplayer, "active": 0, "tourneyId": "tourney1", "rejection": "0"] as [String : Any]
-        teamFormationRef.updateChildValues(values, withCompletionBlock: {
-            (error:Error?, ref:DatabaseReference) in
-            
-            if let error = error {
-                print("Data could not be saved: \(error).")
-                return
-            }
-            
-            let userNotificationsRef = Database.database().reference().child("user-notifications").child(uid)
-            if let notificationId = teamFormationRef.key {
-                userNotificationsRef.updateChildValues([notificationId: 1])
-                if let recipientInvite = selectedplayer {
-                    let recipientNotificationsRef = Database.database().reference().child("user-notifications").child(recipientInvite)
-                    recipientNotificationsRef.updateChildValues([notificationId: 1])
+        let selectedPlayer = players[indexPath.item].id
+        let match = findAlreadyInvitedUsers(selectedPlayer: selectedPlayer!)
+        print(match)
+        switch match {
+        case 0:
+            let uid = Auth.auth().currentUser!.uid
+            let ref = Database.database().reference().child("notifications")
+            let teamFormationRef = ref.childByAutoId()
+            let values = ["player1": uid, "player2": selectedPlayer, "active": 0, "tourneyId": "tourney1", "rejection": "0"] as [String : Any]
+            teamFormationRef.updateChildValues(values, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if let error = error {
+                    print("Data could not be saved: \(error).")
+                    return
                 }
-            }
-            
-            self.dismiss(animated: true, completion: nil)
-            
-            print("Data saved successfully!")
-            
-            
-        })
+                
+                let userNotificationsRef = Database.database().reference().child("user-notifications").child(uid)
+                if let notificationId = teamFormationRef.key {
+                    userNotificationsRef.updateChildValues([notificationId: 1])
+                    if let recipientInvite = selectedPlayer {
+                        let recipientNotificationsRef = Database.database().reference().child("user-notifications").child(recipientInvite)
+                        recipientNotificationsRef.updateChildValues([notificationId: 1])
+                    }
+                }
+                
+                self.dismiss(animated: true, completion: nil)
+                
+                print("Data saved successfully!")
+                
+                
+            })
+        case 1:
+            let newalert = UIAlertController(title: "Sorry", message: "You have already invited this player to play with you in this tournament", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+        case 2:
+            let newalert = UIAlertController(title: "Sorry", message: "This player has already invited you to play with them in this tournament", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+        case 3:
+            let newalert = UIAlertController(title: "Sorry", message: "This player is already enrolled in this tournament", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+        default:
+            print("failed to match at all!!!")
+        }
+        
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

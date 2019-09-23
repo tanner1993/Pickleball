@@ -121,6 +121,18 @@ class TeamCell: FeedCell {
         return button
     }()
     
+    let challengeConfirmButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = UIColor(r: 0, g: 150, b: 0)
+        button.setTitle("Confirm", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 5
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     override func setupViews() {
         addSubview(teamRank)
         teamRank.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
@@ -157,6 +169,12 @@ class TeamCell: FeedCell {
         challengeButton.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
         challengeButton.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 2).isActive = true
         challengeButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        addSubview(challengeConfirmButton)
+        challengeConfirmButton.rightAnchor.constraint(equalTo: player2.rightAnchor, constant: 0).isActive = true
+        challengeConfirmButton.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
+        challengeConfirmButton.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 2).isActive = true
+        challengeConfirmButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
     }
     
     

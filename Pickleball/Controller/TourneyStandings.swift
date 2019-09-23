@@ -17,6 +17,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     let rmCellId = "rmCellId"
     let threeSectionTitles = ["Overall", "Recent Matches", "My Matches"]
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -54,7 +55,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         navigationItem.titleView = titleLabel
     }
     private func setupCollectionView() {
-        
         if let flowLayout = collectionView?.collectionViewLayout as? UICollectionViewFlowLayout {
             flowLayout.scrollDirection = .horizontal
             flowLayout.minimumLineSpacing = 0
@@ -119,7 +119,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         if indexPath.item == 1 {
             return collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath)
         }
-        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
         return cell
     }
