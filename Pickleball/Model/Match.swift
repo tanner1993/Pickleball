@@ -9,6 +9,9 @@
 import UIKit
 
 class Match: NSObject {
-    var TeamPairBetter: String?
-    var TeamPairWorse: String?
+    var challengerTeamId: String?
+    var challengedTeamId: String?
+    var matchId: String?
+    var challengerGames: [Int]?
+    var challengedGames: [Int]?
 }

@@ -109,7 +109,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         }
         let ref = Database.database().reference().child("matches")
         let createMatchInTourneyRef = ref.childByAutoId()
-        let values = ["challenging_team": teams[myTeamIndex].teamId as Any, "challenged_team": teams[cellTag].teamId as Any, "challenging_game1": 0, "challenging_game2": 0, "challenging_game3": 0, "challenging_game4": 0, "challenging_game5": 0, "challenged_game1": 0, "challenged_game2": 0, "challenged_game3": 0, "challenged_game4": 0, "challenged_game5": 0] as [String : Any]
+        let values = ["challenger_team": teams[myTeamIndex].teamId as Any, "challenged_team": teams[cellTag].teamId as Any, "challenger_game1": 0, "challenger_game2": 0, "challenger_game3": 0, "challenger_game4": 0, "challenger_game5": 0, "challenged_game1": 0, "challenged_game2": 0, "challenged_game3": 0, "challenged_game4": 0, "challenged_game5": 0] as [String : Any]
         createMatchInTourneyRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -117,10 +117,10 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
                 print("Data could not be saved: \(error).")
                 return
             }
-            guard let challengingPlayer1Id = self.teams[myTeamIndex].player1 else {
+            guard let challengerPlayer1Id = self.teams[myTeamIndex].player1 else {
                 return
             }
-            guard let challengingPlayer2Id = self.teams[myTeamIndex].player2 else {
+            guard let challengerPlayer2Id = self.teams[myTeamIndex].player2 else {
                 return
             }
             guard let challengedPlayer1Id = self.teams[self.cellTag].player1 else {
@@ -135,7 +135,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
                 let matchRef = Database.database().reference().child("tourneys").child("tourney1").child("matches")
                 matchRef.updateChildValues([matchId: 1])
 
-            let notifiedPlayers = [challengingPlayer1Id, challengingPlayer2Id, challengedPlayer1Id, challengedPlayer2Id]
+            let notifiedPlayers = [challengerPlayer1Id, challengerPlayer2Id, challengedPlayer1Id, challengedPlayer2Id]
             for index in notifiedPlayers {
                 let userNotificationsRef = Database.database().reference().child("user-notifications").child(index)
                 userNotificationsRef.updateChildValues([matchId: 1])

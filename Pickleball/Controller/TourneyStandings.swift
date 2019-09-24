@@ -15,6 +15,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     let tourneystatus = 1
     let cellId = "cellId"
     let rmCellId = "rmCellId"
+    let mmCellId = "mmCellId"
     let threeSectionTitles = ["Overall", "Recent Matches", "My Matches"]
     
     
@@ -62,6 +63,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         
         collectionView?.register(FeedCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.register(MatchCell.self, forCellWithReuseIdentifier: rmCellId)
+        collectionView?.register(MyMatchesCell.self, forCellWithReuseIdentifier: mmCellId)
         
         collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
@@ -118,6 +120,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         
         if indexPath.item == 1 {
             return collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath)
+        } else if indexPath.item == 2 {
+            return collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath)
         }
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
         return cell

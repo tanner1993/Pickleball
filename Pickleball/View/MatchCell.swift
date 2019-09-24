@@ -13,14 +13,20 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
 
     var matches: [Match] = {
     var match1 = Match()
-    match1.TeamPairBetter = "Tanner and Scott"
-    match1.TeamPairWorse = "Keili and Kim"
-    
-    var match2 = Match()
-    match2.TeamPairBetter = "Jim and Joe"
-    match2.TeamPairWorse = "Bob and Bill"
-    
-    return [match1, match2]
+    match1.challengerTeamId = "Tanner and Scott"
+    match1.challengedTeamId = "Keili and Kim"
+        match1.challengerGames?.append(3)
+        match1.challengerGames?.append(2)
+        match1.challengerGames?.append(11)
+        match1.challengerGames?.append(11)
+        match1.challengerGames?.append(11)
+        match1.challengedGames?.append(11)
+        match1.challengedGames?.append(11)
+        match1.challengedGames?.append(1)
+        match1.challengedGames?.append(2)
+        match1.challengedGames?.append(3)
+
+    return [match1]
 }()
 
 lazy var collectionView: UICollectionView = {
@@ -55,7 +61,7 @@ func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection s
 
 func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! RecentMatchesCell
-    cell.team = matches[indexPath.item]
+    cell.match = matches[indexPath.item]
     cell.backgroundColor = UIColor.white
     return cell
 }
