@@ -11,13 +11,14 @@ import FirebaseAuth
 import Firebase
 
 class StartupPage: UIViewController {
-
     
     override func viewDidLoad() {
         super.viewDidLoad()
         checkIfUserLoggedIn()
         setupNavBar()
         setupNavBarButtons()
+        
+        
     }
     
     func setupNavBarButtons() {

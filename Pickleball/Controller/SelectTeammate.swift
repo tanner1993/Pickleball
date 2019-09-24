@@ -133,6 +133,7 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
                 team.rank = rank
                 team.wins = wins
                 team.losses = losses
+                team.teamId = snapshot.key
                 self.teams.append(team)
             }
             

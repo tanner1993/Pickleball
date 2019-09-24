@@ -12,6 +12,7 @@ import FirebaseAuth
 
 class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
+    var highestCurrentRank: Int = 0
     var invitations = [Invitation]()
     let cellId = "cellId"
     var cellTag = -1
@@ -180,6 +181,15 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
     
     @objc func handleInvitationConfirm(sender: UIButton) {
         cellTag = sender.tag
+        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        let query = ref.queryOrdered(byChild: "rank")
+        query.observe(.value) { (snapshot) in
+            for child in snapshot.children.allObjects as! [DataSnapshot] {
+                if let value = child.value as? NSDictionary {
+                    self.highestCurrentRank = value["rank"] as? Int ?? -1
+                }
+            }
+        }
         let newalert = UIAlertController(title: "Confirm", message: "Are you sure you want to join this tournament?", preferredStyle: UIAlertController.Style.alert)
         newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
         newalert.addAction(UIAlertAction(title: "Confirm", style: UIAlertAction.Style.default, handler: handleConfirmConfirmed))
@@ -239,7 +249,7 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
         changeNotificationIdRef.updateChildValues(["active": "1"])
         let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
         let createTeamInTourneyRef = ref.childByAutoId()
-        let values = ["player1": inviteeId, "player2": uid, "wins": 0, "losses": 0, "rank": 0] as [String : Any]
+        let values = ["player1": inviteeId, "player2": uid, "wins": 0, "losses": 0, "rank": highestCurrentRank + 1] as [String : Any]
         createTeamInTourneyRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             

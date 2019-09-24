@@ -208,7 +208,7 @@ class LoginPage: UIViewController {
                     print("Data could not be saved: \(error).")
                     return
                 }
-                
+                self.startupPage?.setupUserNavBarTitle()
                 self.dismiss(animated: true, completion: nil)
                 
                 print("Data saved successfully!")

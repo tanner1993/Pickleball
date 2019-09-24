@@ -14,6 +14,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
 
     var teams = [Team]()
     var cellTag = -1
+    var myTeamId: Int?
     
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -29,7 +30,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     let cellId = "cellId"
     
     func observeTourneyTeams() {
-        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams").queryOrdered(byChild: "rank")
         ref.observe(.childAdded, with: { (snapshot) in
             if let value = snapshot.value as? NSDictionary {
                 let team = Team()
@@ -45,6 +46,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
                 team.rank = rank
                 team.wins = wins
                 team.losses = losses
+                team.teamId = snapshot.key
                 self.teams.append(team)
                 DispatchQueue.main.async { self.collectionView.reloadData() }
             }
@@ -80,6 +82,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
             cell.backgroundColor = .gray
             cell.challengeButton.isHidden = true
             cell.challengeConfirmButton.isHidden = true
+            myTeamId = indexPath.item
         } else {
             cell.backgroundColor = UIColor.white
             print(cellTag)
@@ -101,6 +104,47 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     
     @objc func handleChallengeConfirmed() {
         print("challenge confirmed")
+        guard let myTeamIndex = myTeamId else {
+            return
+        }
+        let ref = Database.database().reference().child("matches")
+        let createMatchInTourneyRef = ref.childByAutoId()
+        let values = ["challenging_team": teams[myTeamIndex].teamId as Any, "challenged_team": teams[cellTag].teamId as Any, "challenging_game1": 0, "challenging_game2": 0, "challenging_game3": 0, "challenging_game4": 0, "challenging_game5": 0, "challenged_game1": 0, "challenged_game2": 0, "challenged_game3": 0, "challenged_game4": 0, "challenged_game5": 0] as [String : Any]
+        createMatchInTourneyRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            guard let challengingPlayer1Id = self.teams[myTeamIndex].player1 else {
+                return
+            }
+            guard let challengingPlayer2Id = self.teams[myTeamIndex].player2 else {
+                return
+            }
+            guard let challengedPlayer1Id = self.teams[self.cellTag].player1 else {
+                return
+            }
+            guard let challengedPlayer2Id = self.teams[self.cellTag].player2 else {
+                return
+            }
+            guard let matchId = createMatchInTourneyRef.key else {
+                return
+            }
+                let matchRef = Database.database().reference().child("tourneys").child("tourney1").child("matches")
+                matchRef.updateChildValues([matchId: 1])
+
+            let notifiedPlayers = [challengingPlayer1Id, challengingPlayer2Id, challengedPlayer1Id, challengedPlayer2Id]
+            for index in notifiedPlayers {
+                let userNotificationsRef = Database.database().reference().child("user-notifications").child(index)
+                userNotificationsRef.updateChildValues([matchId: 1])
+            }
+            
+            print("Data saved successfully!")
+            
+            
+        })
     }
     
     @objc func handleChallengeInvitation(sender: UIButton) {
