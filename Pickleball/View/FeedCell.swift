@@ -12,9 +12,15 @@ import FirebaseAuth
 
 class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
-    var teams = [Team]()
+    var teams = [Team]() {
+        didSet {
+            collectionView.reloadData()
+        }
+    }
     var cellTag = -1
     var myTeamId: Int?
+    var tourneyIdentifier: String?
+    
     
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -29,45 +35,45 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     
     let cellId = "cellId"
     
-    func observeTourneyTeams() {
-        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams").queryOrdered(byChild: "rank")
-        ref.observe(.childAdded, with: { (snapshot) in
-            if let value = snapshot.value as? NSDictionary {
-                let team = Team()
-                let player1Id = value["player1"] as? String ?? "Player not found"
-                let player2Id = value["player2"] as? String ?? "Player not found"
-                let rank = value["rank"] as? Int ?? 100
-                let wins = value["wins"] as? Int ?? -1
-                let losses = value["losses"] as? Int ?? -1
-                
-                
-                team.player2 = player2Id
-                team.player1 = player1Id
-                team.rank = rank
-                team.wins = wins
-                team.losses = losses
-                team.teamId = snapshot.key
-                self.teams.append(team)
-                DispatchQueue.main.async { self.collectionView.reloadData() }
-            }
-            
-        }, withCancel: nil)
-    }
+//    func observeTourneyTeams() {
+//
+//
+//        let ref = Database.database().reference().child("tourneys").child(tourneyid).child("teams").queryOrdered(byChild: "rank")
+//        ref.observe(.childAdded, with: { (snapshot) in
+//            if let value = snapshot.value as? NSDictionary {
+//                let team = Team()
+//                let player1Id = value["player1"] as? String ?? "Player not found"
+//                let player2Id = value["player2"] as? String ?? "Player not found"
+//                let rank = value["rank"] as? Int ?? 100
+//                let wins = value["wins"] as? Int ?? -1
+//                let losses = value["losses"] as? Int ?? -1
+//
+//
+//                team.player2 = player2Id
+//                team.player1 = player1Id
+//                team.rank = rank
+//                team.wins = wins
+//                team.losses = losses
+//                team.teamId = snapshot.key
+//                self.teams.append(team)
+//                DispatchQueue.main.async { self.collectionView.reloadData() }
+//            }
+//
+//        }, withCancel: nil)
+//    }
     
     
     override func setupViews() {
         super.setupViews()
-        observeTourneyTeams()
         backgroundColor = .black
         
+        //observeTourneyTeams()
         addSubview(collectionView)
         collectionView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         collectionView.topAnchor.constraint(equalTo: topAnchor).isActive = true
         collectionView.heightAnchor.constraint(equalToConstant: frame.height).isActive = true
         collectionView.widthAnchor.constraint(equalToConstant: frame.width).isActive = true
-        
         collectionView.register(TeamCell.self, forCellWithReuseIdentifier: cellId)
-        
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -132,7 +138,10 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
             guard let matchId = createMatchInTourneyRef.key else {
                 return
             }
-                let matchRef = Database.database().reference().child("tourneys").child("tourney1").child("matches")
+            guard let tourneyId = self.tourneyIdentifier else {
+                return
+            }
+                let matchRef = Database.database().reference().child("tourneys").child(tourneyId).child("matches")
                 matchRef.updateChildValues([matchId: 1])
 
             let notifiedPlayers = [challengerPlayer1Id, challengerPlayer2Id, challengedPlayer1Id, challengedPlayer2Id]

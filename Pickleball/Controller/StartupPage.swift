@@ -12,17 +12,99 @@ import Firebase
 
 class StartupPage: UIViewController {
     
+    let createTourneyButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+        button.setTitle("Create Tourney", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 5
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleCreateTourney), for: .touchUpInside)
+        return button
+    }()
+    
+    let tourneyNameTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "Name"
+        tf.backgroundColor = .white
+        tf.translatesAutoresizingMaskIntoConstraints = false
+        tf.font = UIFont.boldSystemFont(ofSize: 16)
+        return tf
+    }()
+    
+    let tourneyListButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+        button.setTitle("View Tourney List", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 5
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleViewTourneys), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func handleViewTourneys() {
+        let layout = UICollectionViewFlowLayout()
+        let tourneyListPage = TourneyList(collectionViewLayout: layout)
+        navigationController?.pushViewController(tourneyListPage, animated: true)
+    }
+    
+    @objc func handleCreateTourney() {
+        let ref = Database.database().reference().child("tourneys")
+        guard let tourneyName = tourneyNameTextField.text else {
+            return
+        }
+        let tourneyref = ref.childByAutoId()
+        let values = ["name": tourneyName, "level": 3.5, "type": "ladder"] as [String : Any]
+        tourneyref.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            
+            print("Data saved successfully!")
+            
+            
+        })
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         checkIfUserLoggedIn()
         setupNavBar()
         setupNavBarButtons()
         
+        view.backgroundColor = .white
+        
+        view.addSubview(createTourneyButton)
+        createTourneyButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        createTourneyButton.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -100).isActive = true
+        createTourneyButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        createTourneyButton.widthAnchor.constraint(equalToConstant: 150).isActive = true
+        
+        view.addSubview(tourneyNameTextField)
+        tourneyNameTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        tourneyNameTextField.topAnchor.constraint(equalTo: createTourneyButton.bottomAnchor).isActive = true
+        tourneyNameTextField.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        tourneyNameTextField.widthAnchor.constraint(equalToConstant: 300).isActive = true
+        
+        view.addSubview(tourneyListButton)
+        tourneyListButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        tourneyListButton.topAnchor.constraint(equalTo: tourneyNameTextField.bottomAnchor).isActive = true
+        tourneyListButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        tourneyListButton.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
     }
     
+    
     func setupNavBarButtons() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "View Tourney", style: .plain, target: self, action: #selector(handleViewTourney))
         let logoutButton = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
         let notificationButton = UIBarButtonItem(title: "Notifs", style: .plain, target: self, action: #selector(handleViewNotifications))
         navigationItem.rightBarButtonItems = [logoutButton, notificationButton]
@@ -53,13 +135,6 @@ class StartupPage: UIViewController {
         present(loginController, animated: true, completion: nil)
     }
     
-    @objc func handleViewTourney() {
-        let layout = UICollectionViewFlowLayout()
-        let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
-        //let chooseNavController = UINavigationController(rootViewController: tourneyStandingsPage)
-        navigationController?.pushViewController(tourneyStandingsPage, animated: true)
-        //present(chooseNavController, animated: true, completion: nil)
-    }
     
     func setupNavBar() {
         UINavigationBar.appearance().barTintColor = UIColor.white

@@ -12,21 +12,53 @@ import FirebaseAuth
 
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
+    var teams = [Team]()
     let tourneystatus = 1
     let cellId = "cellId"
     let rmCellId = "rmCellId"
     let mmCellId = "mmCellId"
     let threeSectionTitles = ["Overall", "Recent Matches", "My Matches"]
+    var tourneyIdentifier: String?
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        observeTourneyTeams()
         setupNavBarButtons()
         setupTitle()
         setupCollectionView()
         setupTourneyMenuBar()
         
+    }
+    
+    func observeTourneyTeams() {
+        
+        guard let tourneyId = tourneyIdentifier else {
+            return
+        }
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams").queryOrdered(byChild: "rank")
+        ref.observe(.childAdded, with: { (snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                let team = Team()
+                let player1Id = value["player1"] as? String ?? "Player not found"
+                let player2Id = value["player2"] as? String ?? "Player not found"
+                let rank = value["rank"] as? Int ?? 100
+                let wins = value["wins"] as? Int ?? -1
+                let losses = value["losses"] as? Int ?? -1
+                
+                
+                team.player2 = player2Id
+                team.player1 = player1Id
+                team.rank = rank
+                team.wins = wins
+                team.losses = losses
+                team.teamId = snapshot.key
+                self.teams.append(team)
+                DispatchQueue.main.async { self.collectionView.reloadData() }
+            }
+            
+        }, withCancel: nil)
     }
     
     private func setupNavBarButtons() {
@@ -40,8 +72,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     @objc func handleEnterTourney() {
         let layout = UICollectionViewFlowLayout()
         let chooseTeammatePage = SelectTeammate(collectionViewLayout: layout)
-        let chooseNavController = UINavigationController(rootViewController: chooseTeammatePage)
-        present(chooseNavController, animated: true, completion: nil)
+        chooseTeammatePage.tourneyIdentification = tourneyIdentifier
+        navigationController?.pushViewController(chooseTeammatePage, animated: true)
         
     }
     
@@ -123,7 +155,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         } else if indexPath.item == 2 {
             return collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath)
         }
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
+        cell.teams = teams
+        cell.tourneyIdentifier = tourneyIdentifier
         return cell
     }
     

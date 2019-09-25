@@ -181,7 +181,10 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
     
     @objc func handleInvitationConfirm(sender: UIButton) {
         cellTag = sender.tag
-        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        guard let tourneyId = invitations[cellTag].tourneyid else {
+            return
+        }
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
         let query = ref.queryOrdered(byChild: "rank")
         query.observe(.value) { (snapshot) in
             for child in snapshot.children.allObjects as! [DataSnapshot] {
@@ -242,12 +245,15 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
         guard let inviteeId = invitation.player1 else{
             return
         }
+        guard let tourneyId = invitation.tourneyid else {
+            return
+        }
         
         let deleteUserNotIdRef = Database.database().reference().child("user-notifications").child(uid).child(invitationId)
         deleteUserNotIdRef.removeValue()
         let changeNotificationIdRef = Database.database().reference().child("notifications").child(invitationId)
         changeNotificationIdRef.updateChildValues(["active": "1"])
-        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
         let createTeamInTourneyRef = ref.childByAutoId()
         let values = ["player1": inviteeId, "player2": uid, "wins": 0, "losses": 0, "rank": highestCurrentRank + 1] as [String : Any]
         createTeamInTourneyRef.updateChildValues(values, withCompletionBlock: {

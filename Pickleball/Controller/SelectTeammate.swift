@@ -12,7 +12,7 @@ import FirebaseAuth
 
 class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
-    
+    var tourneyIdentification: String?
     var invitations = [Invitation]()
     var teams = [Team]()
     var alreadyInvitedPlayers = [String]()
@@ -31,16 +31,19 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
         observeTourneyTeams()
         setupCollectionView()
         setupNavBar()
-        setupNavBarButtons()
+        //setupNavBarButtons()
         fetchUsers()
     }
     
     func findAlreadyInvitedUsers(selectedPlayer: String) -> Int{
+        guard let tourneyId = tourneyIdentification else {
+            return 4
+        }
         let uid = Auth.auth().currentUser?.uid
         var match = 0
         print(invitations)
         for index in invitations {
-            if index.tourneyid == "tourney1" {
+            if index.tourneyid == tourneyId {
                 switch uid {
                 case index.player1:
                     if let player2 = index.player2 {
@@ -117,7 +120,10 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
         }, withCancel: nil)
     }
     func observeTourneyTeams() {
-        let ref = Database.database().reference().child("tourneys").child("tourney1").child("teams")
+        guard let tourneyId = tourneyIdentification else {
+            return
+        }
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
         ref.observe(.childAdded, with: { (snapshot) in
             if let value = snapshot.value as? NSDictionary {
                 let team = Team()
@@ -171,13 +177,13 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
         }
     }
     
-    func setupNavBarButtons() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleCancel))
-    }
-    
-    @objc func handleCancel() {
-        dismiss(animated: true, completion: nil)
-    }
+//    func setupNavBarButtons() {
+//        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleCancel))
+//    }
+//
+//    @objc func handleCancel() {
+//        dismiss(animated: true, completion: nil)
+//    }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedPlayer = players[indexPath.item].id
@@ -185,10 +191,13 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
         print(match)
         switch match {
         case 0:
+            guard let tourneyId = tourneyIdentification else {
+                return
+            }
             let uid = Auth.auth().currentUser!.uid
             let ref = Database.database().reference().child("notifications")
             let teamFormationRef = ref.childByAutoId()
-            let values = ["player1": uid, "player2": selectedPlayer, "active": 0, "tourneyId": "tourney1", "rejection": "0"] as [String : Any]
+            let values = ["player1": uid, "player2": selectedPlayer as Any, "active": 0, "tourneyId": tourneyId, "rejection": "0"] as [String : Any]
             teamFormationRef.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
