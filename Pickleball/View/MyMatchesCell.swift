@@ -45,12 +45,15 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         }
         let ref = Database.database().reference().child("user-notifications").child(uid)
         ref.observe(.childAdded, with: { (snapshot) in
-            let notificationId = snapshot.key
-            let matchReference = Database.database().reference().child("matches").child(notificationId)
+            let matchId = snapshot.key
+            guard let tourneyId = snapshot.value as? String else {
+                return
+            }
+
+            let matchReference = Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
             
             matchReference.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? NSDictionary {
-                    print(snapshot)
                     let match = Match()
                     let challengerTeamId = value["challenger_team"] as? String ?? "Team not found"
                     let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
@@ -76,11 +79,11 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
                     match.challengedGames?.append(challengedGame3)
                     match.challengedGames?.append(challengedGame4)
                     match.challengedGames?.append(challengedGame5)
+                    match.matchId = matchId
                     self.matches.append(match)
                     DispatchQueue.main.async { self.collectionView.reloadData() }
                 }
                 
-                print(snapshot)
             }, withCancel: nil)
             
         }, withCancel: nil)
