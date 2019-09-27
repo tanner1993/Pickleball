@@ -153,7 +153,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         if indexPath.item == 1 {
             return collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath)
         } else if indexPath.item == 2 {
-            return collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath) as! MyMatchesCell
+            cell.tourneyIdentifier = tourneyIdentifier
+            return cell
         }
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
         cell.teams = teams
