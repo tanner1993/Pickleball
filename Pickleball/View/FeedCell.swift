@@ -118,7 +118,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         }
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches")
         let createMatchInTourneyRef = ref.childByAutoId()
-        let values = ["challenger_team": teams[myTeamIndex].teamId as Any, "challenged_team": teams[cellTag].teamId as Any, "challenger_game1": 0, "challenger_game2": 0, "challenger_game3": 0, "challenger_game4": 0, "challenger_game5": 0, "challenged_game1": 0, "challenged_game2": 0, "challenged_game3": 0, "challenged_game4": 0, "challenged_game5": 0] as [String : Any]
+        let values = ["active": 0, "challenger_team": teams[myTeamIndex].teamId as Any, "challenged_team": teams[cellTag].teamId as Any, "challenger_game1": 0, "challenger_game2": 0, "challenger_game3": 0, "challenger_game4": 0, "challenger_game5": 0, "challenged_game1": 0, "challenged_game2": 0, "challenged_game3": 0, "challenged_game4": 0, "challenged_game5": 0] as [String : Any]
         createMatchInTourneyRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             

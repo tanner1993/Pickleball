@@ -12,6 +12,7 @@ import FirebaseAuth
 
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
+    var matches = [Match]()
     var teams = [Team]()
     let tourneystatus = 1
     let cellId = "cellId"
@@ -25,6 +26,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         super.viewDidLoad()
 
         observeTourneyTeams()
+        observeMyTourneyMatches()
         setupNavBarButtons()
         setupTitle()
         setupCollectionView()
@@ -57,6 +59,60 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 self.teams.append(team)
                 DispatchQueue.main.async { self.collectionView.reloadData() }
             }
+            
+        }, withCancel: nil)
+    }
+    
+    func observeMyTourneyMatches() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user-notifications").child(uid)
+        ref.observe(.childAdded, with: { (snapshot) in
+            let matchId = snapshot.key
+            guard let tourneyId = snapshot.value as? String else {
+                return
+            }
+            if tourneyId == self.tourneyIdentifier {
+                let matchReference = Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
+                
+                matchReference.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value as? NSDictionary {
+                        let match = Match()
+                        let active = value["active"] as? Int ?? 0
+                        let challengerTeamId = value["challenger_team"] as? String ?? "Team not found"
+                        let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
+                        let challengerGame1 = value["challenger_game1"] as? Int ?? 0
+                        let challengerGame2 = value["challenger_game2"] as? Int ?? 0
+                        let challengerGame3 = value["challenger_game3"] as? Int ?? 0
+                        let challengerGame4 = value["challenger_game4"] as? Int ?? 0
+                        let challengerGame5 = value["challenger_game5"] as? Int ?? 0
+                        let challengedGame1 = value["challenged_game1"] as? Int ?? 0
+                        let challengedGame2 = value["challenged_game2"] as? Int ?? 0
+                        let challengedGame3 = value["challenged_game3"] as? Int ?? 0
+                        let challengedGame4 = value["challenged_game4"] as? Int ?? 0
+                        let challengedGame5 = value["challenged_game5"] as? Int ?? 0
+                        match.active = active
+                        match.challengerTeamId = challengerTeamId
+                        match.challengedTeamId = challengedTeamId
+                        match.challengerGame1 = challengerGame1
+                        match.challengerGame2 = challengerGame2
+                        match.challengerGame3 = challengerGame3
+                        match.challengerGame4 = challengerGame4
+                        match.challengerGame5 = challengerGame5
+                        match.challengedGame1 = challengedGame1
+                        match.challengedGame2 = challengedGame2
+                        match.challengedGame3 = challengedGame3
+                        match.challengedGame4 = challengedGame4
+                        match.challengedGame5 = challengedGame5
+                        match.matchId = matchId
+                        self.matches.append(match)
+                        DispatchQueue.main.async { self.collectionView.reloadData() }
+                    }
+                    
+                }, withCancel: nil)
+            }
+            
             
         }, withCancel: nil)
     }
@@ -155,6 +211,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         } else if indexPath.item == 2 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath) as! MyMatchesCell
             cell.tourneyIdentifier = tourneyIdentifier
+            cell.matches = matches
+            cell.teams = teams
             return cell
         }
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell

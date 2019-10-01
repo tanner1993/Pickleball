@@ -10,21 +10,20 @@ import UIKit
 
 class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
-
     var matches: [Match] = {
     var match1 = Match()
     match1.challengerTeamId = "Tanner and Scott"
     match1.challengedTeamId = "Keili and Kim"
-        match1.challengerGames?.append(3)
-        match1.challengerGames?.append(2)
-        match1.challengerGames?.append(11)
-        match1.challengerGames?.append(11)
-        match1.challengerGames?.append(11)
-        match1.challengedGames?.append(11)
-        match1.challengedGames?.append(11)
-        match1.challengedGames?.append(1)
-        match1.challengedGames?.append(2)
-        match1.challengedGames?.append(3)
+        match1.challengerGame1 = 1
+        match1.challengerGame2 = 2
+        match1.challengerGame3 = 3
+        match1.challengerGame4 = 4
+        match1.challengerGame5 = 5
+        match1.challengedGame1 = 6
+        match1.challengedGame2 = 7
+        match1.challengedGame3 = 8
+        match1.challengedGame4 = 9
+        match1.challengedGame5 = 10
 
     return [match1]
 }()
