@@ -10,6 +10,16 @@ import UIKit
 import Firebase
 import FirebaseAuth
 
+protocol FeedCellProtocol {
+    func pushNavigation(_ vc: UIViewController)
+}
+
+extension TourneyStandings: FeedCellProtocol {
+    func pushNavigation(_ vc: UIViewController) {
+        self.navigationController?.pushViewController(vc, animated: true)
+    }
+}
+
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     var matches = [Match]()
@@ -82,29 +92,13 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                         let active = value["active"] as? Int ?? 0
                         let challengerTeamId = value["challenger_team"] as? String ?? "Team not found"
                         let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
-                        let challengerGame1 = value["challenger_game1"] as? Int ?? 0
-                        let challengerGame2 = value["challenger_game2"] as? Int ?? 0
-                        let challengerGame3 = value["challenger_game3"] as? Int ?? 0
-                        let challengerGame4 = value["challenger_game4"] as? Int ?? 0
-                        let challengerGame5 = value["challenger_game5"] as? Int ?? 0
-                        let challengedGame1 = value["challenged_game1"] as? Int ?? 0
-                        let challengedGame2 = value["challenged_game2"] as? Int ?? 0
-                        let challengedGame3 = value["challenged_game3"] as? Int ?? 0
-                        let challengedGame4 = value["challenged_game4"] as? Int ?? 0
-                        let challengedGame5 = value["challenged_game5"] as? Int ?? 0
+                        let challengerScores = value["challenger_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+                        let challengedScores = value["challenged_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                         match.active = active
                         match.challengerTeamId = challengerTeamId
                         match.challengedTeamId = challengedTeamId
-                        match.challengerGame1 = challengerGame1
-                        match.challengerGame2 = challengerGame2
-                        match.challengerGame3 = challengerGame3
-                        match.challengerGame4 = challengerGame4
-                        match.challengerGame5 = challengerGame5
-                        match.challengedGame1 = challengedGame1
-                        match.challengedGame2 = challengedGame2
-                        match.challengedGame3 = challengedGame3
-                        match.challengedGame4 = challengedGame4
-                        match.challengedGame5 = challengedGame5
+                        match.challengerScores = challengerScores
+                        match.challengedScores = challengedScores
                         match.matchId = matchId
                         self.matches.append(match)
                         DispatchQueue.main.async { self.collectionView.reloadData() }
@@ -205,7 +199,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
         if indexPath.item == 1 {
             return collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath)
         } else if indexPath.item == 2 {
@@ -213,10 +206,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             cell.tourneyIdentifier = tourneyIdentifier
             cell.matches = matches
             cell.teams = teams
+            cell.delegate = self
             return cell
         }
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
         cell.teams = teams
+        cell.delegate = self
         cell.tourneyIdentifier = tourneyIdentifier
         return cell
     }
@@ -224,9 +219,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: view.frame.width, height: view.frame.height - 35)
     }
-    
-
-    
 
 }
 

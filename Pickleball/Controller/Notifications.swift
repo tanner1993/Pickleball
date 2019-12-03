@@ -14,6 +14,7 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
 
     var highestCurrentRank: Int = 0
     var invitations = [Invitation]()
+    var matches = [Match]()
     let cellId = "cellId"
     var cellTag = -1
     
@@ -34,8 +35,10 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
         let ref = Database.database().reference().child("user-notifications").child(uid)
         ref.observe(.childAdded, with: { (snapshot) in
             let notificationId = snapshot.key
+            let potentialTourneyId = snapshot.value as? String ?? "none"
+            
+            if potentialTourneyId == "1" {
             let notificationReference = Database.database().reference().child("notifications").child(notificationId)
-
             notificationReference.observeSingleEvent(of: .value, with: {(snapshot) in
                     if let value = snapshot.value as? NSDictionary {
                         let invitation = Invitation()
@@ -56,6 +59,24 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
 
                 print(snapshot)
             }, withCancel: nil)
+            } else {
+                let challengeReference = Database.database().reference().child("tourneys").child(potentialTourneyId).child("matches").child(notificationId)
+                challengeReference.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value as? NSDictionary {
+                        let match = Match()
+                        let challengerTeamId = value["challenger_team"] as? String ?? "Team not found"
+                        let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
+                        match.challengerTeamId = challengerTeamId
+                        match.challengedTeamId = challengedTeamId
+                        match.matchId = notificationId
+                        match.tourneyId = potentialTourneyId
+                        self.matches.append(match)
+                        DispatchQueue.main.async { self.collectionView.reloadData() }
+                    }
+                    
+                    print(snapshot)
+                }, withCancel: nil)
+            }
 
             }, withCancel: nil)
     }
@@ -87,14 +108,14 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
 
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of items
-        return invitations.count
+        return invitations.count + matches.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! InvitationCell
-        let invitation = invitations[indexPath.item]
         let uid = Auth.auth().currentUser?.uid
+        if indexPath.item < invitations.count {
+        let invitation = invitations[indexPath.item]
         if invitation.active == "1" {
             if let player2 = invitation.player2 {
                 let ref = Database.database().reference().child("users").child(player2)
@@ -159,6 +180,27 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
             print("no match")
         } else {
             print("error, the uid doesn't match player 2 or player 1")
+        }
+            
+        } else if indexPath.item >= invitations.count {
+            
+            let match = matches[indexPath.item - invitations.count]
+                if let challengerTeamId = match.challengedTeamId {
+                    let ref = Database.database().reference().child("teams").child(challengerTeamId)
+                    ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                        if let value = snapshot.value as? [String: AnyObject] {
+                            let player1name = value["player1Name"] as? String
+                            let player2name = value["Player2Name"] as? String
+                            cell.invitationText.text = "\(player1name ?? "") and \(player2name ?? "") has challenged you"
+                            cell.rejectButton.isHidden = true
+                            cell.dismissButton.isHidden = false
+                            cell.confirmButton.isHidden = true
+                            cell.dismissButton.tag = indexPath.item
+                            cell.dismissButton.addTarget(self, action: #selector(self.handleDismiss), for: .touchUpInside)
+                        }
+                    })
+                }
+            
         }
         
         

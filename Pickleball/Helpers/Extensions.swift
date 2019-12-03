@@ -31,3 +31,16 @@ extension UIColor {
     }
 }
 
+extension UIButton {
+    func flash() {
+        let flash = CABasicAnimation(keyPath: "opacity")
+        flash.duration = 0.2
+        flash.fromValue = 0.05
+        flash.toValue = 0.7
+        flash.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeOut)
+        flash.autoreverses = true
+        flash.repeatCount = 0
+        layer.add(flash, forKey: nil)
+    }
+}
+

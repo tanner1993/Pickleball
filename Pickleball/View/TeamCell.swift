@@ -45,54 +45,55 @@ class TeamCell: FeedCell {
             })
             //player1.text = team?.player1
             //player2.text = team?.player2
-            wins.text = "Wins: \(team?.wins ?? -1)"
-            losses.text = "Losses: \(team?.losses ?? -1)"
+            wins.text = "W: \(team?.wins ?? -1)"
+            losses.text = "L: \(team?.losses ?? -1)"
             teamRank.text = "\(team?.rank ?? -1)"
         }
     }
     
     let player1: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+        //label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.layer.cornerRadius = 24
-        label.layer.masksToBounds = true
+        //label.layer.cornerRadius = 24
+        //label.layer.masksToBounds = true
         label.text = "Teammate 1"
-        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.font = UIFont(name: "Futura-Bold", size: 22)
         label.textAlignment = .center
         return label
     }()
     
     let player2: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+        //label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.layer.cornerRadius = 24
-        label.layer.masksToBounds = true
+        //label.layer.cornerRadius = 24
+        //label.layer.masksToBounds = true
         label.text = "Teammate 2"
-        label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.font = UIFont(name: "Futura-Bold", size: 22)
         label.textAlignment = .center
         return label
     }()
     
     let teamRank: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+        //label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.layer.cornerRadius = 35
-        label.layer.masksToBounds = true
+        //label.layer.cornerRadius = 35
+        //label.layer.masksToBounds = true
         label.text = "1"
-        label.font = UIFont.boldSystemFont(ofSize: 50)
+        label.font = UIFont(name: "Futura-Bold", size: 65)
         label.textAlignment = .center
         return label
     }()
     
     let wins: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.init(displayP3Red: 0/255, green: 250/255, blue: 154/255, alpha: 1)
+        //label.backgroundColor = UIColor.init(displayP3Red: 0/255, green: 250/255, blue: 154/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.layer.cornerRadius = 10
-        label.layer.masksToBounds = true
+        //label.layer.cornerRadius = 10
+        //label.layer.masksToBounds = true
+        label.font = UIFont(name: "Futura", size: 22)
         label.text = "Wins: 1"
         label.textAlignment = .center
         return label
@@ -100,10 +101,11 @@ class TeamCell: FeedCell {
     
     let losses: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.init(displayP3Red: 240/255, green: 128/255, blue: 128/255, alpha: 1)
+        //label.backgroundColor = UIColor.init(displayP3Red: 240/255, green: 128/255, blue: 128/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.layer.cornerRadius = 10
-        label.layer.masksToBounds = true
+        //label.layer.cornerRadius = 10
+        //label.layer.masksToBounds = true
+        label.font = UIFont(name: "Futura", size: 22)
         label.text = "Losses: 1"
         label.textAlignment = .center
         return label
@@ -133,48 +135,82 @@ class TeamCell: FeedCell {
         return button
     }()
     
+    let backgroundImage: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.image = UIImage(named: "team_cell_bg2")
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
+    
     override func setupViews() {
+        
+        addSubview(backgroundImage)
+        backgroundImage.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        backgroundImage.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        backgroundImage.widthAnchor.constraint(equalToConstant: frame.width).isActive = true
+        backgroundImage.heightAnchor.constraint(equalToConstant: frame.height).isActive = true
+        
+        let teamRankLoc = calculateButtonPosition(x: 150, y: 165.5, w: 167, h: 270, wib: 1242, hib: 332, wia: 375, hia: 100)
+        
         addSubview(teamRank)
-        teamRank.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
-        teamRank.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        teamRank.widthAnchor.constraint(equalToConstant: 70).isActive = true
-        teamRank.heightAnchor.constraint(equalToConstant: 70).isActive = true
+        teamRank.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(teamRankLoc.Y)).isActive = true
+        teamRank.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(teamRankLoc.X)).isActive = true
+        teamRank.heightAnchor.constraint(equalToConstant: CGFloat(teamRankLoc.H)).isActive = true
+        teamRank.widthAnchor.constraint(equalToConstant: CGFloat(teamRankLoc.W)).isActive = true
+        
+        let player1Loc = calculateButtonPosition(x: 540, y: 95.5, w: 625, h: 130, wib: 1242, hib: 332, wia: 375, hia: 100)
         
         addSubview(player1)
-        player1.leftAnchor.constraint(equalTo: teamRank.rightAnchor, constant: 4).isActive = true
-        player1.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
-        player1.widthAnchor.constraint(equalToConstant: ((frame.width - 74) / 2) - 6).isActive = true
-        player1.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        player1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(player1Loc.Y)).isActive = true
+        player1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(player1Loc.X)).isActive = true
+        player1.heightAnchor.constraint(equalToConstant: CGFloat(player1Loc.H)).isActive = true
+        player1.widthAnchor.constraint(equalToConstant: CGFloat(player1Loc.W)).isActive = true
+        
+        let player2Loc = calculateButtonPosition(x: 540, y: 235.5, w: 625, h: 130, wib: 1242, hib: 332, wia: 375, hia: 100)
         
         addSubview(player2)
-        player2.leftAnchor.constraint(equalTo: player1.rightAnchor, constant: 4).isActive = true
-        player2.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
-        player2.widthAnchor.constraint(equalToConstant: ((frame.width - 74) / 2) - 6).isActive = true
-        player2.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        player2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(player2Loc.Y)).isActive = true
+        player2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(player2Loc.X)).isActive = true
+        player2.heightAnchor.constraint(equalToConstant: CGFloat(player2Loc.H)).isActive = true
+        player2.widthAnchor.constraint(equalToConstant: CGFloat(player2Loc.W)).isActive = true
+        
+        let winsLoc = calculateButtonPosition(x: 1000, y: 95.5, w: 266, h: 130, wib: 1242, hib: 332, wia: 375, hia: 100)
         
         addSubview(wins)
-        wins.rightAnchor.constraint(equalTo: player1.centerXAnchor, constant: -2).isActive = true
-        wins.topAnchor.constraint(equalTo: player1.bottomAnchor, constant: 4).isActive = true
-        wins.leftAnchor.constraint(equalTo: player1.leftAnchor, constant: 0).isActive = true
-        wins.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        wins.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(winsLoc.Y)).isActive = true
+        wins.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(winsLoc.X)).isActive = true
+        wins.heightAnchor.constraint(equalToConstant: CGFloat(winsLoc.H)).isActive = true
+        wins.widthAnchor.constraint(equalToConstant: CGFloat(winsLoc.W)).isActive = true
+        
+        let lossesLoc = calculateButtonPosition(x: 1000, y: 235.5, w: 266, h: 130, wib: 1242, hib: 332, wia: 375, hia: 100)
         
         addSubview(losses)
-        losses.rightAnchor.constraint(equalTo: player1.rightAnchor, constant: 0).isActive = true
-        losses.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
-        losses.leftAnchor.constraint(equalTo: player1.centerXAnchor, constant: 2).isActive = true
-        losses.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        losses.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(lossesLoc.Y)).isActive = true
+        losses.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(lossesLoc.X)).isActive = true
+        losses.heightAnchor.constraint(equalToConstant: CGFloat(lossesLoc.H)).isActive = true
+        losses.widthAnchor.constraint(equalToConstant: CGFloat(lossesLoc.W)).isActive = true
         
-        addSubview(challengeButton)
-        challengeButton.rightAnchor.constraint(equalTo: player2.rightAnchor, constant: 0).isActive = true
-        challengeButton.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
-        challengeButton.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 2).isActive = true
-        challengeButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
-        
-        addSubview(challengeConfirmButton)
-        challengeConfirmButton.rightAnchor.constraint(equalTo: player2.rightAnchor, constant: 0).isActive = true
-        challengeConfirmButton.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
-        challengeConfirmButton.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 2).isActive = true
-        challengeConfirmButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
+//        addSubview(challengeButton)
+//        challengeButton.rightAnchor.constraint(equalTo: player2.rightAnchor, constant: 0).isActive = true
+//        challengeButton.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
+//        challengeButton.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 2).isActive = true
+//        challengeButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
+//
+//        addSubview(challengeConfirmButton)
+//        challengeConfirmButton.rightAnchor.constraint(equalTo: player2.rightAnchor, constant: 0).isActive = true
+//        challengeConfirmButton.topAnchor.constraint(equalTo: player2.bottomAnchor, constant: 4).isActive = true
+//        challengeConfirmButton.leftAnchor.constraint(equalTo: player2.leftAnchor, constant: 2).isActive = true
+//        challengeConfirmButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
+    }
+    
+    func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
+        let X = x / wib * wia
+        let Y = y / hib * hia
+        let W = w / wib * wia
+        let H = h / hib * hia
+        return (X, Y, W, H)
     }
     
     

@@ -208,10 +208,10 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
                 
                 let userNotificationsRef = Database.database().reference().child("user-notifications").child(uid)
                 if let notificationId = teamFormationRef.key {
-                    userNotificationsRef.updateChildValues([notificationId: 1])
+                    userNotificationsRef.updateChildValues([notificationId: "1"])
                     if let recipientInvite = selectedPlayer {
                         let recipientNotificationsRef = Database.database().reference().child("user-notifications").child(recipientInvite)
-                        recipientNotificationsRef.updateChildValues([notificationId: 1])
+                        recipientNotificationsRef.updateChildValues([notificationId: "1"])
                     }
                 }
                 

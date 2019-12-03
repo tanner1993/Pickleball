@@ -11,6 +11,9 @@ import Firebase
 import FirebaseAuth
 
 class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+    
+    var delegate: FeedCellProtocol?
+    
     var matches = [Match]() {
         didSet {
             collectionView.reloadData()
@@ -21,6 +24,13 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
             collectionView.reloadData()
         }
     }
+    var challengerTeamPlayer1Name: String?
+    var challengerTeamPlayer2Name: String?
+    var challengedTeamPlayer1Name: String?
+    var challengedTeamPlayer2Name: String?
+    
+    var myMatches = [Match]()
+    
     var tourneyIdentifier: String?
     
     lazy var collectionView: UICollectionView = {
@@ -49,58 +59,6 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         
     }
     
-//    func observeMyTourneyMatches() {
-//        guard let uid = Auth.auth().currentUser?.uid else {
-//            return
-//        }
-//        let ref = Database.database().reference().child("user-notifications").child(uid)
-//        ref.observe(.childAdded, with: { (snapshot) in
-//            let matchId = snapshot.key
-//            guard let tourneyId = snapshot.value as? String else {
-//                return
-//            }
-//            if tourneyId == self.tourneyIdentifier {
-//                let matchReference = Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
-//
-//                matchReference.observeSingleEvent(of: .value, with: {(snapshot) in
-//                    if let value = snapshot.value as? NSDictionary {
-//                        let match = Match()
-//                        let challengerTeamId = value["challenger_team"] as? String ?? "Team not found"
-//                        let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
-//                        let challengerGame1 = value["challenger_game1"] as? Int ?? 0
-//                        let challengerGame2 = value["challenger_game2"] as? Int ?? 0
-//                        let challengerGame3 = value["challenger_game3"] as? Int ?? 0
-//                        let challengerGame4 = value["challenger_game4"] as? Int ?? 0
-//                        let challengerGame5 = value["challenger_game5"] as? Int ?? 0
-//                        let challengedGame1 = value["challenged_game1"] as? Int ?? 0
-//                        let challengedGame2 = value["challenged_game2"] as? Int ?? 0
-//                        let challengedGame3 = value["challenged_game3"] as? Int ?? 0
-//                        let challengedGame4 = value["challenged_game4"] as? Int ?? 0
-//                        let challengedGame5 = value["challenged_game5"] as? Int ?? 0
-//                        match.challengerTeamId = challengerTeamId
-//                        match.challengedTeamId = challengedTeamId
-//                        match.challengerGames?.append(challengerGame1)
-//                        match.challengerGames?.append(challengerGame2)
-//                        match.challengerGames?.append(challengerGame3)
-//                        match.challengerGames?.append(challengerGame4)
-//                        match.challengerGames?.append(challengerGame5)
-//                        match.challengedGames?.append(challengedGame1)
-//                        match.challengedGames?.append(challengedGame2)
-//                        match.challengedGames?.append(challengedGame3)
-//                        match.challengedGames?.append(challengedGame4)
-//                        match.challengedGames?.append(challengedGame5)
-//                        match.matchId = matchId
-//                        self.matches.append(match)
-//                        DispatchQueue.main.async { self.collectionView.reloadData() }
-//                    }
-//
-//                }, withCancel: nil)
-//            }
-//
-//
-//        }, withCancel: nil)
-//    }
-    
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return matches.count
@@ -108,17 +66,95 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! RecentMatchesCell
-        cell.match = matches[indexPath.item]
+        let uid = Auth.auth().currentUser?.uid
+        let match = matches[indexPath.item]
+        for index in teams {
+            if index.teamId == match.challengerTeamId {
+                if index.player1 == uid || index.player2 == uid {
+                    cell.challengerPlaceholder.image = UIImage(named: "user_team_placeholder")
+                    cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                }
+                let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
+                player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value as? [String: AnyObject] {
+                        cell.challengerTeam1.text = value["name"] as? String
+                        self.challengerTeamPlayer1Name = value["name"] as? String
+                    }
+                })
+                
+                let player2ref = Database.database().reference().child("users").child(index.player2 ?? "nope")
+                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value as? [String: AnyObject] {
+                        cell.challengerTeam2.text = value["name"] as? String
+                        self.challengerTeamPlayer2Name = value["name"] as? String
+                    }
+                })
+                
+            }
+            if index.teamId == match.challengedTeamId {
+                if index.player1 == uid || index.player2 == uid {
+                    cell.challengedPlaceholder.image = UIImage(named: "user_team_placeholder")
+                    cell.challengerPlaceholder.image = UIImage(named: "challenger_team_placeholder")
+                }
+                let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
+                player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value as? [String: AnyObject] {
+                        cell.challengedTeam1.text = value["name"] as? String
+                        self.challengedTeamPlayer1Name = value["name"] as? String
+                    }
+                })
+                
+                let player2ref = Database.database().reference().child("users").child(index.player2 ?? "nope")
+                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value as? [String: AnyObject] {
+                        cell.challengedTeam2.text = value["name"] as? String
+                        self.challengedTeamPlayer2Name = value["name"] as? String
+                    }
+                })
+            }
+        }
+        cell.match = match
         cell.teams = teams
         cell.backgroundColor = UIColor.white
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: frame.width, height: 80)
+        return CGSize(width: frame.width, height: 200)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print(indexPath.item)
+//        guard let myTeamIndex = myTeamId else {
+//            return
+//        }
+//        guard let tourneyId = self.tourneyIdentifier else {
+//            return
+//        }
+        let vc = MatchInfoDisplay()
+        vc.match = matches[indexPath.item]
+        vc.tourneyId = tourneyIdentifier ?? ""
+        let uid = Auth.auth().currentUser?.uid
+        for index in teams {
+            if index.teamId == matches[indexPath.item].challengerTeamId {
+                if index.player1 == uid || index.player2 == uid {
+                    vc.userTeamPlayer1Name = challengerTeamPlayer1Name
+                    vc.userTeamPlayer2Name = challengerTeamPlayer2Name
+                    vc.oppTeamPlayer1Name = challengedTeamPlayer1Name
+                    vc.oppTeamPlayer2Name = challengedTeamPlayer2Name
+                    vc.userIsChallenger = 0
+                    self.delegate?.pushNavigation(vc)
+                }
+            } else if index.teamId == matches[indexPath.item].challengedTeamId {
+                if index.player1 == uid || index.player2 == uid {
+                    vc.userTeamPlayer1Name = challengedTeamPlayer1Name
+                    vc.userTeamPlayer2Name = challengedTeamPlayer2Name
+                    vc.oppTeamPlayer1Name = challengerTeamPlayer1Name
+                    vc.oppTeamPlayer2Name = challengerTeamPlayer2Name
+                    vc.userIsChallenger = 1
+                    self.delegate?.pushNavigation(vc)
+                }
+            }
+        }
     }
+    
 }

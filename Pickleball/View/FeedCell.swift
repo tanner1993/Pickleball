@@ -12,6 +12,8 @@ import FirebaseAuth
 
 class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
+    var delegate: FeedCellProtocol?
+    
     var teams = [Team]() {
         didSet {
             collectionView.reloadData()
@@ -20,6 +22,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     var cellTag = -1
     var myTeamId: Int?
     var tourneyIdentifier: String?
+    var tourneyStandings = TourneyStandings()
     
     
     lazy var collectionView: UICollectionView = {
@@ -85,12 +88,14 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         let uid = Auth.auth().currentUser?.uid
         cell.team = teams[indexPath.item]
         if cell.team?.player1 == uid || cell.team?.player2 == uid {
-            cell.backgroundColor = .gray
+            //cell.backgroundColor = .gray
+            cell.backgroundImage.image = UIImage(named: "team_cell_bg2_you")
             cell.challengeButton.isHidden = true
             cell.challengeConfirmButton.isHidden = true
             myTeamId = indexPath.item
         } else {
-            cell.backgroundColor = UIColor.white
+            //cell.backgroundColor = UIColor.white
+            cell.backgroundImage.image = UIImage(named: "team_cell_bg2")
             print(cellTag)
             print(indexPath.item)
             if cellTag == indexPath.item {
@@ -162,7 +167,33 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: frame.width, height: 80)
+        return CGSize(width: frame.width, height: 100)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+        if let cell = collectionView.cellForItem(at: indexPath) {
+            cell.contentView.backgroundColor = UIColor.init(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+        if let cell = collectionView.cellForItem(at: indexPath) {
+            cell.contentView.backgroundColor = nil
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let myTeamIndex = myTeamId else {
+            return
+        }
+        guard let tourneyId = self.tourneyIdentifier else {
+            return
+        }
+        let vc = TeamInfoDisplay()
+        vc.teamIdSelected = teams[indexPath.item]
+        vc.usersTeamId = teams[myTeamIndex]
+        vc.tourneyId = tourneyId
+        self.delegate?.pushNavigation(vc)
     }
     
 

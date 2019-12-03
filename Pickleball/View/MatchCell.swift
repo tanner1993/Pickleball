@@ -14,16 +14,8 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
     var match1 = Match()
     match1.challengerTeamId = "Tanner and Scott"
     match1.challengedTeamId = "Keili and Kim"
-        match1.challengerGame1 = 1
-        match1.challengerGame2 = 2
-        match1.challengerGame3 = 3
-        match1.challengerGame4 = 4
-        match1.challengerGame5 = 5
-        match1.challengedGame1 = 6
-        match1.challengedGame2 = 7
-        match1.challengedGame3 = 8
-        match1.challengedGame4 = 9
-        match1.challengedGame5 = 10
+        match1.challengerScores = [1, 2, 3, 4, 5]
+        match1.challengedScores = [6, 7, 8, 9, 10]
 
     return [match1]
 }()
