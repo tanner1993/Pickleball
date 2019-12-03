@@ -73,7 +73,7 @@ class TourneyMenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelega
     
     func setupHorizontalBar() {
         let horizontalBarView = UIView()
-        horizontalBarView.backgroundColor = UIColor.black
+        horizontalBarView.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         horizontalBarView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(horizontalBarView)
         horizontalBarLeftAnchorConstraint = horizontalBarView.leftAnchor.constraint(equalTo: self.leftAnchor)
@@ -102,7 +102,7 @@ class MenuCell: BaseCell {
     let CellLabels: UILabel = {
         let lb = UILabel()
         lb.text = "Nothin"
-        lb.font = UIFont.boldSystemFont(ofSize: 15)
+        lb.font = UIFont(name: "ArialRoundedMTBold", size: 15)
         lb.textAlignment = .center
         lb.textColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         lb.translatesAutoresizingMaskIntoConstraints = false
@@ -125,7 +125,7 @@ class MenuCell: BaseCell {
     
     override var isSelected: Bool {
         didSet {
-            CellLabels.textColor = isSelected ? UIColor.black : UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+            CellLabels.textColor = isSelected ? UIColor.init(r: 88, g: 148, b: 200) : UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
             //CellBar.backgroundColor = isSelected ? UIColor.black : UIColor.white
         }
     }

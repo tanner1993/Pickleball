@@ -133,8 +133,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
         titleLabel.text = "Tourney Name"
-        titleLabel.textColor = UIColor.black
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 20)
+        titleLabel.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        titleLabel.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         navigationItem.titleView = titleLabel
     }
     private func setupCollectionView() {
