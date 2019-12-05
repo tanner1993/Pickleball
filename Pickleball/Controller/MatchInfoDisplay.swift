@@ -12,12 +12,8 @@ import FirebaseAuth
 
 class MatchInfoDisplay: UIViewController {
 
-    var userTeamId: String = ""
-    var userTeamPlayer1Name: String?
-    var userTeamPlayer2Name: String?
-    var oppTeamId: String = ""
-    var oppTeamPlayer1Name: String?
-    var oppTeamPlayer2Name: String?
+    var userTeam: Team?
+    var oppTeam: Team?
     var tourneyId: String = ""
     var match = Match()
     var finalUserScores = [Int]()
@@ -46,6 +42,13 @@ class MatchInfoDisplay: UIViewController {
         return button
     }()
     
+    let confirmMatchScoresImage: UIImageView = {
+        let image = UIImageView()
+        image.translatesAutoresizingMaskIntoConstraints = false
+        image.image = UIImage(named: "confirm_match_scores")
+        return image
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -71,7 +74,7 @@ class MatchInfoDisplay: UIViewController {
                 }
                 
                 print("Data saved successfully!")
-                
+                self.match.challengerScores = self.userIsChallenger == 0 ? self.finalUserScores : self.finalOppScores
                 
             })
             ref.updateChildValues(["challenged_scores": userIsChallenger == 0 ? finalOppScores : finalUserScores], withCompletionBlock: {
@@ -83,11 +86,24 @@ class MatchInfoDisplay: UIViewController {
                 }
                 
                 print("Data saved successfully!")
-                
+                self.match.challengedScores = self.userIsChallenger == 0 ? self.finalOppScores : self.finalUserScores
                 
             })
+            ref.updateChildValues(["active": 1], withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if let error = error {
+                    print("Data could not be saved: \(error).")
+                    return
+                }
+                
+                print("Data saved successfully!")
+                self.match.active = 1
+                
+            })
+            
             let newalert = UIAlertController(title: "Awesome", message: "\(winner)", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
             self.present(newalert, animated: true, completion: nil)
         case 1:
             let newalert = UIAlertController(title: "Sorry", message: "At least 3 games need to be completed in order to determine the winner of a match", preferredStyle: UIAlertController.Style.alert)
@@ -115,6 +131,10 @@ class MatchInfoDisplay: UIViewController {
             self.present(newalert, animated: true, completion: nil)
             
         }
+    }
+    
+    @objc func resetupviews(action: UIAlertAction) {
+        setupViews()
     }
     
     func checkScoresValidity() -> Int {
@@ -232,7 +252,44 @@ class MatchInfoDisplay: UIViewController {
     }
     
     func setupViews() {
+        
         view.backgroundColor = .white
+        
+        if match.active == 1 {
+            if userIsChallenger == 0 {
+                game1UserScore.text = "\(match.challengerScores![0])"
+                game2UserScore.text = "\(match.challengerScores![1])"
+                game3UserScore.text = "\(match.challengerScores![2])"
+                game4UserScore.text = "\(match.challengerScores![3])"
+                game5UserScore.text = "\(match.challengerScores![4])"
+                game1OppScore.text = "\(match.challengedScores![0])"
+                game2OppScore.text = "\(match.challengedScores![1])"
+                game3OppScore.text = "\(match.challengedScores![2])"
+                game4OppScore.text = "\(match.challengedScores![3])"
+                game5OppScore.text = "\(match.challengedScores![4])"
+            } else if userIsChallenger == 1 {
+                game1UserScore.text = "\(match.challengedScores![0])"
+                game2UserScore.text = "\(match.challengedScores![1])"
+                game3UserScore.text = "\(match.challengedScores![2])"
+                game4UserScore.text = "\(match.challengedScores![3])"
+                game5UserScore.text = "\(match.challengedScores![4])"
+                game1OppScore.text = "\(match.challengerScores![0])"
+                game2OppScore.text = "\(match.challengerScores![1])"
+                game3OppScore.text = "\(match.challengerScores![2])"
+                game4OppScore.text = "\(match.challengerScores![3])"
+                game5OppScore.text = "\(match.challengerScores![4])"
+            }
+            game1UserScore.isUserInteractionEnabled = false
+            game2UserScore.isUserInteractionEnabled = false
+            game3UserScore.isUserInteractionEnabled = false
+            game4UserScore.isUserInteractionEnabled = false
+            game5UserScore.isUserInteractionEnabled = false
+            game1OppScore.isUserInteractionEnabled = false
+            game2OppScore.isUserInteractionEnabled = false
+            game3OppScore.isUserInteractionEnabled = false
+            game4OppScore.isUserInteractionEnabled = false
+            game5OppScore.isUserInteractionEnabled = false
+        }
         
         view.addSubview(backgroundImage)
         backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
@@ -242,14 +299,26 @@ class MatchInfoDisplay: UIViewController {
         
         let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1045, w: 532, h: 68, wib: 750, hib: 1150, wia: 375, hia: 575)
         
+        view.addSubview(confirmMatchScoresImage)
+        confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+        confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+        confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+        confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+        
         view.addSubview(confirmMatchScores)
         confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
         confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
         confirmMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
         confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
         
+        
         let userPlayer1Loc = calculateButtonPosition(x: 375, y: 75, w: 666, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
-        userPlayer1.text = userTeamPlayer1Name!
+        let user1NameRef = Database.database().reference().child("users").child(userTeam!.player1!)
+        user1NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                self.userPlayer1.text = value["name"] as? String
+            }
+        })
         
         view.addSubview(userPlayer1)
         userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
@@ -258,7 +327,12 @@ class MatchInfoDisplay: UIViewController {
         userPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.W)).isActive = true
         
         let userPlayer2Loc = calculateButtonPosition(x: 375, y: 165, w: 666, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
-        userPlayer2.text = userTeamPlayer2Name!
+        let user2NameRef = Database.database().reference().child("users").child(userTeam!.player2!)
+        user2NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                self.userPlayer2.text = value["name"] as? String
+            }
+        })
         
         view.addSubview(userPlayer2)
         userPlayer2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer2Loc.Y)).isActive = true
@@ -267,7 +341,12 @@ class MatchInfoDisplay: UIViewController {
         userPlayer2.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.W)).isActive = true
         
         let oppPlayer1Loc = calculateButtonPosition(x: 375, y: 381, w: 666, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
-        oppPlayer1.text = oppTeamPlayer1Name!
+        let opp1NameRef = Database.database().reference().child("users").child(oppTeam!.player1!)
+        opp1NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                self.oppPlayer1.text = value["name"] as? String
+            }
+        })
         
         view.addSubview(oppPlayer1)
         oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
@@ -276,7 +355,12 @@ class MatchInfoDisplay: UIViewController {
         oppPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.W)).isActive = true
         
         let oppPlayer2Loc = calculateButtonPosition(x: 375, y: 471, w: 666, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
-        oppPlayer2.text = oppTeamPlayer2Name!
+        let opp2NameRef = Database.database().reference().child("users").child(oppTeam!.player2!)
+        opp2NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                self.oppPlayer2.text = value["name"] as? String
+            }
+        })
         
         view.addSubview(oppPlayer2)
         oppPlayer2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer2Loc.Y)).isActive = true
