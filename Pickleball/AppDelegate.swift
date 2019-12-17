@@ -22,12 +22,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         window?.rootViewController = UINavigationController(rootViewController: StartupPage())
         
-        UINavigationBar.appearance().barTintColor = UIColor.white
-        
+        UINavigationBar.appearance().barTintColor = UIColor.init(r: 88, g: 148, b: 200)
+        //UINavigationBar.appearance().backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         UINavigationBar.appearance().shadowImage = UIImage()
         UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default)
-        UINavigationBar.appearance().tintColor = UIColor.init(r: 88, g: 148, b: 200)
-        UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.init(r: 88, g: 148, b: 200)]
+        UINavigationBar.appearance().tintColor = UIColor.white
+        UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
         
         return true
     }

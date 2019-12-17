@@ -103,7 +103,11 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
     
     func setupCollectionView() {
         collectionView?.register(InvitationCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+        collectionView?.backgroundColor = .white
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
     }
 
 
@@ -205,12 +209,12 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
         
         
         // Configure the cell
-        cell.backgroundColor = .red
+        cell.backgroundColor = .white
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 120)
+        return CGSize(width: view.frame.width, height: 150)
     }
     
     @objc func handleInvitationReject(sender: UIButton) {
@@ -327,51 +331,53 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
 }
 
 class InvitationCell: BaseCell {
-//    var player2Name: String?
-//    var invitation: Invitation? {
-//        didSet {
-//            guard let player2nam = invitation?.player2 else{
-//                return
-//            }
-//            guard let tourneyIdText = invitation?.tourneyid else{
-//                return
-//            }
-//            invitationText.text = "\(player2nam) has invited you to join them in playing in \(tourneyIdText)"
-//        }
-//    }
+
+    let backgroundImage: UIImageView = {
+        let image = UIImageView()
+        image.image = UIImage(named: "invitation_cell")
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
+    
+    let separatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .black
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
     let rejectButton: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
-        button.setTitle("Reject", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 5
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        button.layer.masksToBounds = true
+        //button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+        //button.setTitle("Reject", for: .normal)
+        //button.setTitleColor(.white, for: .normal)
+        //button.layer.cornerRadius = 5
+//        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+//        button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     let dismissButton: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
-        button.setTitle("Dismiss", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 5
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        button.layer.masksToBounds = true
+//        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+//        button.setTitle("Dismiss", for: .normal)
+//        button.setTitleColor(.white, for: .normal)
+//        button.layer.cornerRadius = 5
+//        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+//        button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     let confirmButton: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
-        button.setTitle("Confirm", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 5
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        button.layer.masksToBounds = true
+        //button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+        //button.setTitle("Confirm", for: .normal)
+        //button.setTitleColor(.white, for: .normal)
+        //button.layer.cornerRadius = 5
+        //button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        //button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -391,27 +397,55 @@ class InvitationCell: BaseCell {
     
     
     override func setupViews() {
+        
+        addSubview(backgroundImage)
+        backgroundImage.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        backgroundImage.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        backgroundImage.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        backgroundImage.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        
+//        addSubview(separatorView)
+//        separatorView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+//        separatorView.topAnchor.constraint(equalTo: backgroundImage.bottomAnchor).isActive = true
+//        separatorView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+//        separatorView.heightAnchor.constraint(equalToConstant: 3).isActive = true
+        
+        
         addSubview(invitationText)
         addSubview(rejectButton)
         addSubview(dismissButton)
         addSubview(confirmButton)
-        invitationText.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        invitationText.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
-        invitationText.widthAnchor.constraint(equalTo: widthAnchor, constant: -8).isActive = true
-        invitationText.heightAnchor.constraint(equalToConstant: 90).isActive = true
-        rejectButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -75).isActive = true
-        rejectButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 4).isActive = true
-        rejectButton.widthAnchor.constraint(equalToConstant: 75).isActive = true
-        rejectButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
-        dismissButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: -75).isActive = true
-        dismissButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 4).isActive = true
-        dismissButton.widthAnchor.constraint(equalToConstant: 75).isActive = true
-        dismissButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
-        confirmButton.centerXAnchor.constraint(equalTo: centerXAnchor, constant: 75).isActive = true
-        confirmButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 4).isActive = true
-        confirmButton.widthAnchor.constraint(equalToConstant: 75).isActive = true
-        confirmButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
-        //addConstraintsWithFormat(format: "H:|-4-[v0]-4-|", views: invitationText)
-        //addConstraintsWithFormat(format: "V:|-4-[v0]-4-|", views: invitationText)
+        
+        let invitationTextLoc = calculateButtonPosition(x: 375, y: 72, w: 688, h: 111, wib: 750, hib: 300, wia: 375, hia: 150)
+        
+        addSubview(invitationText)
+        invitationText.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(invitationTextLoc.Y)).isActive = true
+        invitationText.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(invitationTextLoc.X)).isActive = true
+        invitationText.heightAnchor.constraint(equalToConstant: CGFloat(invitationTextLoc.H)).isActive = true
+        invitationText.widthAnchor.constraint(equalToConstant: CGFloat(invitationTextLoc.W)).isActive = true
+        
+        let confirmLoc = calculateButtonPosition(x: 638.75, y: 206, w: 177.5, h: 146, wib: 750, hib: 300, wia: 375, hia: 150)
+        
+        addSubview(confirmButton)
+        confirmButton.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmLoc.Y)).isActive = true
+        confirmButton.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmLoc.X)).isActive = true
+        confirmButton.heightAnchor.constraint(equalToConstant: CGFloat(confirmLoc.H)).isActive = true
+        confirmButton.widthAnchor.constraint(equalToConstant: CGFloat(confirmLoc.W)).isActive = true
+        
+        let rejectLoc = calculateButtonPosition(x: 448.5, y: 206, w: 177.5, h: 146, wib: 750, hib: 300, wia: 375, hia: 150)
+        
+        addSubview(rejectButton)
+        rejectButton.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(rejectLoc.Y)).isActive = true
+        rejectButton.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(rejectLoc.X)).isActive = true
+        rejectButton.heightAnchor.constraint(equalToConstant: CGFloat(rejectLoc.H)).isActive = true
+        rejectButton.widthAnchor.constraint(equalToConstant: CGFloat(rejectLoc.W)).isActive = true
+
+    }
+    func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
+        let X = x / wib * wia
+        let Y = y / hib * hia
+        let W = w / wib * wia
+        let H = h / hib * hia
+        return (X, Y, W, H)
     }
 }

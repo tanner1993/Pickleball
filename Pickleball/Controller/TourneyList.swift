@@ -15,11 +15,39 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     var tourneys = [Tourney]()
     let cellId = "cellId"
     
+    let backgroundImage: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.image = UIImage(named: "user_dashboard")
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         fetchTourneys()
         setupCollectionView()
+        setupViews()
+        setupNavbarButton()
 
+    }
+    
+    func setupNavbarButton() {
+        let image = UIImage(named: "alarmness")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleViewNotifications))
+    }
+    
+    @objc func handleViewNotifications() {
+        
+    }
+    
+    func setupViews() {
+        view.addSubview(backgroundImage)
+        backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        backgroundImage.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        backgroundImage.heightAnchor.constraint(equalToConstant: 350).isActive = true
     }
 
     func fetchTourneys() {
@@ -45,7 +73,9 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     func setupCollectionView() {
         collectionView?.register(TourneyCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
+        collectionView?.backgroundColor = UIColor.white
+        collectionView?.contentInset = UIEdgeInsets(top: 350, left: 0, bottom: 0, right: 0)
+        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 350, left: 0, bottom: 0, right: 0)
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

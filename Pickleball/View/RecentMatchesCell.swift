@@ -47,7 +47,6 @@ class RecentMatchesCell: BaseCell {
 //                    })
 //                }
 //            }
-
             match1Label.text = "\(match?.challengerScores?[0] ?? -1)/\(match?.challengedScores?[0] ?? -1)"
             match2Label.text = "\(match?.challengerScores?[1] ?? -1)/\(match?.challengedScores?[1] ?? -1)"
             match3Label.text = "\(match?.challengerScores?[2] ?? -1)/\(match?.challengedScores?[2] ?? -1)"

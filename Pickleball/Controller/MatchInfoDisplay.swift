@@ -23,6 +23,10 @@ class MatchInfoDisplay: UIViewController {
     var userWins = 0
     var oppWins = 0
     var userIsChallenger = 0
+    var confirmMatchScoresWidthAnchor: NSLayoutConstraint?
+    var confirmMatchScoresCenterXAnchor: NSLayoutConstraint?
+    var backgroundImageCenterYAnchor: NSLayoutConstraint?
+    var userWinner = -1
     
     let backgroundImage: UIImageView = {
         let bi = UIImageView()
@@ -42,21 +46,117 @@ class MatchInfoDisplay: UIViewController {
         return button
     }()
     
+    let rejectMatchScores: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = .white
+        button.alpha = 0.05
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleEditScores), for: .touchUpInside)
+        return button
+    }()
+    
     let confirmMatchScoresImage: UIImageView = {
         let image = UIImageView()
         image.translatesAutoresizingMaskIntoConstraints = false
-        image.image = UIImage(named: "confirm_match_scores")
         return image
+    }()
+    
+    let winnerConfirmed: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Teammate 1"
+        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
+        label.textAlignment = .center
+        return label
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupViews()
+        setupKeyboardObservers()
+    }
+    
+    func resigningFirstResponders() {
+        game1UserScore.resignFirstResponder()
+        game2UserScore.resignFirstResponder()
+        game3UserScore.resignFirstResponder()
+        game4UserScore.resignFirstResponder()
+        game5UserScore.resignFirstResponder()
+        game1OppScore.resignFirstResponder()
+        game2OppScore.resignFirstResponder()
+        game3OppScore.resignFirstResponder()
+        game4OppScore.resignFirstResponder()
+        game5OppScore.resignFirstResponder()
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        resigningFirstResponders()
+        self.view.endEditing(true)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func handleKeyboardWillShow(notification: NSNotification) {
+        let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+        let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+        let height =  (keyboardFrame?.height)! - 50
+        backgroundImageCenterYAnchor?.constant = -height
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc func handleKeyboardWillHide(notification: NSNotification) {
+        backgroundImageCenterYAnchor?.constant = 0
+        let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc func handleEditScores() {
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1045, w: 532, h: 68, wib: 750, hib: 1150, wia: 375, hia: 575)
+        self.match.active = 0
+        self.match.winner = "no one"
+        self.match.submitter = "no one"
+        self.match.challengerScores = [0, 0, 0, 0, 0]
+        self.match.challengedScores = [0, 0, 0, 0, 0]
+        let newalert = UIAlertController(title: "Okay", message: "well if these scores ain't right then what is?", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
+        self.present(newalert, animated: true, completion: nil)
+        confirmMatchScoresImage.image = UIImage(named: "confirm_match_scores")
+        rejectMatchScores.removeFromSuperview()
+        confirmMatchScoresCenterXAnchor?.isActive = false
+        confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X))
+        confirmMatchScoresCenterXAnchor?.isActive = true
+        confirmMatchScoresWidthAnchor?.isActive = false
+        confirmMatchScoresWidthAnchor = confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W))
+        confirmMatchScoresWidthAnchor?.isActive = true
+        
     }
     
     @objc func handleConfirmScores() {
+        game1UserScore.resignFirstResponder()
+        game2UserScore.resignFirstResponder()
+        game3UserScore.resignFirstResponder()
+        game4UserScore.resignFirstResponder()
+        game5UserScore.resignFirstResponder()
+        game1OppScore.resignFirstResponder()
+        game2OppScore.resignFirstResponder()
+        game3OppScore.resignFirstResponder()
+        game4OppScore.resignFirstResponder()
+        game5OppScore.resignFirstResponder()
         confirmMatchScores.flash()
+        if match.active == 0 {
         finalUserScores.removeAll()
         finalOppScores.removeAll()
         gameWinners.removeAll()
@@ -64,32 +164,15 @@ class MatchInfoDisplay: UIViewController {
         
         switch scoresValidation {
         case 0:
+            guard let userTeamId = userTeam?.teamId else {
+                return
+            }
+            guard let oppTeamId = oppTeam?.teamId else {
+                return
+            }
+            let values = ["winner": winner, "submitter": userTeamId, "active": 1, "challenger_team": userIsChallenger == 0 ? userTeamId : oppTeamId, "challenged_team": userIsChallenger == 0 ? oppTeamId : userTeamId, "challenger_scores": userIsChallenger == 0 ? finalUserScores : finalOppScores, "challenged_scores": userIsChallenger == 0 ? finalOppScores : finalUserScores] as [String : Any]
             let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(match.matchId ?? "")
-            ref.updateChildValues(["challenger_scores": userIsChallenger == 0 ? finalUserScores : finalOppScores], withCompletionBlock: {
-                (error:Error?, ref:DatabaseReference) in
-                
-                if let error = error {
-                    print("Data could not be saved: \(error).")
-                    return
-                }
-                
-                print("Data saved successfully!")
-                self.match.challengerScores = self.userIsChallenger == 0 ? self.finalUserScores : self.finalOppScores
-                
-            })
-            ref.updateChildValues(["challenged_scores": userIsChallenger == 0 ? finalOppScores : finalUserScores], withCompletionBlock: {
-                (error:Error?, ref:DatabaseReference) in
-                
-                if let error = error {
-                    print("Data could not be saved: \(error).")
-                    return
-                }
-                
-                print("Data saved successfully!")
-                self.match.challengedScores = self.userIsChallenger == 0 ? self.finalOppScores : self.finalUserScores
-                
-            })
-            ref.updateChildValues(["active": 1], withCompletionBlock: {
+            ref.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
                 if let error = error {
@@ -99,12 +182,18 @@ class MatchInfoDisplay: UIViewController {
                 
                 print("Data saved successfully!")
                 self.match.active = 1
+                self.match.winner = self.winner
+                self.match.submitter = userTeamId
+                self.match.challengerScores = self.userIsChallenger == 0 ? self.finalUserScores : self.finalOppScores
+                self.match.challengedScores = self.userIsChallenger == 0 ? self.finalOppScores : self.finalUserScores
                 
             })
             
             let newalert = UIAlertController(title: "Awesome", message: "\(winner)", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
             self.present(newalert, animated: true, completion: nil)
+            confirmMatchScores.isEnabled = false
+            confirmMatchScoresImage.image = UIImage(named: "waiting_confirm")
         case 1:
             let newalert = UIAlertController(title: "Sorry", message: "At least 3 games need to be completed in order to determine the winner of a match", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
@@ -131,10 +220,72 @@ class MatchInfoDisplay: UIViewController {
             self.present(newalert, animated: true, completion: nil)
             
         }
+        } else if match.active == 1 {
+            let values = ["active": 2] as [String : Any]
+            let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(match.matchId ?? "")
+            ref.updateChildValues(values, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if let error = error {
+                    print("Data could not be saved: \(error).")
+                    return
+                }
+                
+                print("Data saved successfully!")
+                self.match.active = 2
+                self.updateTourneyStandings()
+                
+                
+            })
+            let newalert = UIAlertController(title: "Awesome", message: "Match Confirmed", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
+            self.present(newalert, animated: true, completion: nil)
+            confirmMatchScoresImage.image = UIImage(named: "winner_confirm")
+            let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1045, w: 532, h: 68, wib: 750, hib: 1150, wia: 375, hia: 575)
+            view.addSubview(winnerConfirmed)
+            winnerConfirmed.text = userTeam?.teamId == match.winner ? "\(userPlayer1.text!) & \(userPlayer2.text!) won!" : "\(oppPlayer1.text!) & \(oppPlayer2.text!) won!"
+            winnerConfirmed.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+            winnerConfirmed.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+            
+        }
+    }
+    
+    func updateTourneyStandings() {
+        guard let userTeamRank = userTeam?.rank else {
+            return
+        }
+        guard let oppTeamRank = oppTeam?.rank else {
+            return
+        }
+        let winnerRank = userTeamRank < oppTeamRank ? userTeamRank : oppTeamRank
+        let loserRank = userTeamRank < oppTeamRank ? oppTeamRank : userTeamRank
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
+        let values = ["rank": match.winner == userTeam?.teamId ? winnerRank : loserRank, "wins": match.winner == userTeam?.teamId ? userTeam!.wins! + 1 : userTeam?.wins, "losses": match.winner == oppTeam?.teamId ? userTeam!.losses! + 1 : userTeam?.losses, "player1": userTeam?.player1, "player2": userTeam?.player2] as [String : Any]
+        let values2 = ["rank": match.winner == oppTeam?.teamId ? winnerRank : loserRank, "wins": match.winner == oppTeam?.teamId ? oppTeam!.wins! + 1 : oppTeam?.wins, "losses": match.winner == userTeam?.teamId ? oppTeam!.losses! + 1 : oppTeam?.losses, "player1": oppTeam?.player1, "player2": oppTeam?.player2] as [String : Any]
+
+        let childUpdates = ["/\(userTeam?.teamId ?? "none")/": values, "/\(oppTeam?.teamId ?? "none")/": values2]
+        ref.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            print("Crazy data saved!")
+            
+            
+        })
+        
     }
     
     @objc func resetupviews(action: UIAlertAction) {
-        setupViews()
+        //setupViews()
+        if match.active != 2 {
+            disableScores()
+        }
     }
     
     func checkScoresValidity() -> Int {
@@ -165,14 +316,14 @@ class MatchInfoDisplay: UIViewController {
                 }
             }
             if userWins == 3 {
-                winner = "You won!"
+                winner = userTeam?.teamId ?? "no winner"
                 finalUserScores.append(0)
                 finalOppScores.append(0)
                 finalUserScores.append(0)
                 finalOppScores.append(0)
                 return 0
             } else if oppWins == 3 {
-                winner = "You Lost!"
+                winner = oppTeam?.teamId ?? "no winner 2"
                 finalUserScores.append(0)
                 finalOppScores.append(0)
                 finalUserScores.append(0)
@@ -252,54 +403,23 @@ class MatchInfoDisplay: UIViewController {
     }
     
     func setupViews() {
-        
+        userWinner = userTeam?.teamId == match.winner ? 0 : 1
         view.backgroundColor = .white
         
-        if match.active == 1 {
-            if userIsChallenger == 0 {
-                game1UserScore.text = "\(match.challengerScores![0])"
-                game2UserScore.text = "\(match.challengerScores![1])"
-                game3UserScore.text = "\(match.challengerScores![2])"
-                game4UserScore.text = "\(match.challengerScores![3])"
-                game5UserScore.text = "\(match.challengerScores![4])"
-                game1OppScore.text = "\(match.challengedScores![0])"
-                game2OppScore.text = "\(match.challengedScores![1])"
-                game3OppScore.text = "\(match.challengedScores![2])"
-                game4OppScore.text = "\(match.challengedScores![3])"
-                game5OppScore.text = "\(match.challengedScores![4])"
-            } else if userIsChallenger == 1 {
-                game1UserScore.text = "\(match.challengedScores![0])"
-                game2UserScore.text = "\(match.challengedScores![1])"
-                game3UserScore.text = "\(match.challengedScores![2])"
-                game4UserScore.text = "\(match.challengedScores![3])"
-                game5UserScore.text = "\(match.challengedScores![4])"
-                game1OppScore.text = "\(match.challengerScores![0])"
-                game2OppScore.text = "\(match.challengerScores![1])"
-                game3OppScore.text = "\(match.challengerScores![2])"
-                game4OppScore.text = "\(match.challengerScores![3])"
-                game5OppScore.text = "\(match.challengerScores![4])"
-            }
-            game1UserScore.isUserInteractionEnabled = false
-            game2UserScore.isUserInteractionEnabled = false
-            game3UserScore.isUserInteractionEnabled = false
-            game4UserScore.isUserInteractionEnabled = false
-            game5UserScore.isUserInteractionEnabled = false
-            game1OppScore.isUserInteractionEnabled = false
-            game2OppScore.isUserInteractionEnabled = false
-            game3OppScore.isUserInteractionEnabled = false
-            game4OppScore.isUserInteractionEnabled = false
-            game5OppScore.isUserInteractionEnabled = false
-        }
+        disableScores()
         
         view.addSubview(backgroundImage)
-        backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        backgroundImageCenterYAnchor = backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
+        backgroundImageCenterYAnchor?.isActive = true
         backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         backgroundImage.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         backgroundImage.heightAnchor.constraint(equalToConstant: 575).isActive = true
         
         let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1045, w: 532, h: 68, wib: 750, hib: 1150, wia: 375, hia: 575)
+        if match.active == 0 {
         
         view.addSubview(confirmMatchScoresImage)
+        confirmMatchScoresImage.image = UIImage(named: "confirm_match_scores")
         confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
         confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
         confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
@@ -307,9 +427,44 @@ class MatchInfoDisplay: UIViewController {
         
         view.addSubview(confirmMatchScores)
         confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-        confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+        confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X))
+        confirmMatchScoresCenterXAnchor?.isActive = true
         confirmMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-        confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+        confirmMatchScoresWidthAnchor = confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W))
+        confirmMatchScoresWidthAnchor?.isActive = true
+            print(confirmMatchScoresLoc.W)
+            
+        } else if match.active == 1 && match.submitter == userTeam?.teamId {
+            confirmMatchScoresImage.image = UIImage(named: "waiting_confirm")
+            view.addSubview(confirmMatchScoresImage)
+            confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+            confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+        } else if match.active == 1 && match.submitter == oppTeam?.teamId {
+            confirmMatchScoresImage.image = UIImage(named: "reject_confirm")
+            view.addSubview(confirmMatchScoresImage)
+            confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+            confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+            
+            view.addSubview(confirmMatchScores)
+            //confirmMatchScores.backgroundColor = .yellow
+            confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X + (confirmMatchScoresLoc.W / 4)))
+            confirmMatchScoresCenterXAnchor?.isActive = true
+            confirmMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            confirmMatchScoresWidthAnchor = confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W / 2))
+            confirmMatchScoresWidthAnchor?.isActive = true
+            
+            view.addSubview(rejectMatchScores)
+            //rejectMatchScores.backgroundColor = .red
+            rejectMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            rejectMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X - (confirmMatchScoresLoc.W / 4))).isActive = true
+            rejectMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            rejectMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W / 2)).isActive = true
+        }
         
         
         let userPlayer1Loc = calculateButtonPosition(x: 375, y: 75, w: 666, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
@@ -317,6 +472,7 @@ class MatchInfoDisplay: UIViewController {
         user1NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 self.userPlayer1.text = value["name"] as? String
+                self.winnerConfirmed.text = self.userWinner == 0 ? value["name"] as? String : self.winnerConfirmed.text
             }
         })
         
@@ -331,6 +487,7 @@ class MatchInfoDisplay: UIViewController {
         user2NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 self.userPlayer2.text = value["name"] as? String
+                self.winnerConfirmed.text = self.userWinner == 0 ? "\(self.winnerConfirmed.text!) & \(value["name"] as? String ?? "none found") Won!" : self.winnerConfirmed.text
             }
         })
         
@@ -345,6 +502,7 @@ class MatchInfoDisplay: UIViewController {
         opp1NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 self.oppPlayer1.text = value["name"] as? String
+                self.winnerConfirmed.text = self.userWinner == 1 ? value["name"] as? String : self.winnerConfirmed.text
             }
         })
         
@@ -359,6 +517,7 @@ class MatchInfoDisplay: UIViewController {
         opp2NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 self.oppPlayer2.text = value["name"] as? String
+                self.winnerConfirmed.text = self.userWinner == 1 ? "\(self.winnerConfirmed.text!) & \(value["name"] as? String ?? "none found") Won!" : self.winnerConfirmed.text
             }
         })
         
@@ -447,6 +606,16 @@ class MatchInfoDisplay: UIViewController {
         game5OppScore.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(game5OppScoreLoc.X)).isActive = true
         game5OppScore.heightAnchor.constraint(equalToConstant: CGFloat(game5OppScoreLoc.H)).isActive = true
         game5OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game5OppScoreLoc.W)).isActive = true
+        
+        if match.active == 2 {
+            confirmMatchScoresImage.image = UIImage(named: "winner_confirm")
+            view.addSubview(winnerConfirmed)
+            winnerConfirmed.text = userTeam?.teamId == match.winner ? "\(userPlayer1.text ?? "nobody") & \(userPlayer2.text ?? "nobody") won!" : "\(oppPlayer1.text ?? "nobody") & \(oppPlayer2.text ?? "nobody") won!"
+            winnerConfirmed.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+            winnerConfirmed.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+        }
     }
 
     
@@ -583,4 +752,42 @@ class MatchInfoDisplay: UIViewController {
         textField.textAlignment = .center
         return textField
     }()
+    
+        func disableScores() {
+            if match.active ?? 0 > 0 {
+                if userIsChallenger == 0 {
+                    game1UserScore.text = "\(match.challengerScores![0])"
+                    game2UserScore.text = "\(match.challengerScores![1])"
+                    game3UserScore.text = "\(match.challengerScores![2])"
+                    game4UserScore.text = "\(match.challengerScores![3])"
+                    game5UserScore.text = "\(match.challengerScores![4])"
+                    game1OppScore.text = "\(match.challengedScores![0])"
+                    game2OppScore.text = "\(match.challengedScores![1])"
+                    game3OppScore.text = "\(match.challengedScores![2])"
+                    game4OppScore.text = "\(match.challengedScores![3])"
+                    game5OppScore.text = "\(match.challengedScores![4])"
+                } else if userIsChallenger == 1 {
+                    game1UserScore.text = "\(match.challengedScores![0])"
+                    game2UserScore.text = "\(match.challengedScores![1])"
+                    game3UserScore.text = "\(match.challengedScores![2])"
+                    game4UserScore.text = "\(match.challengedScores![3])"
+                    game5UserScore.text = "\(match.challengedScores![4])"
+                    game1OppScore.text = "\(match.challengerScores![0])"
+                    game2OppScore.text = "\(match.challengerScores![1])"
+                    game3OppScore.text = "\(match.challengerScores![2])"
+                    game4OppScore.text = "\(match.challengerScores![3])"
+                    game5OppScore.text = "\(match.challengerScores![4])"
+                }
+        }
+            game1UserScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game2UserScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game3UserScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game4UserScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game5UserScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game1OppScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game2OppScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game3OppScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game4OppScore.isUserInteractionEnabled = match.active == 0 ? true : false
+            game5OppScore.isUserInteractionEnabled = match.active == 0 ? true : false
+    }
 }

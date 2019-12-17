@@ -9,6 +9,8 @@
 import UIKit
 
 class Match: NSObject {
+    var winner: String?
+    var submitter: String?
     var active: Int?
     var challengerTeamId: String?
     var challengedTeamId: String?

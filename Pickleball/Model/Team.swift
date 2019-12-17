@@ -10,6 +10,7 @@ import UIKit
 
 class Team: NSObject {
     var player1: String?
+    var player1Name: String?
     var player2: String?
     var wins: Int?
     var losses: Int?

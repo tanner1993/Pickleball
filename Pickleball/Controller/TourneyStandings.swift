@@ -39,8 +39,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         observeMyTourneyMatches()
         setupNavBarButtons()
         setupTitle()
-        setupCollectionView()
         setupTourneyMenuBar()
+        setupCollectionView()
         
     }
     
@@ -58,8 +58,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 let rank = value["rank"] as? Int ?? 100
                 let wins = value["wins"] as? Int ?? -1
                 let losses = value["losses"] as? Int ?? -1
-                
-                
                 team.player2 = player2Id
                 team.player1 = player1Id
                 team.rank = rank
@@ -94,14 +92,18 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                         let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
                         let challengerScores = value["challenger_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                         let challengedScores = value["challenged_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+                        let submitter = value["submitter"] as? String ?? "No submitter yet"
+                        let winner = value["winner"] as? String ?? "No winner yet"
                         match.active = active
+                        match.submitter = submitter
+                        match.winner = winner
                         match.challengerTeamId = challengerTeamId
                         match.challengedTeamId = challengedTeamId
                         match.challengerScores = challengerScores
                         match.challengedScores = challengedScores
                         match.matchId = matchId
                         self.matches.append(match)
-                        DispatchQueue.main.async { self.collectionView.reloadData() }
+                        //DispatchQueue.main.async { self.collectionView.reloadData() }
                     }
                     
                 }, withCancel: nil)

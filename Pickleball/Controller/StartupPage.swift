@@ -12,6 +12,15 @@ import Firebase
 
 class StartupPage: UIViewController {
     
+    let backgroundImage: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        //bi.image = UIImage(named: "user_dashboard")
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
+    
     let createTourneyButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
@@ -83,21 +92,27 @@ class StartupPage: UIViewController {
         
         view.backgroundColor = .white
         
-        view.addSubview(createTourneyButton)
-        createTourneyButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        createTourneyButton.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -100).isActive = true
-        createTourneyButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        createTourneyButton.widthAnchor.constraint(equalToConstant: 150).isActive = true
+        view.addSubview(backgroundImage)
+        backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        backgroundImage.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        backgroundImage.heightAnchor.constraint(equalToConstant: 575).isActive = true
         
-        view.addSubview(tourneyNameTextField)
-        tourneyNameTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        tourneyNameTextField.topAnchor.constraint(equalTo: createTourneyButton.bottomAnchor).isActive = true
-        tourneyNameTextField.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        tourneyNameTextField.widthAnchor.constraint(equalToConstant: 300).isActive = true
-        
+//        view.addSubview(createTourneyButton)
+//        createTourneyButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        createTourneyButton.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -100).isActive = true
+//        createTourneyButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+//        createTourneyButton.widthAnchor.constraint(equalToConstant: 150).isActive = true
+//
+//        view.addSubview(tourneyNameTextField)
+//        tourneyNameTextField.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        tourneyNameTextField.topAnchor.constraint(equalTo: createTourneyButton.bottomAnchor).isActive = true
+//        tourneyNameTextField.heightAnchor.constraint(equalToConstant: 30).isActive = true
+//        tourneyNameTextField.widthAnchor.constraint(equalToConstant: 300).isActive = true
+//
         view.addSubview(tourneyListButton)
         tourneyListButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        tourneyListButton.topAnchor.constraint(equalTo: tourneyNameTextField.bottomAnchor).isActive = true
+        tourneyListButton.topAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
         tourneyListButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
         tourneyListButton.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
@@ -137,7 +152,6 @@ class StartupPage: UIViewController {
     
     
     func setupNavBar() {
-        UINavigationBar.appearance().barTintColor = UIColor.white
         navigationController?.navigationBar.isTranslucent = false
     }
     

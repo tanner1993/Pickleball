@@ -36,6 +36,7 @@ class TeamCell: FeedCell {
                     self.player1.text = value["name"] as? String
                 }
             })
+            //player1.text = team?.player1Name ?? "nono"
             
             let player2ref = Database.database().reference().child("users").child(team?.player2 ?? "nope")
             player2ref.observeSingleEvent(of: .value, with: {(snapshot) in

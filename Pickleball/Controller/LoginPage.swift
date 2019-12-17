@@ -120,7 +120,7 @@ class LoginPage: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor(r: 61, g: 150, b: 200)
+        view.backgroundColor = UIColor(r: 88, g: 148, b: 200)
         
         setupContainerView()
         setupLoginRegSeg()
