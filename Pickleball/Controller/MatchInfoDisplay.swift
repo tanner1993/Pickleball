@@ -12,6 +12,8 @@ import FirebaseAuth
 
 class MatchInfoDisplay: UIViewController {
 
+    var tourneyStandings = TourneyStandings()
+    var teams = [Team]()
     var userTeam: Team?
     var oppTeam: Team?
     var tourneyId: String = ""
@@ -72,7 +74,6 @@ class MatchInfoDisplay: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setupViews()
         setupKeyboardObservers()
     }
@@ -252,20 +253,112 @@ class MatchInfoDisplay: UIViewController {
         }
     }
     
-    func updateTourneyStandings() {
+    func reorganizeTeams() -> [Int] {
+        var newUserTeamRank = -10
+        var newOppTeamRank = -10
+        var effectedRanks = [Int]()
+        var effectedIndices = [Int]()
         guard let userTeamRank = userTeam?.rank else {
-            return
+            return [-1]
         }
         guard let oppTeamRank = oppTeam?.rank else {
-            return
+            return [-1]
         }
-        let winnerRank = userTeamRank < oppTeamRank ? userTeamRank : oppTeamRank
-        let loserRank = userTeamRank < oppTeamRank ? oppTeamRank : userTeamRank
+        let userIsLeading = userTeamRank < oppTeamRank ? 0 : 1
+        if match.winner == userTeam?.teamId {
+            if userIsLeading == 0 {
+                newUserTeamRank = userTeamRank != 1 ? userTeamRank - 1 : 1
+                newOppTeamRank = oppTeamRank
+                for (index, element) in teams.enumerated() {
+                    if element.rank == newUserTeamRank {
+                        element.rank = userTeamRank
+                        effectedIndices.append(index)
+                    } else if element.teamId == userTeam?.teamId {
+                        element.rank = newUserTeamRank
+                    }
+                }
+                return effectedIndices
+            } else {
+                newUserTeamRank = oppTeamRank
+                newOppTeamRank = oppTeamRank + 1
+                if userTeamRank - oppTeamRank > 1 {
+                    for index in oppTeamRank + 1..<userTeamRank {
+                        effectedRanks.append(index)
+                    }
+                }
+                for (index, element) in teams.enumerated() {
+                    if effectedRanks.contains(element.rank!) {
+                        element.rank = element.rank! + 1
+                        effectedIndices.append(index)
+                    } else if element.teamId == userTeam?.teamId {
+                        element.rank = newUserTeamRank
+                    } else if element.teamId == oppTeam?.teamId {
+                        element.rank = newOppTeamRank
+                    }
+                }
+                return effectedIndices
+            }
+        } else if match.winner == oppTeam?.teamId {
+            if userIsLeading == 1 {
+                newOppTeamRank = oppTeamRank != 1 ? oppTeamRank - 1 : 1
+                newUserTeamRank = userTeamRank
+                for (index, element) in teams.enumerated() {
+                    if element.rank == newOppTeamRank {
+                        element.rank = oppTeamRank
+                        effectedIndices.append(index)
+                    } else if element.teamId == oppTeam?.teamId {
+                        element.rank = newOppTeamRank
+                    }
+                }
+                return effectedIndices
+            } else {
+                newOppTeamRank = userTeamRank
+                newUserTeamRank = userTeamRank + 1
+                if oppTeamRank - userTeamRank > 1 {
+                    for index in userTeamRank + 1..<oppTeamRank {
+                        effectedRanks.append(index)
+                    }
+                }
+                for (index, element) in teams.enumerated() {
+                    if effectedRanks.contains(element.rank!) {
+                        element.rank = element.rank! + 1
+                        effectedIndices.append(index)
+                    } else if element.teamId == oppTeam?.teamId {
+                        element.rank = newOppTeamRank
+                    } else if element.teamId == userTeam?.teamId {
+                        element.rank = newUserTeamRank
+                    }
+                }
+                return effectedIndices
+            }
+        } else {
+            return [-1]
+        }
+    }
+    
+    func updateTourneyStandings() {
+        var userTeamIndex = -1
+        var oppTeamIndex = -1
+        for (index, element) in teams.enumerated() {
+            if element.teamId == userTeam?.teamId ?? "no user id" {
+                userTeamIndex = index
+            } else if element.teamId == oppTeam?.teamId {
+                oppTeamIndex = index
+            }
+        }
+        let effectedIndices = reorganizeTeams()
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
-        let values = ["rank": match.winner == userTeam?.teamId ? winnerRank : loserRank, "wins": match.winner == userTeam?.teamId ? userTeam!.wins! + 1 : userTeam?.wins, "losses": match.winner == oppTeam?.teamId ? userTeam!.losses! + 1 : userTeam?.losses, "player1": userTeam?.player1, "player2": userTeam?.player2] as [String : Any]
-        let values2 = ["rank": match.winner == oppTeam?.teamId ? winnerRank : loserRank, "wins": match.winner == oppTeam?.teamId ? oppTeam!.wins! + 1 : oppTeam?.wins, "losses": match.winner == userTeam?.teamId ? oppTeam!.losses! + 1 : oppTeam?.losses, "player1": oppTeam?.player1, "player2": oppTeam?.player2] as [String : Any]
-
-        let childUpdates = ["/\(userTeam?.teamId ?? "none")/": values, "/\(oppTeam?.teamId ?? "none")/": values2]
+        let valuesUser = ["rank": teams[userTeamIndex].rank, "wins": match.winner == userTeam?.teamId ? userTeam!.wins! + 1 : userTeam?.wins, "losses": match.winner == oppTeam?.teamId ? userTeam!.losses! + 1 : userTeam?.losses, "player1": userTeam?.player1, "player2": userTeam?.player2] as [String : Any]
+        let valuesOpp = ["rank": teams[oppTeamIndex].rank, "wins": match.winner == oppTeam?.teamId ? oppTeam!.wins! + 1 : oppTeam?.wins, "losses": match.winner == userTeam?.teamId ? oppTeam!.losses! + 1 : oppTeam?.losses, "player1": oppTeam?.player1, "player2": oppTeam?.player2] as [String : Any]
+        var childUpdates = ["/\(userTeam?.teamId ?? "none")/": valuesUser, "/\(oppTeam?.teamId ?? "none")/": valuesOpp]
+        if effectedIndices.count == 1 {
+            let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
+            childUpdates = ["/\(userTeam?.teamId ?? "none")/": valuesUser, "/\(oppTeam?.teamId ?? "none")/": valuesOpp, "/\(teams[effectedIndices[0]].teamId ?? "none")/": valuesEffected1]
+        } else if effectedIndices.count == 2 {
+            let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
+            let valuesEffected2 = ["rank": teams[effectedIndices[1]].rank as Any, "wins": teams[effectedIndices[1]].wins as Any, "losses": teams[effectedIndices[1]].losses as Any, "player1": teams[effectedIndices[1]].player1 as Any, "player2": teams[effectedIndices[1]].player2 as Any] as [String : Any]
+            childUpdates = ["/\(userTeam?.teamId ?? "none")/": valuesUser, "/\(oppTeam?.teamId ?? "none")/": valuesOpp, "/\(teams[effectedIndices[0]].teamId ?? "none")/": valuesEffected1, "/\(teams[effectedIndices[1]].teamId ?? "none")/": valuesEffected2]
+        }
         ref.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -352,12 +445,12 @@ class MatchInfoDisplay: UIViewController {
             }
             
             if userWins == 3 {
-                winner = "You won!"
+                winner = userTeam?.teamId ?? "no winner"
                 finalUserScores.append(0)
                 finalOppScores.append(0)
                 return 0
             } else if oppWins == 3 {
-                winner = "You Lost!"
+                winner = oppTeam?.teamId ?? "no winner 2"
                 finalUserScores.append(0)
                 finalOppScores.append(0)
                 return 0
@@ -383,10 +476,10 @@ class MatchInfoDisplay: UIViewController {
             }
             
             if userWins == 3 {
-                winner = "You won!"
+                winner = userTeam?.teamId ?? "no winner"
                 return 0
             } else if oppWins == 3 {
-                winner = "You Lost!"
+                winner = oppTeam?.teamId ?? "no winner 2"
                 return 0
             } else {
                 return -1

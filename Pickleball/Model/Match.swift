@@ -10,6 +10,7 @@ import UIKit
 
 class Match: NSObject {
     var winner: String?
+    var time: Double?
     var submitter: String?
     var active: Int?
     var challengerTeamId: String?

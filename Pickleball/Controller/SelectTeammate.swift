@@ -214,8 +214,9 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
                         recipientNotificationsRef.updateChildValues([notificationId: "1"])
                     }
                 }
-                
-                self.dismiss(animated: true, completion: nil)
+                let newalert = UIAlertController(title: "Sweet", message: "Invite has been sent", preferredStyle: UIAlertController.Style.alert)
+                newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: self.handleInviteSent))
+                self.present(newalert, animated: true, completion: nil)
                 
                 print("Data saved successfully!")
                 
@@ -237,6 +238,10 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
             print("failed to match at all!!!")
         }
         
+    }
+    
+    @objc func handleInviteSent(action: UIAlertAction) {
+        self.dismiss(animated: true, completion: nil)
     }
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {

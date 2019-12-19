@@ -31,11 +31,6 @@ class TeamInfoDisplay: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        print(teamIdSelected)
-        print(usersTeamId)
-        print(tourneyId)
-        
         view.addSubview(challengeButton)
         challengeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         challengeButton.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -100).isActive = true
@@ -45,9 +40,10 @@ class TeamInfoDisplay: UIViewController {
     
     @objc func handleChallengeConfirmed() {
         print("challenge confirmed")
+        let timeOfChallenge = Date().timeIntervalSince1970
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches")
         let createMatchInTourneyRef = ref.childByAutoId()
-        let values = ["active": 0, "challenger_team": usersTeamId.teamId as Any, "challenged_team": teamIdSelected.teamId as Any, "challenger_scores": [0, 0, 0, 0, 0], "challenged_scores": [0, 0, 0, 0, 0]] as [String : Any]
+        let values = ["active": 0, "challenger_team": usersTeamId.teamId as Any, "challenged_team": teamIdSelected.teamId as Any, "challenger_scores": [0, 0, 0, 0, 0], "challenged_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
         createMatchInTourneyRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             

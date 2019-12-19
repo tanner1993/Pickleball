@@ -164,6 +164,7 @@ class StartupPage: UIViewController {
                 self.navigationItem.title = dictionary["name"] as? String
             }
         })
+        UINavigationBar.appearance().barTintColor = UIColor.init(r: 88, g: 148, b: 200)
     }
 
 }

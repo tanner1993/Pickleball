@@ -153,6 +153,8 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
                     vc.oppTeam = index
                 }
             }
+            vc.teams = teams
+            vc.tourneyStandings = TourneyStandings()
             self.delegate?.pushNavigation(vc)
         }
         

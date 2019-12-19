@@ -23,6 +23,7 @@ extension TourneyStandings: FeedCellProtocol {
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     var matches = [Match]()
+    var allMatches = [Match]()
     var teams = [Team]()
     let tourneystatus = 1
     let cellId = "cellId"
@@ -37,6 +38,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
 
         observeTourneyTeams()
         observeMyTourneyMatches()
+        observeAllTourneyMatches()
         setupNavBarButtons()
         setupTitle()
         setupTourneyMenuBar()
@@ -94,6 +96,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                         let challengedScores = value["challenged_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                         let submitter = value["submitter"] as? String ?? "No submitter yet"
                         let winner = value["winner"] as? String ?? "No winner yet"
+                        let time = value["time"] as? Double ?? Date().timeIntervalSince1970
                         match.active = active
                         match.submitter = submitter
                         match.winner = winner
@@ -102,11 +105,53 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                         match.challengerScores = challengerScores
                         match.challengedScores = challengedScores
                         match.matchId = matchId
+                        match.time = time
                         self.matches.append(match)
+                        self.matches = self.matches.sorted { p1, p2 in
+                            return (p1.time!) > (p2.time!)
+                        }
                         //DispatchQueue.main.async { self.collectionView.reloadData() }
                     }
                     
                 }, withCancel: nil)
+            }
+            
+            
+        }, withCancel: nil)
+        
+    }
+    
+    func observeAllTourneyMatches() {
+        guard let tourneyId = tourneyIdentifier else {
+            return
+        }
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches").queryOrdered(byChild: "rank")
+        ref.observe(.childAdded, with: { (snapshot) in
+                    if let value = snapshot.value as? NSDictionary {
+                        let match = Match()
+                        let active = value["active"] as? Int ?? 0
+                        let challengerTeamId = value["challenger_team"] as? String ?? "Team not found"
+                        let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
+                        let challengerScores = value["challenger_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+                        let challengedScores = value["challenged_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+                        let submitter = value["submitter"] as? String ?? "No submitter yet"
+                        let winner = value["winner"] as? String ?? "No winner yet"
+                        let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+                        match.active = active
+                        match.submitter = submitter
+                        match.winner = winner
+                        match.challengerTeamId = challengerTeamId
+                        match.challengedTeamId = challengedTeamId
+                        match.challengerScores = challengerScores
+                        match.challengedScores = challengedScores
+                        match.matchId = snapshot.key
+                        match.time = time
+                        print(match.challengerTeamId)
+                        print(time)
+                        self.allMatches.append(match)
+                        self.allMatches = self.allMatches.sorted { p1, p2 in
+                            return (p1.time!) > (p2.time!)
+                        }
             }
             
             
@@ -202,7 +247,11 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.item == 1 {
-            return collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath) as! MatchCell
+            cell.tourneyIdentifier = tourneyIdentifier
+            cell.matches = allMatches
+            cell.teams = teams
+            return cell
         } else if indexPath.item == 2 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath) as! MyMatchesCell
             cell.tourneyIdentifier = tourneyIdentifier

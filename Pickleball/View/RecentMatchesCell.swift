@@ -52,6 +52,12 @@ class RecentMatchesCell: BaseCell {
             match3Label.text = "\(match?.challengerScores?[2] ?? -1)/\(match?.challengedScores?[2] ?? -1)"
             match4Label.text = "\(match?.challengerScores?[3] ?? -1)/\(match?.challengedScores?[3] ?? -1)"
             match5Label.text = "\(match?.challengerScores?[4] ?? -1)/\(match?.challengedScores?[4] ?? -1)"
+            guard let startTime = match?.time else {
+                return
+            }
+            let daysLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 86400
+            let daysRounded = daysLeft.round(nearest: 0.5)
+            timeLeftLabel.text = "\(daysRounded)\ndays\nleft"
         }
     }
     var match: Match?
@@ -73,6 +79,16 @@ class RecentMatchesCell: BaseCell {
         image.translatesAutoresizingMaskIntoConstraints = false
         image.image = UIImage(named: "match_time_placeholder")
         return image
+    }()
+    
+    let timeLeftLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "5 Days Left"
+        label.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        label.textAlignment = .center
+        label.numberOfLines = 3
+        return label
     }()
     
     let match1Placeholder: UIImageView = {
@@ -244,6 +260,15 @@ class RecentMatchesCell: BaseCell {
         timePlaceholder.centerXAnchor.constraint(equalTo: leftAnchor, constant: CGFloat(timePlaceholderLoc.X)).isActive = true
         timePlaceholder.heightAnchor.constraint(equalToConstant: CGFloat(timePlaceholderLoc.H)).isActive = true
         timePlaceholder.widthAnchor.constraint(equalToConstant: CGFloat(timePlaceholderLoc.W)).isActive = true
+        
+        addSubview(timeLeftLabel)
+        
+        let timeLeftLabelLoc = calculateButtonPosition(x: 690, y: 200, w: 105, h: 140, wib: 750, hib: 400, wia: 375, hia: 200)
+        
+        timeLeftLabel.centerYAnchor.constraint(equalTo: topAnchor, constant: CGFloat(timeLeftLabelLoc.Y)).isActive = true
+        timeLeftLabel.centerXAnchor.constraint(equalTo: leftAnchor, constant: CGFloat(timeLeftLabelLoc.X)).isActive = true
+        timeLeftLabel.heightAnchor.constraint(equalToConstant: CGFloat(timeLeftLabelLoc.H)).isActive = true
+        timeLeftLabel.widthAnchor.constraint(equalToConstant: CGFloat(timeLeftLabelLoc.W)).isActive = true
         
         addSubview(challenged)
         
