@@ -56,3 +56,12 @@ extension Double {
         return intDiv * nearest
     }
 }
+
+extension String {
+    
+    var isValidName: Bool {
+        let RegEx = "^\\w{3,15}$"
+        let Test = NSPredicate(format:"SELF MATCHES %@", RegEx)
+        return Test.evaluate(with: self)
+    }
+}

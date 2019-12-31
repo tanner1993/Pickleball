@@ -146,8 +146,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                         match.challengedScores = challengedScores
                         match.matchId = snapshot.key
                         match.time = time
-                        print(match.challengerTeamId)
-                        print(time)
                         self.allMatches.append(match)
                         self.allMatches = self.allMatches.sorted { p1, p2 in
                             return (p1.time!) > (p2.time!)

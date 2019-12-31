@@ -65,13 +65,16 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! RecentMatchesCell
         let uid = Auth.auth().currentUser?.uid
+        cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
+        cell.challengerPlaceholder.image = UIImage(named: "challenger_team_placeholder")
         let match = matches[indexPath.item]
         for index in teams {
+            var userTester = 0
             if index.teamId == match.challengerTeamId {
                 if index.player1 == uid || index.player2 == uid {
-                    //userIsChallenger = 0
                     cell.challengerPlaceholder.image = UIImage(named: "user_team_placeholder")
                     cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                    userTester = 1
                 }
                 cell.teamRank1.text = "\(index.rank ?? -1)"
                 let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
@@ -89,10 +92,11 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
                 })
                 
             }
-            if index.teamId == match.challengedTeamId {
+            else if index.teamId == match.challengedTeamId {
                 if index.player1 == uid || index.player2 == uid {
                     cell.challengedPlaceholder.image = UIImage(named: "user_team_placeholder")
                     cell.challengerPlaceholder.image = UIImage(named: "challenger_team_placeholder")
+                    userTester = 1
                 }
                 cell.teamRank2.text = "\(index.rank ?? -1)"
                 let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")

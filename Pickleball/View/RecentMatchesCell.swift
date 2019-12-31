@@ -13,40 +13,6 @@ import FirebaseAuth
 class RecentMatchesCell: BaseCell {
     var teams = [Team]() {
         didSet {
-//            for index in teams {
-//                if index.teamId == match?.challengerTeamId {
-//
-//                    let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
-//                    player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                        if let value = snapshot.value as? [String: AnyObject] {
-//                            self.challengerTeam1.text = value["name"] as? String
-//                        }
-//                    })
-//
-//                    let player2ref = Database.database().reference().child("users").child(index.player2 ?? "nope")
-//                    player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                        if let value = snapshot.value as? [String: AnyObject] {
-//                            self.challengerTeam2.text = value["name"] as? String
-//                        }
-//                    })
-//
-//                }
-//                if index.teamId == match?.challengedTeamId {
-//                    let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
-//                    player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                        if let value = snapshot.value as? [String: AnyObject] {
-//                            self.challengedTeam1.text = value["name"] as? String
-//                        }
-//                    })
-//
-//                    let player2ref = Database.database().reference().child("users").child(index.player2 ?? "nope")
-//                    player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                        if let value = snapshot.value as? [String: AnyObject] {
-//                            self.challengedTeam2.text = value["name"] as? String
-//                        }
-//                    })
-//                }
-//            }
             match1Label.text = "\(match?.challengerScores?[0] ?? -1)/\(match?.challengedScores?[0] ?? -1)"
             match2Label.text = "\(match?.challengerScores?[1] ?? -1)/\(match?.challengedScores?[1] ?? -1)"
             match3Label.text = "\(match?.challengerScores?[2] ?? -1)/\(match?.challengedScores?[2] ?? -1)"
@@ -55,9 +21,17 @@ class RecentMatchesCell: BaseCell {
             guard let startTime = match?.time else {
                 return
             }
-            let daysLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 86400
-            let daysRounded = daysLeft.round(nearest: 0.5)
-            timeLeftLabel.text = "\(daysRounded)\ndays\nleft"
+            if (startTime + (86400 * 3)) < Date().timeIntervalSince1970 {
+                timeLeftLabel.text = "0\ndays\nleft"
+            } else {
+                let daysLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 86400
+                let daysRounded = daysLeft.round(nearest: 0.5)
+                if daysRounded == 0 {
+                    timeLeftLabel.text = "<0.5\ndays\nleft"
+                } else {
+                    timeLeftLabel.text = "\(daysRounded)\ndays\nleft"
+                }
+            }
         }
     }
     var match: Match?
