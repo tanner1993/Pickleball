@@ -24,6 +24,8 @@
 		7718BDC7233ADE700004777C /* Tourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BDC6233ADE700004777C /* Tourney.swift */; };
 		77196F7A238488C1004A8C79 /* TeamInfoDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77196F79238488C1004A8C79 /* TeamInfoDisplay.swift */; };
 		77196F7C238841CF004A8C79 /* MatchInfoDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77196F7B238841CF004A8C79 /* MatchInfoDisplay.swift */; };
+		7739865B23BBEC4700195253 /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865A23BBEC4700195253 /* MainMenu.swift */; };
+		7739865D23BBEF6D00195253 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865C23BBEF6D00195253 /* Connect.swift */; };
 		77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB022231499C3006CB608 /* AppDelegate.swift */; };
 		77BBB028231499C3006CB608 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB026231499C3006CB608 /* Main.storyboard */; };
 		77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB029231499C5006CB608 /* Assets.xcassets */; };
@@ -58,6 +60,8 @@
 		7718BDC6233ADE700004777C /* Tourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tourney.swift; sourceTree = "<group>"; };
 		77196F79238488C1004A8C79 /* TeamInfoDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamInfoDisplay.swift; sourceTree = "<group>"; };
 		77196F7B238841CF004A8C79 /* MatchInfoDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchInfoDisplay.swift; sourceTree = "<group>"; };
+		7739865A23BBEC4700195253 /* MainMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
+		7739865C23BBEF6D00195253 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77BBB022231499C3006CB608 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77BBB027231499C3006CB608 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -140,12 +144,14 @@
 		77BBB03B231EE540006CB608 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				77BBB0382319E5C5006CB608 /* TourneyStandings.swift */,
 				7718BD7523256F890004777C /* LoginPage.swift */,
-				7718BD7D232882830004777C /* SelectTeammate.swift */,
-				7718BD81232AC84A0004777C /* StartupPage.swift */,
-				7718BD83232C13C00004777C /* Notifications.swift */,
+				7739865A23BBEC4700195253 /* MainMenu.swift */,
 				7718BDC4233ADDAF0004777C /* TourneyList.swift */,
+				7718BD81232AC84A0004777C /* StartupPage.swift */,
+				7739865C23BBEF6D00195253 /* Connect.swift */,
+				77BBB0382319E5C5006CB608 /* TourneyStandings.swift */,
+				7718BD7D232882830004777C /* SelectTeammate.swift */,
+				7718BD83232C13C00004777C /* Notifications.swift */,
 				77196F79238488C1004A8C79 /* TeamInfoDisplay.swift */,
 				77196F7B238841CF004A8C79 /* MatchInfoDisplay.swift */,
 			);
@@ -320,11 +326,13 @@
 				77BBB0452320838F006CB608 /* Team.swift in Sources */,
 				77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */,
 				77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */,
+				7739865D23BBEF6D00195253 /* Connect.swift in Sources */,
 				7718BD84232C13C00004777C /* Notifications.swift in Sources */,
 				77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */,
 				77196F7C238841CF004A8C79 /* MatchInfoDisplay.swift in Sources */,
 				7718BD8023288A340004777C /* PlayerCell.swift in Sources */,
 				7718BD7E232882830004777C /* SelectTeammate.swift in Sources */,
+				7739865B23BBEC4700195253 /* MainMenu.swift in Sources */,
 				7718BD7C2328694F0004777C /* Player.swift in Sources */,
 				7718BD74232332600004777C /* Match.swift in Sources */,
 				7718BDC5233ADDAF0004777C /* TourneyList.swift in Sources */,

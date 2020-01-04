@@ -19,15 +19,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
-        
-        window?.rootViewController = UINavigationController(rootViewController: StartupPage())
-        
-        UINavigationBar.appearance().barTintColor = UIColor.init(r: 88, g: 148, b: 200)
-        //UINavigationBar.appearance().backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-        UINavigationBar.appearance().shadowImage = UIImage()
-        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default)
-        UINavigationBar.appearance().tintColor = UIColor.white
-        UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
+        window?.rootViewController?.navigationController?.navigationBar.isTranslucent = false
+        window?.rootViewController = UINavigationController(rootViewController: MainMenu())
         
         return true
     }

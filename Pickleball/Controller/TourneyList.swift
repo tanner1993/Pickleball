@@ -26,6 +26,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationController?.navigationBar.isTranslucent = false
         fetchTourneys()
         setupCollectionView()
         setupViews()

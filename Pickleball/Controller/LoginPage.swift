@@ -12,7 +12,7 @@ import FirebaseAuth
 
 class LoginPage: UIViewController {
     
-    var startupPage: StartupPage?
+    var mainMenu: MainMenu?
     var usernames = [String]()
     var emails = [String]()
     
@@ -30,6 +30,19 @@ class LoginPage: UIViewController {
         view.layer.masksToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
+    }()
+    
+    let passwordReset: UIButton = {
+        let button = UIButton(type: .system)
+        //button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+        button.setTitle("Forgot Password?", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        //button.layer.cornerRadius = 5
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        //button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handlePasswordResetPressed), for: .touchUpInside)
+        return button
     }()
     
     lazy var registerButton: UIButton = {
@@ -65,6 +78,7 @@ class LoginPage: UIViewController {
         tf.placeholder = "Username"
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.font = UIFont.boldSystemFont(ofSize: 16)
+        tf.autocapitalizationType = UITextAutocapitalizationType.none
         return tf
     }()
     
@@ -78,6 +92,7 @@ class LoginPage: UIViewController {
     let emailTextField: UITextField = {
         let tf = UITextField()
         tf.placeholder = "Email"
+        tf.autocapitalizationType = UITextAutocapitalizationType.none
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.font = UIFont.boldSystemFont(ofSize: 16)
         return tf
@@ -108,6 +123,36 @@ class LoginPage: UIViewController {
         return sc
     }()
     
+    @objc func handlePasswordResetPressed() {
+        let newalert = UIAlertController(title: "Password Reset", message: "Do you want a password reset link to be sent to your email?", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Send Password Reset", style: UIAlertAction.Style.default, handler: handleSendResetLink))
+        newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+        self.present(newalert, animated: true, completion: nil)
+    }
+    
+    @objc func handleSendResetLink (action: UIAlertAction) {
+        guard let email = emailTextField.text else {
+            return
+        }
+        if isValidEmail(email) != true {
+            let newalert = UIAlertController(title: "Sorry", message: "This email is invalid", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        }
+        Auth.auth().sendPasswordReset(withEmail: email) { error in
+            if error != nil{
+                let resetFailedAlert = UIAlertController(title: "Reset Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                resetFailedAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(resetFailedAlert, animated: true, completion: nil)
+            }else {
+                let resetEmailSentAlert = UIAlertController(title: "Reset email sent successfully", message: "Check your email", preferredStyle: .alert)
+                resetEmailSentAlert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(resetEmailSentAlert, animated: true, completion: nil)
+            }
+        }
+    }
+    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         nameTextField.resignFirstResponder()
         emailTextField.resignFirstResponder()
@@ -126,7 +171,7 @@ class LoginPage: UIViewController {
         nameTextFieldHeightAnchor?.isActive = true
         
         userNameTextFieldHeightAnchor?.isActive = false
-        userNameTextFieldHeightAnchor = userNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 1/2 : 1/4)
+        userNameTextFieldHeightAnchor = userNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
         userNameTextFieldHeightAnchor?.isActive = true
         
         emailTextFieldHeightAnchor?.isActive = false
@@ -136,6 +181,8 @@ class LoginPage: UIViewController {
         passwordTextFieldHeightAnchor?.isActive = false
         passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 1/2 : 1/4)
         passwordTextFieldHeightAnchor?.isActive = true
+        
+        passwordReset.isHidden = loginRegSegControl.selectedSegmentIndex == 0 ? false : true
     }
     
     override func viewDidLoad() {
@@ -204,7 +251,7 @@ class LoginPage: UIViewController {
     
     func handleLogin() {
         
-        guard let email = emailTextField.text, let password = passwordTextField.text else {
+        guard let email = emailTextField.text?.lowercased(), let password = passwordTextField.text?.lowercased() else {
             print("Form is not valid")
             let newalert = UIAlertController(title: "Sorry", message: "The email or password you entered is incorrect", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
@@ -220,7 +267,7 @@ class LoginPage: UIViewController {
                 self.present(newalert, animated: true, completion: nil)
                 return
             }
-            self.startupPage?.setupUserNavBarTitle()
+            self.mainMenu?.setupUserNavBarTitle()
             
             self.dismiss(animated: true, completion: nil)
             print("Yay! You've logged in")
@@ -228,7 +275,7 @@ class LoginPage: UIViewController {
     }
     
     @objc func handleRegister() {
-        guard let email = emailTextField.text, let password = passwordTextField.text, let name = nameTextField.text, let username = userNameTextField.text else {
+        guard let email = emailTextField.text?.lowercased(), let password = passwordTextField.text, let name = nameTextField.text, let username = userNameTextField.text?.lowercased() else {
             print("Form is not valid")
             return
         }
@@ -269,7 +316,7 @@ class LoginPage: UIViewController {
             
             let ref = Database.database().reference()
             let usersref = ref.child("users").child(uid)
-            let values = ["name": name, "email": email, "username": username]
+            let values = ["name": name, "email": email, "username": username, "exp": 0, "state": "none", "county": "none", "level": 0, "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "age": 0] as [String : Any]
             usersref.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -277,7 +324,7 @@ class LoginPage: UIViewController {
                     print("Data could not be saved: \(error).")
                     return
                 }
-                self.startupPage?.setupUserNavBarTitle()
+                self.mainMenu?.setupUserNavBarTitle()
                 self.dismiss(animated: true, completion: nil)
                 
                 print("Data saved successfully!")
@@ -379,6 +426,13 @@ class LoginPage: UIViewController {
         registerButton.topAnchor.constraint(equalTo: inputsContainerView.bottomAnchor, constant: 12).isActive = true
         registerButton.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         registerButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        view.addSubview(passwordReset)
+        passwordReset.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        passwordReset.topAnchor.constraint(equalTo: registerButton.bottomAnchor, constant: 12).isActive = true
+        passwordReset.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
+        passwordReset.heightAnchor.constraint(equalToConstant: 25).isActive = true
+        passwordReset.isHidden = true
     }
     
     override public var preferredStatusBarStyle: UIStatusBarStyle {
