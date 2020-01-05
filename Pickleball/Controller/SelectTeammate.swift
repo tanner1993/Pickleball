@@ -30,7 +30,6 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
         oberveUserNotifications()
         observeTourneyTeams()
         setupCollectionView()
-        setupNavBar()
         //setupNavBarButtons()
         fetchUsers()
     }
@@ -149,11 +148,6 @@ class SelectTeammate: UICollectionViewController, UICollectionViewDelegateFlowLa
     func setupCollectionView() {
         collectionView?.register(PlayerCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
-    }
-    
-    func setupNavBar() {
-        UINavigationBar.appearance().barTintColor = UIColor.white
-        navigationController?.navigationBar.isTranslucent = false
     }
     
     func fetchUsers() {

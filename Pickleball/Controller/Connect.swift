@@ -21,7 +21,12 @@ class Connect: UICollectionViewController {
         // Register cell classes
         self.collectionView!.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
 
-        // Do any additional setup after loading the view.
+        let widthofscreen = Int(view.frame.width)
+        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+        titleLabel.text = "Connect"
+        titleLabel.textColor = .white
+        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        self.navigationItem.titleView = titleLabel
     }
 
     /*

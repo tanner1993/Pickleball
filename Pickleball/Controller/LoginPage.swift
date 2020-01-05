@@ -12,7 +12,7 @@ import FirebaseAuth
 
 class LoginPage: UIViewController {
     
-    var mainMenu: MainMenu?
+    var startupPage: StartupPage?
     var usernames = [String]()
     var emails = [String]()
     
@@ -267,7 +267,7 @@ class LoginPage: UIViewController {
                 self.present(newalert, animated: true, completion: nil)
                 return
             }
-            self.mainMenu?.setupUserNavBarTitle()
+            //self.mainMenu?.setupUserNavBarTitle()
             
             self.dismiss(animated: true, completion: nil)
             print("Yay! You've logged in")
@@ -324,7 +324,7 @@ class LoginPage: UIViewController {
                     print("Data could not be saved: \(error).")
                     return
                 }
-                self.mainMenu?.setupUserNavBarTitle()
+                //self.mainMenu?.setupUserNavBarTitle()
                 self.dismiss(animated: true, completion: nil)
                 
                 print("Data saved successfully!")

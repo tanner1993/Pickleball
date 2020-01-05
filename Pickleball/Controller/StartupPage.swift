@@ -10,9 +10,10 @@ import UIKit
 import FirebaseAuth
 import Firebase
 
-class StartupPage: UIViewController {
+class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     let player = Player()
+    let blackView = UIView()
     
     let backgroundImage: UIImageView = {
         let bi = UIImageView()
@@ -26,7 +27,7 @@ class StartupPage: UIViewController {
     let skillLevel: UIButton = {
         let button = UIButton(type: .system)
         button.setTitleColor(.black, for: .normal)
-        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 75)
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
         //button.addTarget(self, action: #selector(handleCreateTourney), for: .touchUpInside)
@@ -136,10 +137,105 @@ class StartupPage: UIViewController {
         return label
     }()
     
+    func checkIfUserLoggedIn() {
+        if Auth.auth().currentUser?.uid == nil {
+            perform(#selector(handleLogout), with: nil, afterDelay: 0)
+        } else {
+            //setupUserNavBarTitle()
+        }
+    }
+    
+    @objc func handleLogout() {
+        do {
+            try Auth.auth().signOut()
+        } catch let logoutError {
+            print(logoutError)
+        }
+        
+        let loginController = LoginPage()
+        loginController.startupPage = self
+        present(loginController, animated: true, completion: nil)
+    }
+    
     @objc func handleViewTourneys() {
         let layout = UICollectionViewFlowLayout()
         let tourneyListPage = TourneyList(collectionViewLayout: layout)
         navigationController?.pushViewController(tourneyListPage, animated: true)
+    }
+    
+    let collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = .white
+        return cv
+    }()
+    
+    let cellId = "cellId"
+    
+    let menuItems = ["Logout", "Edit Profile", "Poop", "Dismiss"]
+    
+    func setupCollectionView() {
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.register(ProfileMenuCell.self, forCellWithReuseIdentifier: cellId)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.width, height: 50)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 4
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ProfileMenuCell
+        cell.menuItem.text = menuItems[indexPath.item]
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        switch indexPath.item {
+        case 0:
+            handleLogout()
+            dismissMenu()
+        case 1:
+            print("Edit")
+        case 2:
+            dismissMenu()
+        default:
+            print("failed")
+        }
+    }
+    
+    @objc func openMenu() {
+        if let window = UIApplication.shared.keyWindow {
+            blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+            blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu)))
+            window.addSubview(blackView)
+            window.addSubview(collectionView)
+            collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 200)
+            blackView.frame = window.frame
+            blackView.alpha = 0
+            
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                self.blackView.alpha = 1
+                self.collectionView.frame = CGRect(x: 0, y: window.frame.height - 200, width: window.frame.width, height: 200)
+            }, completion: nil)
+        }
+    }
+    
+    @objc func dismissMenu() {
+        UIView.animate(withDuration: 0.5, animations: {
+            self.blackView.alpha = 0
+            if let window = UIApplication.shared.keyWindow {
+                self.collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 200)
+            }
+        })
     }
     
     @objc func handleCreateTourney() {
@@ -164,11 +260,63 @@ class StartupPage: UIViewController {
         })
     }
     
+    func setupNavbarTitle() {
+        let image = UIImage(named: "menu")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(openMenu))
+        let widthofscreen = Int(view.frame.width)
+        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+        titleLabel.text = "My Profile"
+        titleLabel.textColor = .white
+        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        self.navigationItem.titleView = titleLabel
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         observePlayerProfile()
+        setupViews()
+        setupNavbarTitle()
+        setupCollectionView()
+        checkIfUserLoggedIn()
+    }
+    
+    func observePlayerProfile() {
+        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("users").child(uid)
+        ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                self.skillLevel.setTitle("3.5", for: .normal)
+                let exp = value["exp"] as? Int ?? 0
+                self.haloLevel.text = "\(self.player.haloLevel(exp: exp))"
+                self.haloLevelTitle.text = "App Level"
+                self.playerName.text = value["name"] as? String ?? "no name"
+                let state = value["state"] as? String ?? "no state"
+                let county = value["county"] as? String ?? "no state"
+                self.location.text = "\(state), \(county)"
+                self.ageGroup.text = "46-55"
+                self.tourneysEntered.text = "\(value["tourneys_played"] as? Int ?? 0)"
+                self.tourneysWon.text = "\(value["tourneys_won"] as? Int ?? 0)"
+                self.matchesWon.text = "\(value["match_wins"] as? Int ?? 0)"
+                self.matchesLost.text = "\(value["match_losses"] as? Int ?? 0)"
+                self.winRatio.text = ".5"
+            }
+        }, withCancel: nil)
+    }
+    
+    func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
+        let X = x / wib * wia
+        let Y = y / hib * hia
+        let W = w / wib * wia
+        let H = h / hib * hia
+        return (X, Y, W, H)
+    }
+    
+    func setupViews() {
         view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-        self.navigationController?.navigationBar.isTranslucent = false
         
         view.addSubview(backgroundImage)
         backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
@@ -201,7 +349,7 @@ class StartupPage: UIViewController {
         haloLevel.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.W)).isActive = true
         
         view.addSubview(haloLevelTitle)
-        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 35, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 40, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         haloLevelTitle.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelTitleLoc.Y)).isActive = true
         haloLevelTitle.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelTitleLoc.X)).isActive = true
@@ -271,41 +419,6 @@ class StartupPage: UIViewController {
         winRatio.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(winRatioLoc.X)).isActive = true
         winRatio.heightAnchor.constraint(equalToConstant: CGFloat(winRatioLoc.H)).isActive = true
         winRatio.widthAnchor.constraint(equalToConstant: CGFloat(winRatioLoc.W)).isActive = true
-        
-    }
-    
-    func observePlayerProfile() {
-        
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        let ref = Database.database().reference().child("users").child(uid)
-        ref.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? NSDictionary {
-                self.skillLevel.setTitle("\(self.player.level ?? 2)", for: .normal)
-                let exp = value["exp"] as? Int ?? 0
-                self.haloLevel.text = "\(self.player.haloLevel(exp: exp))"
-                self.haloLevelTitle.text = "Pickler"
-                self.playerName.text = value["name"] as? String ?? "no name"
-                let state = value["state"] as? String ?? "no state"
-                let county = value["county"] as? String ?? "no state"
-                self.location.text = "\(state), \(county)"
-                self.ageGroup.text = "46-55"
-                self.tourneysEntered.text = "\(value["tourneys_played"] as? Int ?? 0)"
-                self.tourneysWon.text = "\(value["tourneys_won"] as? Int ?? 0)"
-                self.matchesWon.text = "\(value["match_wins"] as? Int ?? 0)"
-                self.matchesLost.text = "\(value["match_losses"] as? Int ?? 0)"
-                self.winRatio.text = ".5"
-            }
-        }, withCancel: nil)
-    }
-    
-    func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
-        let X = x / wib * wia
-        let Y = y / hib * hia
-        let W = w / wib * wia
-        let H = h / hib * hia
-        return (X, Y, W, H)
     }
     
 

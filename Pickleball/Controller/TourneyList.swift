@@ -26,7 +26,6 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationController?.navigationBar.isTranslucent = false
         fetchTourneys()
         setupCollectionView()
         setupViews()
@@ -36,7 +35,13 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     func setupNavbarButton() {
         let image = UIImage(named: "alarmness")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleViewNotifications))
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(handleViewNotifications))
+        let widthofscreen = Int(view.frame.width)
+        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+        titleLabel.text = "Search Tourneys"
+        titleLabel.textColor = .white
+        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        self.navigationItem.titleView = titleLabel
     }
     
     @objc func handleViewNotifications() {
@@ -96,6 +101,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let layout = UICollectionViewFlowLayout()
         let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
+        tourneyStandingsPage.hidesBottomBarWhenPushed = true
         tourneyStandingsPage.tourneyIdentifier = tourneys[indexPath.item].id
         navigationController?.pushViewController(tourneyStandingsPage, animated: true)
     }

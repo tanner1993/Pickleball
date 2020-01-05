@@ -19,8 +19,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
-        window?.rootViewController?.navigationController?.navigationBar.isTranslucent = false
-        window?.rootViewController = UINavigationController(rootViewController: MainMenu())
+        //window?.rootViewController?.navigationController?.navigationBar.isTranslucent = false
+        window?.rootViewController = MainMenu()
         
         return true
     }

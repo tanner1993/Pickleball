@@ -173,8 +173,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     private func setupTitle() {
-        navigationItem.title = "Tournament 1"
-        navigationController?.navigationBar.isTranslucent = false
+        //navigationItem.title = "Tournament 1"
+        //navigationController?.navigationBar.isTranslucent = false
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
         titleLabel.text = "Tourney Name"
