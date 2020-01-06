@@ -28,6 +28,7 @@
 		7739865D23BBEF6D00195253 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865C23BBEF6D00195253 /* Connect.swift */; };
 		773CA5CB23C2647100DED169 /* MenuLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CA23C2647100DED169 /* MenuLauncher.swift */; };
 		773CA5CD23C2692700DED169 /* ProfileMenuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */; };
+		773CA5CF23C27E5200DED169 /* EditProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CE23C27E5200DED169 /* EditProfile.swift */; };
 		77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB022231499C3006CB608 /* AppDelegate.swift */; };
 		77BBB028231499C3006CB608 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB026231499C3006CB608 /* Main.storyboard */; };
 		77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB029231499C5006CB608 /* Assets.xcassets */; };
@@ -66,6 +67,7 @@
 		7739865C23BBEF6D00195253 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		773CA5CA23C2647100DED169 /* MenuLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuLauncher.swift; sourceTree = "<group>"; };
 		773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuCell.swift; sourceTree = "<group>"; };
+		773CA5CE23C27E5200DED169 /* EditProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfile.swift; sourceTree = "<group>"; };
 		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77BBB022231499C3006CB608 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77BBB027231499C3006CB608 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				77196F79238488C1004A8C79 /* TeamInfoDisplay.swift */,
 				77196F7B238841CF004A8C79 /* MatchInfoDisplay.swift */,
 				773CA5CA23C2647100DED169 /* MenuLauncher.swift */,
+				773CA5CE23C27E5200DED169 /* EditProfile.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -337,6 +340,7 @@
 				7718BD84232C13C00004777C /* Notifications.swift in Sources */,
 				77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */,
 				77196F7C238841CF004A8C79 /* MatchInfoDisplay.swift in Sources */,
+				773CA5CF23C27E5200DED169 /* EditProfile.swift in Sources */,
 				7718BD8023288A340004777C /* PlayerCell.swift in Sources */,
 				7718BD7E232882830004777C /* SelectTeammate.swift in Sources */,
 				7739865B23BBEC4700195253 /* MainMenu.swift in Sources */,

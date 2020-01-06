@@ -141,7 +141,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         if Auth.auth().currentUser?.uid == nil {
             perform(#selector(handleLogout), with: nil, afterDelay: 0)
         } else {
-            //setupUserNavBarTitle()
+            observePlayerProfile()
         }
     }
     
@@ -204,11 +204,14 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             handleLogout()
             dismissMenu()
         case 1:
-            print("Edit")
+            let editProfile = EditProfile()
+            present(editProfile, animated: true, completion: nil)
+            dismissMenu()
         case 2:
             dismissMenu()
         default:
             print("failed")
+            dismissMenu()
         }
     }
     
@@ -273,8 +276,6 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        observePlayerProfile()
         setupViews()
         setupNavbarTitle()
         setupCollectionView()
