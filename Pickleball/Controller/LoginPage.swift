@@ -316,7 +316,7 @@ class LoginPage: UIViewController {
             
             let ref = Database.database().reference()
             let usersref = ref.child("users").child(uid)
-            let values = ["name": name, "email": email, "username": username, "exp": 0, "state": "none", "county": "none", "level": 0, "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "age": 0] as [String : Any]
+            let values = ["name": name, "email": email, "username": username, "exp": 0, "state": "none", "county": "none", "skill_level": Float(0), "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": Double(0), "sex": "none"] as [String : Any]
             usersref.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -324,8 +324,12 @@ class LoginPage: UIViewController {
                     print("Data could not be saved: \(error).")
                     return
                 }
-                self.startupPage?.observePlayerProfile()
-                self.dismiss(animated: true, completion: nil)
+                let editProfile = EditProfile()
+                editProfile.sender = 1
+                editProfile.loginPage = self
+                self.present(editProfile, animated: true, completion: nil)
+                //self.startupPage?.observePlayerProfile()
+                //self.dismiss(animated: true, completion: nil)
                 
                 print("Data saved successfully!")
 

@@ -24,14 +24,12 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         return bi
     }()
     
-    let skillLevel: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitleColor(.black, for: .normal)
-        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 75)
-        button.layer.masksToBounds = true
-        button.translatesAutoresizingMaskIntoConstraints = false
-        //button.addTarget(self, action: #selector(handleCreateTourney), for: .touchUpInside)
-        return button
+    let skillLevel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 75)
+        label.textAlignment = .center
+        return label
     }()
     
     let tourneyNameTextField: UITextField = {
@@ -55,7 +53,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     let haloLevel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 75)
         label.textAlignment = .center
         return label
     }()
@@ -205,6 +203,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             dismissMenu()
         case 1:
             let editProfile = EditProfile()
+            editProfile.sender = 2
             present(editProfile, animated: true, completion: nil)
             dismissMenu()
         case 2:
@@ -290,7 +289,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let ref = Database.database().reference().child("users").child(uid)
         ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
-                self.skillLevel.setTitle("3.5", for: .normal)
+                self.skillLevel.text = "\(value["skill_level"] as? Float ?? 0)"
                 let exp = value["exp"] as? Int ?? 0
                 self.haloLevel.text = "\(self.player.haloLevel(exp: exp))"
                 self.haloLevelTitle.text = "App Level"
@@ -298,7 +297,8 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 let state = value["state"] as? String ?? "no state"
                 let county = value["county"] as? String ?? "no state"
                 self.location.text = "\(state), \(county)"
-                self.ageGroup.text = "46-55"
+                let birthdate = value["birthdate"] as? Double ?? 0
+                self.ageGroup.text = self.getAgeGroup(birthdate: birthdate)
                 self.tourneysEntered.text = "\(value["tourneys_played"] as? Int ?? 0)"
                 self.tourneysWon.text = "\(value["tourneys_won"] as? Int ?? 0)"
                 self.matchesWon.text = "\(value["match_wins"] as? Int ?? 0)"
@@ -306,6 +306,23 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 self.winRatio.text = ".5"
             }
         }, withCancel: nil)
+    }
+    
+    func getAgeGroup(birthdate: Double) -> String {
+        let now = Double((Date().timeIntervalSince1970))
+        let yearsOld = (now - birthdate) / 60.0 / 60.0 / 24.0 / 365.0
+        switch yearsOld {
+        case 0..<19:
+            return "0 - 18"
+        case 19..<35:
+            return "19 - 34"
+        case 35..<50:
+            return "35 - 49"
+        case 50..<125:
+            return "50+"
+        default:
+            return "no age group"
+        }
     }
     
     func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
@@ -350,7 +367,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         haloLevel.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.W)).isActive = true
         
         view.addSubview(haloLevelTitle)
-        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 40, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 45, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         haloLevelTitle.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelTitleLoc.Y)).isActive = true
         haloLevelTitle.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelTitleLoc.X)).isActive = true
