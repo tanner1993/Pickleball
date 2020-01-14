@@ -16,13 +16,16 @@ class Player: NSObject {
     var exp: Int?
     var state: String?
     var county: String?
-    var level: Int?
+    var skill_level: Float?
+    var halo_level: Int?
     var court: String?
     var match_wins: Int?
     var match_losses: Int?
     var tourneys_played: Int?
     var tourneys_won: Int?
-    var age: Double?
+    var birthdate: Double?
+    var age_group: String?
+    var sex: String?
 }
 
 extension Player {

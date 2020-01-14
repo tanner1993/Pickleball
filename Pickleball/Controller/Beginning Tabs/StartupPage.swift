@@ -170,7 +170,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     let cellId = "cellId"
     
-    let menuItems = ["Logout", "Edit Profile", "Poop", "Dismiss"]
+    let menuItems = ["Logout", "Edit Profile", "Dismiss"]
     
     func setupCollectionView() {
         collectionView.dataSource = self
@@ -183,7 +183,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 4
+        return 3
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -204,6 +204,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         case 1:
             let editProfile = EditProfile()
             editProfile.sender = 2
+            editProfile.startupPage = self
             present(editProfile, animated: true, completion: nil)
             dismissMenu()
         case 2:
@@ -220,13 +221,13 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu)))
             window.addSubview(blackView)
             window.addSubview(collectionView)
-            collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 200)
+            collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 150)
             blackView.frame = window.frame
             blackView.alpha = 0
             
             UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
                 self.blackView.alpha = 1
-                self.collectionView.frame = CGRect(x: 0, y: window.frame.height - 200, width: window.frame.width, height: 200)
+                self.collectionView.frame = CGRect(x: 0, y: window.frame.height - 150, width: window.frame.width, height: 150)
             }, completion: nil)
         }
     }
@@ -235,7 +236,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         UIView.animate(withDuration: 0.5, animations: {
             self.blackView.alpha = 0
             if let window = UIApplication.shared.keyWindow {
-                self.collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 200)
+                self.collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 150)
             }
         })
     }
@@ -367,7 +368,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         haloLevel.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.W)).isActive = true
         
         view.addSubview(haloLevelTitle)
-        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 45, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         haloLevelTitle.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelTitleLoc.Y)).isActive = true
         haloLevelTitle.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelTitleLoc.X)).isActive = true
@@ -375,7 +376,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         haloLevelTitle.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.W)).isActive = true
         
         view.addSubview(playerName)
-        let playerNameLoc = calculateButtonPosition(x: 375, y: 380, w: 700, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let playerNameLoc = calculateButtonPosition(x: 375, y: 380, w: 700, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         playerName.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(playerNameLoc.Y)).isActive = true
         playerName.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(playerNameLoc.X)).isActive = true

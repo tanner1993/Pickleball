@@ -11,6 +11,13 @@ import UIKit
 class Tourney: NSObject {
     var name: String?
     var id: String?
-    var level: Int?
+    var skill_level: Float?
     var type: String?
+    var sex: String?
+    var age_group: String?
+    var start_date: Double?
+    var duration: Int?
+    var creator: String?
+    var state: String?
+    var county: String?
 }

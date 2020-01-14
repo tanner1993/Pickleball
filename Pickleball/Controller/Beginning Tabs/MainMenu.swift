@@ -24,6 +24,7 @@ class MainMenu: UITabBarController {
         let tourneyList = TourneyList(collectionViewLayout: layout)
         let tourneyList2 = UINavigationController(rootViewController: tourneyList)
         tourneyList2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
+        tourneyList2.navigationBar.tintColor = .white
         tourneyList2.navigationBar.isTranslucent = false
         tourneyList2.tabBarItem = UITabBarItem(title: "Tourneys", image: UIImage(named: "map"), tag: 0)
         
@@ -37,6 +38,7 @@ class MainMenu: UITabBarController {
         let connect2 = UINavigationController(rootViewController: connect)
         connect2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
         connect2.navigationBar.isTranslucent = false
+        connect2.navigationBar.tintColor = .white
         connect2.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(named: "map"), tag: 2)
         
         

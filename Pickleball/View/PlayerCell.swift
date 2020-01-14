@@ -12,25 +12,40 @@ class PlayerCell: BaseCell {
     
     var player: Player? {
         didSet {
-            playerName.text = player?.name
+            playerName.text = "\(player?.username ?? "none") | \(player?.state ?? "none"), \(player?.county ?? "none")"
+            skills.text = "Skill Level: \(player?.skill_level ?? 0.0)"
         }
     }
     
     let playerName: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.layer.cornerRadius = 24
-        label.layer.masksToBounds = true
         label.text = "playerName"
-        label.font = UIFont.boldSystemFont(ofSize: 20)
+        //label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let skills: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "playerName"
+        //label.font = UIFont.boldSystemFont(ofSize: 20)
         label.textAlignment = .center
         return label
     }()
     
     override func setupViews() {
         addSubview(playerName)
-        addConstraintsWithFormat(format: "H:|-4-[v0]-4-|", views: playerName)
-        addConstraintsWithFormat(format: "V:|-4-[v0]-4-|", views: playerName)
+        playerName.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        playerName.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        playerName.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
+        playerName.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        
+        addSubview(skills)
+        skills.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
+        skills.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        skills.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
+        skills.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
     }
 }

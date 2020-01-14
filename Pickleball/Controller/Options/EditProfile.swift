@@ -20,9 +20,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
     var sender = 0
     var loginPage: LoginPage?
     var startupPage: StartupPage?
-    var dayInt = 0
-    var monthInt = 0
-    var yearInt = 0
     
     @objc func handleSaveChanges() {
         guard let email = emailTextField.text?.lowercased(), let name = nameTextField.text, let username = usernameTextField.text?.lowercased(), let state = stateTextField.text, let county = countyTextField.text, let month = monthTextField.text, let day = dayTextField.text, let year = yearTextField.text, let skillLevel = skillLevelTextField.text, let sex = sexTextField.text else {
@@ -76,9 +73,9 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         }
         let calendar = Calendar.current
         var components = DateComponents()
-        components.day = dayInt
-        components.month = monthInt
-        components.year = yearInt
+        components.day = Int(day)
+        components.month = months.firstIndex(of: "\(month)")! + 1
+        components.year = Int(year)
         components.hour = 12
         components.minute = 0
         
@@ -137,7 +134,8 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
                         let calendar = Calendar.current
                         let birthdateDate = Date(timeIntervalSince1970: birthdate)
                         let components = calendar.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: birthdateDate)
-                        self.monthTextField.text = "\(components.month!)"
+                        let monthInt = components.month!
+                        self.monthTextField.text = "\(self.months[monthInt - 1])"
                         self.dayTextField.text = "\(components.day!)"
                         self.yearTextField.text = "\(components.year!)"
                         self.skillLevelTextField.text = "\(value["skill_level"] as? Float ?? 0)"
@@ -326,15 +324,12 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         case 3:
             monthTextField.text = months[indexPath.item]
             monthTextField.textColor = .black
-            monthInt = monthInts[indexPath.item]
         case 4:
             dayTextField.text = "\(days[indexPath.item])"
             dayTextField.textColor = .black
-            dayInt = days[indexPath.item]
         case 5:
             yearTextField.text = "\(years[indexPath.item])"
             yearTextField.textColor = .black
-            yearInt = years[indexPath.item]
         case 6:
             skillLevelTextField.text = "\(skillLevels[indexPath.item])"
         case 7:
@@ -369,7 +364,7 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     let editProfileLabel: UILabel = {
         let lb = UILabel()
-        lb.text = "Edit Profile Information"
+        lb.text = "Edit Profile Info"
         lb.translatesAutoresizingMaskIntoConstraints = false
         lb.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         lb.textAlignment = .center
@@ -711,9 +706,30 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+    
+    let backButton: UIButton = {
+        let button = UIButton(type: .system)
+        //button.backgroundColor = .white
+        button.setTitle("Return", for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        button.setTitleColor(.white, for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleReturn), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func handleReturn() {
+        self.dismiss(animated: true, completion: nil)
+    }
 
     func setupViews() {
         view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        
+        view.addSubview(backButton)
+        backButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true
+        backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+        backButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         view.addSubview(inputsContainerView)
         inputsContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -1117,7 +1133,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
     let counties = ["Beaver", "Box Elder", "Cache", "Carbon", "Daggett", "Davis", "Duchesne", "Emery", "Garfield", "Grand", "Iron", "Juab", "Kane", "Millard", "Morgan", "Piute", "Rich", "Salt Lake", "San Juan", "Sanpete", "Sevier", "Summit", "Tooele", "Uintah", "Utah", "Wasatch", "Washington", "Wayne", "Weber"]
     
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    let monthInts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     var days = [Int]()
     var years = [Int]()
     let skillLevels = [1.0, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
