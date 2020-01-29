@@ -35,6 +35,13 @@ class PlayerCell: BaseCell {
         return label
     }()
     
+    let separatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.init(r: 220, g: 220, b: 220)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     override func setupViews() {
         addSubview(playerName)
         playerName.topAnchor.constraint(equalTo: topAnchor).isActive = true
@@ -47,5 +54,11 @@ class PlayerCell: BaseCell {
         skills.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         skills.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
         skills.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        
+        addSubview(separatorView)
+        separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+        separatorView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        separatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        separatorView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
     }
 }

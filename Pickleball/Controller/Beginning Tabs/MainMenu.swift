@@ -41,9 +41,16 @@ class MainMenu: UITabBarController {
         connect2.navigationBar.tintColor = .white
         connect2.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(named: "map"), tag: 2)
         
+        let notifications = Notifications(collectionViewLayout: layout)
+        let notifications2 = UINavigationController(rootViewController: notifications)
+        notifications2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
+        notifications2.navigationBar.isTranslucent = false
+        notifications2.navigationBar.tintColor = .white
+        notifications2.tabBarItem = UITabBarItem(title: "Notifications", image: UIImage(named: "map"), tag: 3)
         
         
-        let tabBarList = [myProfile2, tourneyList2, connect2]
+        
+        let tabBarList = [myProfile2, tourneyList2, connect2, notifications2]
         viewControllers = tabBarList
     }
     

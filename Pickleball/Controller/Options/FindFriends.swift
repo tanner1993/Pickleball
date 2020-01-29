@@ -37,6 +37,13 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         setupFilterCollectionView()
         //observeUsernamesEmails()
         
+        let widthofscreen = Int(view.frame.width)
+        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+        titleLabel.text = "Find Friends"
+        titleLabel.textColor = .white
+        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        self.navigationItem.titleView = titleLabel
+        
     }
     
     @objc func handleSearchFilter() {
@@ -151,10 +158,9 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == self.collectionView {
-//            let layout = UICollectionViewFlowLayout()
-//            let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
-//            tourneyStandingsPage.tourneyIdentifier = searchResults[indexPath.item].id
-//            navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+            let playerProfile = StartupPage()
+            playerProfile.playerId = searchResults[indexPath.item].id ?? "none"
+            navigationController?.pushViewController(playerProfile, animated: true)
         } else {
             switch selectedDropDown {
             case 0:

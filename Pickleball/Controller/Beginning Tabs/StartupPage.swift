@@ -14,6 +14,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     let player = Player()
     let blackView = UIView()
+    var playerId = "none"
     
     let backgroundImage: UIImageView = {
         let bi = UIImageView()
@@ -241,45 +242,55 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         })
     }
     
-    @objc func handleCreateTourney() {
-        let ref = Database.database().reference().child("tourneys")
-        guard let tourneyName = tourneyNameTextField.text else {
+    func setupNavbarTitle() {
+        if playerId == "none" {
+            let image = UIImage(named: "menu")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(openMenu))
+        } else {
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite Friend", style: .plain, target: self, action: #selector(sendFriendInvitation))
+        }
+        let widthofscreen = Int(view.frame.width)
+        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+        titleLabel.text = playerId == "none" ? "My Profile" : "Player Profile"
+        titleLabel.textColor = .white
+        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        self.navigationItem.titleView = titleLabel
+    }
+    
+    @objc func sendFriendInvitation() {
+        guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        let tourneyref = ref.childByAutoId()
-        let values = ["name": tourneyName, "level": 3.5, "type": "ladder"] as [String : Any]
-        tourneyref.updateChildValues(values, withCompletionBlock: {
+        
+        
+        
+        let ref = Database.database().reference().child("friends")
+        let childUpdates = ["/\(uid)/\(playerId)/": true, "/\(playerId)/\(uid)/": true]
+        ref.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
-            
+
             if let error = error {
                 print("Data could not be saved: \(error).")
                 return
             }
-            
-            
-            print("Data saved successfully!")
-            
-            
+
+            print("Crazy data saved!")
+
+
         })
-    }
-    
-    func setupNavbarTitle() {
-        let image = UIImage(named: "menu")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(openMenu))
-        let widthofscreen = Int(view.frame.width)
-        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        titleLabel.text = "My Profile"
-        titleLabel.textColor = .white
-        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        self.navigationItem.titleView = titleLabel
+        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         setupNavbarTitle()
-        setupCollectionView()
-        checkIfUserLoggedIn()
+        if playerId == "none" {
+            setupCollectionView()
+            checkIfUserLoggedIn()
+        } else {
+            observePlayerProfile()
+        }
     }
     
     func observePlayerProfile() {
@@ -287,7 +298,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        let ref = Database.database().reference().child("users").child(uid)
+        let ref = Database.database().reference().child("users").child(playerId == "none" ? uid : playerId)
         ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
                 self.skillLevel.text = "\(value["skill_level"] as? Float ?? 0)"

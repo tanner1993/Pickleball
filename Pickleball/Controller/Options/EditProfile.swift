@@ -731,6 +731,12 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         backButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
         backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
+        if sender == 1 {
+            backButton.isHidden = true
+        } else if sender == 2 {
+            backButton.isHidden = false
+        }
+        
         view.addSubview(inputsContainerView)
         inputsContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         inputsContainerViewCenterYAnchor = inputsContainerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 80)

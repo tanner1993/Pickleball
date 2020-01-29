@@ -166,9 +166,14 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     @objc func handleEnterTourney() {
         let layout = UICollectionViewFlowLayout()
-        let chooseTeammatePage = SelectTeammate(collectionViewLayout: layout)
-        chooseTeammatePage.tourneyIdentification = tourneyIdentifier
-        navigationController?.pushViewController(chooseTeammatePage, animated: true)
+        let friendList = FriendList(collectionViewLayout: layout)
+        friendList.tourneyId = tourneyIdentifier!
+        let friendNavController = UINavigationController(rootViewController: friendList)
+        //friendList.hidesBottomBarWhenPushed = true
+        friendNavController.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
+        friendNavController.navigationBar.tintColor = .white
+        friendNavController.navigationBar.isTranslucent = false
+        navigationController?.present(friendNavController, animated: true, completion: nil)
         
     }
     
