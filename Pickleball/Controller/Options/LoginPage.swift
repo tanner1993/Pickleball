@@ -268,6 +268,8 @@ class LoginPage: UIViewController {
                 return
             }
             self.startupPage?.observePlayerProfile()
+            self.startupPage?.fetchMessages()
+            self.startupPage?.fetchNotifications()
             
             self.dismiss(animated: true, completion: nil)
             print("Yay! You've logged in")

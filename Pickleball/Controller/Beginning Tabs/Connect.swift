@@ -18,9 +18,40 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     var messages = [Message]()
     var messageChecker = 0
     var currentUser = "nothing"
+    
+    let messagesLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.text = "My Messages"
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let separatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.init(r: 220, g: 220, b: 220)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        view.addSubview(messagesLabel)
+        messagesLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        messagesLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        messagesLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        messagesLabel.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        
+        view.addSubview(separatorView)
+        separatorView.bottomAnchor.constraint(equalTo: messagesLabel.bottomAnchor).isActive = true
+        separatorView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        separatorView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        separatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        
+        print("connect didload")
         
         guard let uid = Auth.auth().currentUser?.uid else {
             return
@@ -30,6 +61,8 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         self.collectionView!.register(RecentMessagesCell.self, forCellWithReuseIdentifier: reuseIdentifier)
 
         collectionView.backgroundColor = .white
+        collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
         titleLabel.text = "Connect"
@@ -37,7 +70,7 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "New", style: .plain, target: self, action: #selector(handleNewMessage))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Friends", style: .plain, target: self, action: #selector(handleNewMessage))
 //        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
 //            self.collectionView.reloadData()
 //        }
@@ -45,8 +78,10 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         fetchFirstMessages()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         checkUser()
+        print("connect willappear")
+        print(currentUser)
     }
     
     func checkUser() {
@@ -55,7 +90,8 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         }
         if currentUser != uid {
             messages.removeAll()
-            collectionView.reloadData()
+            collectionView.collectionViewLayout.invalidateLayout()
+            messageChecker = 0
             fetchFirstMessages()
             currentUser = uid
         }
@@ -117,6 +153,10 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             let ref2 = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 1)
             ref2.observe(.childAdded, with: { (snapshot) in
                 let messageId = snapshot.key
+                let messageSeen = snapshot.value! as! Int
+                if messageSeen == 1 {
+                    Database.database().reference().child("user_messages").child(uid).child(recipientId).child(messageId).setValue(0, andPriority: .none)
+                }
                 let messagesReference = Database.database().reference().child("messages").child(messageId)
                 messagesReference.observeSingleEvent(of: .value, with: {(snapshot) in
                     if let value = snapshot.value as? NSDictionary {
@@ -149,6 +189,10 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                 }, withCancel: nil)
             }, withCancel: nil)
         }, withCancel: nil)
+        if let tabItems = self.tabBarController?.tabBar.items {
+            let tabItem = tabItems[2]
+            tabItem.badgeValue = .none
+        }
     }
 
 }

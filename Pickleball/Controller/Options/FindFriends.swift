@@ -21,6 +21,8 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     let blackView = UIView()
     var selectedDropDown = -1
     var buttonsCreated = 0
+    var friends = [String]()
+    var almostFriends = [String]()
     
     var tourneyList: TourneyList?
     
@@ -35,7 +37,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         collectionView?.contentInset = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
         collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
         setupFilterCollectionView()
-        //observeUsernamesEmails()
+        observeUsernamesEmails()
         
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
@@ -83,22 +85,22 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         collectionView.reloadData()
     }
     
-//    func observeUsernamesEmails() {
-//        guard let uid = Auth.auth().currentUser?.uid else {
-//            return
-//        }
-//
-//        let ref = Database.database().reference().child("users").child(uid)
-//        ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//            if let value = snapshot.value as? [String: AnyObject] {
-//                self.textFields[1].text = value["state"] as? String ?? ""
-//                self.textFields[2].text = value["county"] as? String ?? ""
-//                self.textFields[0].text = "\(value["skill_level"] as? Float ?? 0)"
-//            }
-//        })
-//        self.textFields[3].text = "Any"
-//        self.textFields[4].text = "Any"
-//    }
+    func observeUsernamesEmails() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+
+        let ref = Database.database().reference().child("users").child(uid)
+        ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                self.textFields[1].text = value["state"] as? String ?? ""
+                self.textFields[0].text = "\(value["skill_level"] as? Float ?? 0)"
+            }
+        })
+        self.textFields[2].text = "Any"
+        self.textFields[3].text = "Any"
+        self.textFields[4].text = "Any"
+    }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         if collectionView == self.collectionView {
@@ -134,6 +136,9 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         if collectionView == self.collectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! PlayerCell
             cell.player = searchResults[indexPath.item]
+            if searchResults[indexPath.item].friend == 2 {
+                cell.backgroundColor = .green
+            }
             
             return cell
         } else {
@@ -160,6 +165,11 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         if collectionView == self.collectionView {
             let playerProfile = StartupPage()
             playerProfile.playerId = searchResults[indexPath.item].id ?? "none"
+            if searchResults[indexPath.item].friend == 2 {
+                playerProfile.isFriend = 2
+            } else if searchResults[indexPath.item].friend == 1 {
+                playerProfile.isFriend = 1
+            }
             navigationController?.pushViewController(playerProfile, animated: true)
         } else {
             switch selectedDropDown {
@@ -208,7 +218,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     let searchButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-        button.setTitle("Search Tourneys", for: .normal)
+        button.setTitle("Search Players", for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 5
@@ -274,7 +284,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     let searchBar: UISearchBar = {
         let sb = UISearchBar()
-        sb.placeholder = "Name of tourney"
+        sb.placeholder = "Name of player"
         sb.translatesAutoresizingMaskIntoConstraints = false
         return sb
     }()
@@ -300,12 +310,17 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     player.halo_level = haloLevel
                     player.state = state
                     player.county = county
+                    if self.friends.contains(player.id ?? "noId") == true {
+                        player.friend = 2
+                    } else if self.almostFriends.contains(player.id ?? "noId") == true {
+                        player.friend = 1
+                    } else {
+                        player.friend = 0
+                    }
                     
-//                    if player.id != Auth.auth().currentUser?.uid {
-//                        self.players.append(player)
-//                    }
-                    self.players.append(player)
-                    DispatchQueue.main.async { self.collectionView.reloadData() }
+                    if player.id != Auth.auth().currentUser?.uid {
+                        self.players.append(player)
+                    }
                 }
             }
         }
@@ -418,10 +433,7 @@ extension FindFriends: UISearchBarDelegate {
             let textField: UITextField = {
                 let tf = UITextField()
                 tf.textColor = .white
-                //tf.placeholder = "Name"
-                //                if inputTypes[index] == 1 {
-                //                    tf.is
-                //                }
+                tf.text = "Any"
                 tf.translatesAutoresizingMaskIntoConstraints = false
                 tf.font = UIFont(name: "HelveticaNeue-Light", size: 15)
                 return tf

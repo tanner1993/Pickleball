@@ -10,27 +10,99 @@ import UIKit
 import Firebase
 import FirebaseAuth
 
-class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class Notifications: UITableViewController {
 
     var highestCurrentRank: Int = 0
     //var invitations = [Invitation]()
-    var matches = [Match]()
+    var notifications = [Message]()
     let cellId = "cellId"
+    let cellId2 = "cellId2"
     var cellTag = -1
+    var currentUser2 = "nothing"
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-        //oberveUserNotifications()
-        setupCollectionView()
+    func setupNavbarAndTitle() {
+        let plusImage = UIImage(named: "plus")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
+        let createNewMatchButton = UIBarButtonItem(image: plusImage, style: .plain, target: self, action: #selector(handleCreateNewMatch))
+        self.navigationItem.rightBarButtonItem = createNewMatchButton
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
         titleLabel.text = "Notifications"
         titleLabel.textColor = .white
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
+    }
+    
+    @objc func handleCreateNewMatch() {
+        let createNewMatch = CreateMatch()
+        createNewMatch.hidesBottomBarWhenPushed = true
+        navigationController?.present(createNewMatch, animated: true, completion: nil)
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        print("notifications didload")
+        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        currentUser2 = uid
+        setupNavbarAndTitle()
+        setupCollectionView()
+        fetchNotifications()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        checkUser()
+        print("notifications willload")
+        print(currentUser2)
+    }
+    
+    
+    func checkUser() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if currentUser2 != uid {
+            notifications.removeAll()
+            tableView.reloadData()
+            fetchNotifications()
+            currentUser2 = uid
+        }
+    }
+    
+    func fetchNotifications() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_notifications").child(uid)
+        ref.observe(.childAdded, with: { (snapshot) in
+            let notificationId = snapshot.key
+            let notificationSeen = snapshot.value! as! Int
+            if notificationSeen == 1 {
+                Database.database().reference().child("user_notifications").child(uid).child(notificationId).setValue(0, andPriority: .none)
+            }
+            let notificationsReference = Database.database().reference().child("notifications").child(notificationId)
+            notificationsReference.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? NSDictionary {
+                    let notification = Message()
+                    let messageText = value["type"] as? String ?? "No text"
+                    let timeStamp = value["timestamp"] as? Double ?? Double(Date().timeIntervalSince1970)
+                    let toId = value["toId"] as? String ?? "No toId"
+                    let fromId = value["fromId"] as? String ?? "No fromId"
+                    notification.message = messageText
+                    notification.timeStamp = timeStamp
+                    notification.toId = toId
+                    notification.fromId = fromId
+                    notification.id = notificationId
+                    self.notifications.append(notification)
+                    DispatchQueue.main.async { self.tableView.reloadData()}
+                }
+            }, withCancel: nil)
+        }, withCancel: nil)
+        if let tabItems = self.tabBarController?.tabBar.items {
+            let tabItem = tabItems[3]
+            tabItem.badgeValue = .none
+        }
     }
     
 //    func oberveUserNotifications() {
@@ -108,119 +180,111 @@ class Notifications: UICollectionViewController, UICollectionViewDelegateFlowLay
 //    }
     
     func setupCollectionView() {
-        collectionView?.register(InvitationCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView?.backgroundColor = .white
+        tableView?.register(FriendInviteCell.self, forCellReuseIdentifier: cellId)
+        tableView?.register(MatchNotificationCell.self, forCellReuseIdentifier: cellId2)
+        tableView?.backgroundColor = .white
+        self.tableView.separatorStyle = .none
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 0
-    }
-
-
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return matches.count
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! InvitationCell
-//        let uid = Auth.auth().currentUser?.uid
-//        if indexPath.item < invitations.count {
-//        let invitation = invitations[indexPath.item]
-//        if invitation.active == "1" {
-//            if let player2 = invitation.player2 {
-//                let ref = Database.database().reference().child("users").child(player2)
-//                ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                    if let value = snapshot.value as? [String: AnyObject] {
-//                        let player2name = value["name"] as? String
-//                        cell.invitationText.text = "\(player2name ?? "") has confirmed playing with you in \(invitation.tourneyid ?? "")"
-//                        cell.rejectButton.isHidden = true
-//                        cell.dismissButton.isHidden = false
-//                        cell.confirmButton.isHidden = true
-//                        cell.dismissButton.tag = indexPath.item
-//                        cell.dismissButton.addTarget(self, action: #selector(self.handleDismiss), for: .touchUpInside)
-//                    }
-//                })
-//            }
-//        } else if invitation.rejection == "1" {
-//            if let player2 = invitation.player2 {
-//                let ref = Database.database().reference().child("users").child(player2)
-//                ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                    if let value = snapshot.value as? [String: AnyObject] {
-//                        let player2name = value["name"] as? String
-//                        cell.invitationText.text = "\(player2name ?? "") has rejected playing with you in \(invitation.tourneyid ?? "")"
-//                        cell.rejectButton.isHidden = true
-//                        cell.dismissButton.isHidden = false
-//                        cell.confirmButton.isHidden = true
-//                        cell.dismissButton.tag = indexPath.item
-//                        cell.dismissButton.addTarget(self, action: #selector(self.handleDismiss), for: .touchUpInside)
-//                    }
-//                })
-//            }
-//        } else if uid == invitation.player1 {
-//            if let player2 = invitation.player2 {
-//                let ref = Database.database().reference().child("users").child(player2)
-//                ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                    if let value = snapshot.value as? [String: AnyObject] {
-//                        let player2name = value["name"] as? String
-//                        cell.invitationText.text = "You have invited \(player2name ?? "") to play with you in \(invitation.tourneyid ?? "")"
-//                        cell.rejectButton.isHidden = true
-//                        cell.confirmButton.isHidden = true
-//                        cell.dismissButton.isHidden = true
-//                    }
-//                })
-//            }
-//            print("match")
-//        } else if uid == invitation.player2 {
-//            if let player1 = invitation.player1 {
-//                let ref = Database.database().reference().child("users").child(player1)
-//                ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                    if let value = snapshot.value as? [String: AnyObject] {
-//                        let player1name = value["name"] as? String
-//                        cell.invitationText.text = "\(player1name ?? "") has invited you to play with them in \(invitation.tourneyid ?? "")"
-//                        cell.rejectButton.isHidden = false
-//                        cell.dismissButton.isHidden = true
-//                        cell.confirmButton.isHidden = false
-//                        cell.confirmButton.tag = indexPath.item
-//                        cell.rejectButton.tag = indexPath.item
-//                        cell.rejectButton.addTarget(self, action: #selector(self.handleInvitationReject), for: .touchUpInside)
-//                        cell.confirmButton.addTarget(self, action: #selector(self.handleInvitationConfirm), for: .touchUpInside)
-//                    }
-//                })
-//            }
-//            print("no match")
-//        } else {
-//            print("error, the uid doesn't match player 2 or player 1")
-//        }
-//
-//        } else if indexPath.item >= invitations.count {
-//
-//            let match = matches[indexPath.item - invitations.count]
-//                if let challengerTeamId = match.challengedTeamId {
-//                    let ref = Database.database().reference().child("teams").child(challengerTeamId)
-//                    ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                        if let value = snapshot.value as? [String: AnyObject] {
-//                            let player1name = value["player1Name"] as? String
-//                            let player2name = value["Player2Name"] as? String
-//                            cell.invitationText.text = "\(player1name ?? "") and \(player2name ?? "") has challenged you"
-//                            cell.rejectButton.isHidden = true
-//                            cell.dismissButton.isHidden = false
-//                            cell.confirmButton.isHidden = true
-//                            cell.dismissButton.tag = indexPath.item
-//                            cell.dismissButton.addTarget(self, action: #selector(self.handleDismiss), for: .touchUpInside)
-//                        }
-//                    })
-//                }
-//
-//        }
-//
-//
-//        // Configure the cell
-//        cell.backgroundColor = .white
-        return cell
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return notifications.count
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 150)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if notifications[indexPath.row].message == "friend" {
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
+            cell.friendInvite = notifications[indexPath.row]
+            cell.confirmButton.tag = indexPath.row
+            cell.confirmButton.addTarget(self, action: #selector(confirmFriend), for: .touchUpInside)
+            cell.rejectButton.tag = indexPath.row
+            cell.rejectButton.addTarget(self, action: #selector(rejectFriend), for: .touchUpInside)
+            cell.viewButton.tag = indexPath.row
+            cell.viewButton.addTarget(self, action: #selector(viewProfile), for: .touchUpInside)
+            return cell
+        } else if notifications[indexPath.row].message == "match" {
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
+            cell.matchInvite = notifications[indexPath.row]
+            cell.viewButton.tag = indexPath.row
+            cell.viewButton.addTarget(self, action: #selector(viewMatch), for: .touchUpInside)
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
+            return cell
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return CGFloat(88)
+    }
+    
+    @objc func confirmFriend(sender: UIButton) {
+        let whichNotif = sender.tag
+        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        guard let playerId = notifications[whichNotif].fromId else {
+            return
+        }
+        
+        let friendsRef = Database.database().reference()
+        guard let notificationId = notifications[whichNotif].id else {
+            return
+        }
+        let childUpdates = ["/\("friends")/\(uid)/\(playerId)/": true, "/\("friends")/\(playerId)/\(uid)/": true] as [String : Any]
+        friendsRef.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if error != nil {
+                let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(messageSendFailed, animated: true, completion: nil)
+                print("Data could not be saved: \(String(describing: error)).")
+                return
+            }
+            
+            Database.database().reference().child("notifications").child(notificationId).removeValue()
+            Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
+            self.notifications.remove(at: whichNotif)
+            self.tableView.reloadData()
+            
+            print("Crazy data 2 saved!")
+            
+            
+        })
+    }
+    
+    @objc func rejectFriend(sender: UIButton) {
+        let whichNotif = sender.tag
+        
+        guard let uid = Auth.auth().currentUser?.uid, let playerId = notifications[whichNotif].fromId, let notificationId = notifications[whichNotif].id else {
+            return
+        }
+            
+        Database.database().reference().child("notifications").child(notificationId).removeValue()
+        Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
+        Database.database().reference().child("friends").child(playerId).child(uid).removeValue()
+        
+        self.notifications.remove(at: whichNotif)
+        self.tableView.reloadData()
+    }
+    
+    @objc func viewProfile(sender: UIButton) {
+        let whichNotif = sender.tag
+        
+        let playerProfile = StartupPage()
+        playerProfile.playerId = notifications[whichNotif].fromId ?? "none"
+        playerProfile.isFriend = 3
+        playerProfile.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(playerProfile, animated: true)
+    }
+    
+    @objc func viewMatch(sender: UIButton) {
+        let whichNotif = sender.tag
+        let matchDisplay = MatchView()
+        matchDisplay.matchId = notifications[whichNotif].id ?? "none"
+        matchDisplay.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(matchDisplay, animated: true)
     }
     
     @objc func handleInvitationReject(sender: UIButton) {

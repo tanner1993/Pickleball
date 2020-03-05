@@ -20,3 +20,16 @@ class Match: NSObject {
     var challengerScores: [Int]?
     var challengedScores: [Int]?
 }
+
+class Match2: NSObject {
+    var winner: String?
+    var time: Double?
+    var active: Int?
+    var team_1_player_1: String?
+    var team_1_player_2: String?
+    var team_2_player_1: String?
+    var team_2_player_2: String?
+    var matchId: String?
+    var team1_scores: [Int]?
+    var team2_scores: [Int]?
+}

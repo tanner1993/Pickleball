@@ -15,6 +15,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     let player = Player()
     let blackView = UIView()
     var playerId = "none"
+    var isFriend = 0
     
     let backgroundImage: UIImageView = {
         let bi = UIImageView()
@@ -140,6 +141,8 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         if Auth.auth().currentUser?.uid == nil {
             perform(#selector(handleLogout), with: nil, afterDelay: 0)
         } else {
+            fetchNotifications()
+            fetchMessages()
             observePlayerProfile()
         }
     }
@@ -246,8 +249,12 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         if playerId == "none" {
             let image = UIImage(named: "menu")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(openMenu))
-        } else {
+        } else if isFriend == 0 {
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite Friend", style: .plain, target: self, action: #selector(sendFriendInvitation))
+        } else if isFriend == 1 {
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Requested", style: .plain, target: self, action: #selector(sendFriendInvitation))
+        } else if isFriend == 2 {
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Friends", style: .plain, target: self, action: #selector(sendFriendInvitation))
         }
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
@@ -258,26 +265,57 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     }
     
     @objc func sendFriendInvitation() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        
-        
-        
-        let ref = Database.database().reference().child("friends")
-        let childUpdates = ["/\(uid)/\(playerId)/": true, "/\(playerId)/\(uid)/": true]
-        ref.updateChildValues(childUpdates, withCompletionBlock: {
-            (error:Error?, ref:DatabaseReference) in
-
-            if let error = error {
-                print("Data could not be saved: \(error).")
+        if isFriend == 0 {
+            guard let uid = Auth.auth().currentUser?.uid else {
                 return
             }
-
-            print("Crazy data saved!")
-
-
-        })
+            
+            
+            let ref = Database.database().reference()
+            let notifications2Ref = ref.child("notifications")
+            let childRef = notifications2Ref.childByAutoId()
+            let toId = playerId
+            let fromId = uid
+            let timeStamp = Int(Date().timeIntervalSince1970)
+            let values = ["type": "friend", "toId": toId, "fromId" :fromId, "timestamp": timeStamp] as [String : Any]
+            childRef.updateChildValues(values, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self.present(messageSendFailed, animated: true, completion: nil)
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                
+                let notificationsRef = Database.database().reference()
+                let notificationId = childRef.key!
+                let childUpdates = ["/\("friends")/\(uid)/\(self.playerId)/": false, "/\("user_notifications")/\(self.playerId)/\(notificationId)/": 1] as [String : Any]
+                notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                    (error:Error?, ref:DatabaseReference) in
+                    
+                    if error != nil {
+                        let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                        messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                        self.present(messageSendFailed, animated: true, completion: nil)
+                        print("Data could not be saved: \(String(describing: error)).")
+                        return
+                    }
+                    
+                    print("Crazy data 2 saved!")
+                    
+                    
+                })
+                
+                print("Crazy data saved!")
+                
+                
+            })
+            isFriend = 1
+            setupNavbarTitle()
+        }
+        
         
     }
     
@@ -291,6 +329,45 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         } else {
             observePlayerProfile()
         }
+    }
+    
+    func fetchNotifications() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_notifications").child(uid).queryLimited(toLast: 1)
+        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+            guard let notificationSeen = snapshot.value else {
+                return
+            }
+            let notifNumber = notificationSeen as! Int
+            if notifNumber == 1 {
+                if let tabItems = self.tabBarController?.tabBar.items {
+                    let tabItem = tabItems[3]
+                    tabItem.badgeValue = "1"
+                }
+            }
+        })
+    }
+    
+    func fetchMessages() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_messages").child(uid)
+        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+            let recipientId = snapshot.key
+            let ref2 = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 1)
+            ref2.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+                let messageSeen = snapshot.value! as! Int
+                if messageSeen == 1 {
+                    if let tabItems = self.tabBarController?.tabBar.items {
+                        let tabItem = tabItems[2]
+                        tabItem.badgeValue = "1"
+                    }
+                }
+            })
+        })
     }
     
     func observePlayerProfile() {

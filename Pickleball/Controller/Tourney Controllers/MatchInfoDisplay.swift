@@ -72,6 +72,132 @@ class MatchInfoDisplay: UIViewController {
         return label
     }()
     
+    let userPlayer1: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Teammate 1"
+        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let userPlayer2: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Teammate 1"
+        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let oppPlayer1: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Teammate 1"
+        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let oppPlayer2: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Teammate 1"
+        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let game1UserScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game2UserScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game3UserScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game4UserScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game5UserScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game1OppScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game2OppScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game3OppScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game4OppScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
+    let game5OppScore: UITextField = {
+        let textField = UITextField()
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.placeholder = "#"
+        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        textField.textAlignment = .center
+        return textField
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
@@ -375,7 +501,6 @@ class MatchInfoDisplay: UIViewController {
     }
     
     @objc func resetupviews(action: UIAlertAction) {
-        //setupViews()
         if match.active != 2 {
             disableScores()
         }
@@ -710,141 +835,6 @@ class MatchInfoDisplay: UIViewController {
             winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
         }
     }
-
-    
-    func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
-        let X = x / wib * wia
-        let Y = y / hib * hia
-        let W = w / wib * wia
-        let H = h / hib * hia
-        return (X, Y, W, H)
-    }
-    
-    let userPlayer1: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Teammate 1"
-        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let userPlayer2: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Teammate 1"
-        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let oppPlayer1: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Teammate 1"
-        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let oppPlayer2: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Teammate 1"
-        label.font = UIFont(name: "ArialRoundedMTBold", size: 25)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let game1UserScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game2UserScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game3UserScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game4UserScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game5UserScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game1OppScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game2OppScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game3OppScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game4OppScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
-    
-    let game5OppScore: UITextField = {
-        let textField = UITextField()
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "#"
-        textField.font = UIFont(name: "ArialRoundedMTBold", size: 15)
-        textField.textAlignment = .center
-        return textField
-    }()
     
         func disableScores() {
             if match.active ?? 0 > 0 {
@@ -882,5 +872,13 @@ class MatchInfoDisplay: UIViewController {
             game3OppScore.isUserInteractionEnabled = match.active == 0 ? true : false
             game4OppScore.isUserInteractionEnabled = match.active == 0 ? true : false
             game5OppScore.isUserInteractionEnabled = match.active == 0 ? true : false
+    }
+    
+    func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
+        let X = x / wib * wia
+        let Y = y / hib * hia
+        let W = w / wib * wia
+        let H = h / hib * hia
+        return (X, Y, W, H)
     }
 }

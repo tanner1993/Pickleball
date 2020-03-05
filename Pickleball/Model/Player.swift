@@ -26,6 +26,7 @@ class Player: NSObject {
     var birthdate: Double?
     var age_group: String?
     var sex: String?
+    var friend: Int?
 }
 
 extension Player {

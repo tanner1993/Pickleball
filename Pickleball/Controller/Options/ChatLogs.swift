@@ -17,32 +17,35 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     var recipientName = "nobody"
     var recipientId = "none"
     var messages = [Message]()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        //setupViews()
-        fetchMessages()
-        self.collectionView!.register(MessageCell.self, forCellWithReuseIdentifier: reuseIdentifier)
-        collectionView.backgroundColor = .white
-        collectionView?.contentInset = UIEdgeInsets(top: 4, left: 0, bottom: 8, right: 0)
-        //collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 4, left: 0, bottom: 55, right: 0)
-        collectionView.keyboardDismissMode = .interactive
-        
-        let widthofscreen = Int(view.frame.width)
-        let recipientNameRef = Database.database().reference().child("users").child(recipientId)
-        recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                self.recipientName = value["username"] as? String ?? "noname"
-                let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-                titleLabel.textColor = .white
-                titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-                titleLabel.text = self.recipientName
-                self.navigationItem.titleView = titleLabel
-            }
-        })
-        setupKeyboardObservers()
-    }
+    
+    let whiteContainerView: UIView = {
+        let wc = UIView()
+        wc.translatesAutoresizingMaskIntoConstraints = false
+        wc.backgroundColor = .white
+        return wc
+    }()
+    
+    let sendButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Send", for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleSendMessage), for: .touchUpInside)
+        return button
+    }()
+    
+    let messageField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "Enter message..."
+        tf.translatesAutoresizingMaskIntoConstraints = false
+        return tf
+    }()
+    
+    let separatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.init(r: 222, g: 222, b: 222)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
     lazy var inputContainerView: UIView = {
         let containerView = UIView()
@@ -67,6 +70,30 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         separatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
         return containerView
     }()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        fetchMessages()
+        self.collectionView!.register(MessageCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+        collectionView.backgroundColor = .white
+        collectionView?.contentInset = UIEdgeInsets(top: 4, left: 0, bottom: 8, right: 0)
+        collectionView.keyboardDismissMode = .interactive
+        
+        let widthofscreen = Int(view.frame.width)
+        let recipientNameRef = Database.database().reference().child("users").child(recipientId)
+        recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                self.recipientName = value["username"] as? String ?? "noname"
+                let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+                titleLabel.textColor = .white
+                titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+                titleLabel.text = self.recipientName
+                self.navigationItem.titleView = titleLabel
+            }
+        })
+        setupKeyboardObservers()
+    }
     
     override var inputAccessoryView: UIView? {
         get {
@@ -79,7 +106,6 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     func setupKeyboardObservers() {
-        //NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.key, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardDidShowNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
@@ -90,31 +116,17 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
     
     @objc func handleKeyboardWillShow(notification: NSNotification) {
-//        let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
-//        let safeLayoutGuideBot = self.view.safeAreaInsets.bottom
-//        let height =  (keyboardFrame?.height)! - safeLayoutGuideBot
-//        let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
         let index = messages.count - 1
         scrollToMenuIndex(menuIndex: index)
-//        containerBottomAnchor?.constant -= height
-//        UIView.animate(withDuration: keyboardDuration!, animations: {
-//            self.view.layoutIfNeeded()
-//        })
     }
     
     func scrollToMenuIndex(menuIndex: Int) {
         let indexPath = NSIndexPath(item: menuIndex, section: 0)
         collectionView?.scrollToItem(at: indexPath as IndexPath, at: .top, animated: true)
-        
-        //setTitleForIndex(index: menuIndex)
     }
     
     @objc func handleKeyboardWillHide(notification: NSNotification) {
-//        let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
-        //containerBottomAnchor?.constant = 0
-//        UIView.animate(withDuration: keyboardDuration!, animations: {
-//            self.view.layoutIfNeeded()
-//        })
+
     }
     
     func fetchMessages() {
@@ -163,23 +175,6 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         
     }
     
-//    let query = rootRef.child("users").queryOrdered(byChild: "name")
-//    query.observe(.value) { (snapshot) in
-//    for child in snapshot.children.allObjects as! [DataSnapshot] {
-//    if let value = child.value as? NSDictionary {
-//    let player = Player()
-//    let name = value["name"] as? String ?? "Name not found"
-//    let email = value["email"] as? String ?? "Email not found"
-//    player.name = name
-//    player.email = email
-//    player.id = child.key
-//    if player.id != Auth.auth().currentUser?.uid {
-//    self.players.append(player)
-//    }
-//    DispatchQueue.main.async { self.collectionView.reloadData() }
-//    }
-//    }
-//    }
     
     @objc func handleSendMessage() {
         guard let uid = Auth.auth().currentUser?.uid, let message = messageField.text else {
@@ -207,7 +202,7 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             
             let messagesRef = Database.database().reference().child("user_messages")
             let messageId = childRef.key!
-            let childUpdates = ["/\(uid)/\(self.recipientId)/\(messageId)/": 1, "/\(self.recipientId)/\(uid)/\(messageId)/": 1]
+            let childUpdates = ["/\(uid)/\(self.recipientId)/\(messageId)/": 0, "/\(self.recipientId)/\(uid)/\(messageId)/": 1]
             messagesRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -262,36 +257,6 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         let options = NSStringDrawingOptions.usesFontLeading.union(.usesLineFragmentOrigin)
         return NSString(string: text).boundingRect(with: size, options: options, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)], context: nil)
     }
-    
-    let whiteContainerView: UIView = {
-        let wc = UIView()
-        wc.translatesAutoresizingMaskIntoConstraints = false
-        wc.backgroundColor = .white
-        return wc
-    }()
-    
-    let sendButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Send", for: .normal)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(handleSendMessage), for: .touchUpInside)
-        return button
-    }()
-    
-    let messageField: UITextField = {
-        let tf = UITextField()
-        tf.placeholder = "Enter message..."
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        //tf.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        return tf
-    }()
-    
-    let separatorView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor.init(r: 222, g: 222, b: 222)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
     
     var containerBottomAnchor: NSLayoutConstraint?
     
@@ -362,7 +327,6 @@ class MessageCell: BaseCell {
     
     let messageText: UITextView = {
         let label = UITextView()
-        //label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "None"
         label.isEditable = false

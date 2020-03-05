@@ -15,8 +15,6 @@ class MainMenu: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTabBarController()
-        setupNavBar()
-        //self.navigationController?.navigationBar.isTranslucent = false
     }
     
     private func setupTabBarController() {
@@ -41,7 +39,7 @@ class MainMenu: UITabBarController {
         connect2.navigationBar.tintColor = .white
         connect2.tabBarItem = UITabBarItem(title: "Connect", image: UIImage(named: "map"), tag: 2)
         
-        let notifications = Notifications(collectionViewLayout: layout)
+        let notifications = Notifications()
         let notifications2 = UINavigationController(rootViewController: notifications)
         notifications2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
         notifications2.navigationBar.isTranslucent = false
@@ -52,37 +50,6 @@ class MainMenu: UITabBarController {
         
         let tabBarList = [myProfile2, tourneyList2, connect2, notifications2]
         viewControllers = tabBarList
-    }
-    
-//    @objc func handleViewNotifications() {
-//        let layout = UICollectionViewFlowLayout()
-//        let NotificationsPage = Notifications(collectionViewLayout: layout)
-//        navigationController?.pushViewController(NotificationsPage, animated: true)
-//    }
-    
-    
-    func setupNavBar() {
-        //self.tabBarController?.navigationItem.title = "Little Cottonwood Areas"
-        //UINavigationBar.appearance().barTintColor = UIColor.init(r: 88, g: 148, b: 200)
-        //UINavigationBar.appearance().tintColor = UIColor.white
-        //UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.foregroundColor:UIColor.white]
-        //navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.font: UIFont(name: "AmericanTypewriter-Bold", size: 25)!]
-        //UINavigationBar.appearance().shadowImage = UIImage()
-        //tabBarController?.tabBar.isTranslucent = false
-//        let logoutButton = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
-//        let notificationButton = UIBarButtonItem(title: "Notifs", style: .plain, target: self, action: #selector(handleViewNotifications))
-//        navigationItem.rightBarButtonItems = [logoutButton, notificationButton]
-    }
-    
-    func setupUserNavBarTitle() {
-//        guard let uid = Auth.auth().currentUser?.uid else {
-//            return
-//        }
-//        Database.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: {(snapshot) in
-//            if let dictionary = snapshot.value as? [String: AnyObject] {
-//                self.navigationItem.title = dictionary["name"] as? String
-//            }
-//        })
     }
 
 }
