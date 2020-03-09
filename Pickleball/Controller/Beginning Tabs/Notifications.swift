@@ -207,10 +207,28 @@ class Notifications: UITableViewController {
             cell.viewButton.tag = indexPath.row
             cell.viewButton.addTarget(self, action: #selector(viewMatch), for: .touchUpInside)
             return cell
+        } else if notifications[indexPath.row].message == "reject_match" {
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
+            cell.matchInvite = notifications[indexPath.row]
+            cell.viewButton.setTitle("Dismiss", for: .normal)
+            cell.viewButton.tag = indexPath.row
+            cell.viewButton.addTarget(self, action: #selector(dismissNotification), for: .touchUpInside)
+            return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
             return cell
         }
+    }
+    
+    @objc func dismissNotification(sender: UIButton) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let notificationId = notifications[sender.tag].id!
+        Database.database().reference().child("notifications").child(notificationId).removeValue()
+        Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
+        notifications.remove(at: sender.tag)
+        tableView.reloadData()
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

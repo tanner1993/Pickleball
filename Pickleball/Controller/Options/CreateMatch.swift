@@ -102,7 +102,7 @@ class CreateMatch: UIViewController {
         let timeOfChallenge = Date().timeIntervalSince1970
         let ref = Database.database().reference().child("matches")
         let createMatchRef = ref.childByAutoId()
-        let values = ["active": 0, "team_1_player_1": uid, "team_1_player_2": teammate.id, "team_2_player_1": opponent1.id, "team_2_player_2": opponent2.id, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
+        let values = ["active": 0, "team_1_player_1": uid, "team_1_player_2": teammate.id, "team_2_player_1": opponent1.id, "team_2_player_2": opponent2.id, "team1_scores": [1, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
         createMatchRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             

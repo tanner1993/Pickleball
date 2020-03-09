@@ -80,7 +80,7 @@ extension Player {
             return 23
         case 3750...3999:
             return 24
-        case 4000...4249:
+        case 4000...20000:
             return 25
         default:
             return 0

@@ -38,7 +38,11 @@ class MatchNotificationCell: UITableViewCell {
                     if chatPartnerId != self.matchInvite?.chatPartnerId() {
                         
                     } else {
-                        self.invitationText.text = "\(chatPartnerName) invited you to play a match with him!"
+                        if self.matchInvite?.message == "match" {
+                            self.invitationText.text = "\(chatPartnerName) invited you to play a match with him!"
+                        } else if self.matchInvite?.message == "reject_match" {
+                            self.invitationText.text = "\(chatPartnerName) has rejected playing the match with you"
+                        }
                         var initials = ""
                         var finalChar = 0
                         for (index, char) in chatPartnerName2.enumerated() {
@@ -76,7 +80,7 @@ class MatchNotificationCell: UITableViewCell {
     let viewButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
-        button.setTitle("View Profile", for: .normal)
+        button.setTitle("View Match", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 5
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)

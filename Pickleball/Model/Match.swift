@@ -22,7 +22,8 @@ class Match: NSObject {
 }
 
 class Match2: NSObject {
-    var winner: String?
+    var winner: Int?
+    var submitter: Int?
     var time: Double?
     var active: Int?
     var team_1_player_1: String?
