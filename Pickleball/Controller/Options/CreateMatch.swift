@@ -133,7 +133,7 @@ class CreateMatch: UIViewController {
             
                 let notificationId = matchId
             let notificationsRef = Database.database().reference().child("user_notifications")
-            let childUpdates = ["/\(uid)/\(notificationId)/": 1, "/\(self.teammate.id)/\(notificationId)/": 1, "/\(self.opponent1.id)/\(notificationId)/": 1, "/\(self.opponent2.id)/\(notificationId)/": 1,] as [String : Any]
+            let childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.teammate.id)/\(notificationId)/": 1, "/\(self.opponent1.id)/\(notificationId)/": 1, "/\(self.opponent2.id)/\(notificationId)/": 1,] as [String : Any]
             notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -151,11 +151,18 @@ class CreateMatch: UIViewController {
             })
             
             print("Crazy data saved!")
+                let createMatchConfirmed = UIAlertController(title: "Successfully created the match", message: "Check your matches to see it", preferredStyle: .alert)
+                createMatchConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
+                self.present(createMatchConfirmed, animated: true, completion: nil)
             
             
         })
             
         })
+    }
+    
+    func handleDismiss(action: UIAlertAction) {
+        dismiss(animated: true, completion: nil)
     }
 
     override func viewDidLoad() {
