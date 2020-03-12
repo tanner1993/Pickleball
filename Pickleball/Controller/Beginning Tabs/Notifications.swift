@@ -17,8 +17,19 @@ class Notifications: UITableViewController {
     var notifications = [Message]()
     let cellId = "cellId"
     let cellId2 = "cellId2"
+    let cellIdNone = "loading"
     var cellTag = -1
     var currentUser2 = "nothing"
+    var noNotifications = 0
+    
+    var activityIndicatorView: UIActivityIndicatorView!
+    
+    override func loadView() {
+        super.loadView()
+        
+        activityIndicatorView = UIActivityIndicatorView(style: .gray)
+        
+    }
     
     func setupNavbarAndTitle() {
         let plusImage = UIImage(named: "plus")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
@@ -45,10 +56,20 @@ class Notifications: UITableViewController {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.fillInRow()
+        }
         currentUser2 = uid
         setupNavbarAndTitle()
         setupCollectionView()
         fetchNotifications()
+    }
+    
+    func fillInRow() {
+        if notifications.count == 0 {
+            noNotifications = 1
+            tableView.reloadData()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -63,6 +84,10 @@ class Notifications: UITableViewController {
             return
         }
         if currentUser2 != uid {
+            noNotifications = 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                self.fillInRow()
+            }
             notifications.removeAll()
             tableView.reloadData()
             fetchNotifications()
@@ -182,41 +207,58 @@ class Notifications: UITableViewController {
     func setupCollectionView() {
         tableView?.register(FriendInviteCell.self, forCellReuseIdentifier: cellId)
         tableView?.register(MatchNotificationCell.self, forCellReuseIdentifier: cellId2)
+        tableView?.register(UITableViewCell.self, forCellReuseIdentifier: cellIdNone)
         tableView?.backgroundColor = .white
         self.tableView.separatorStyle = .none
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return notifications.count
+        return notifications.count == 0 ? 1 : notifications.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if notifications[indexPath.row].message == "friend" {
-            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
-            cell.friendInvite = notifications[indexPath.row]
-            cell.confirmButton.tag = indexPath.row
-            cell.confirmButton.addTarget(self, action: #selector(confirmFriend), for: .touchUpInside)
-            cell.rejectButton.tag = indexPath.row
-            cell.rejectButton.addTarget(self, action: #selector(rejectFriend), for: .touchUpInside)
-            cell.viewButton.tag = indexPath.row
-            cell.viewButton.addTarget(self, action: #selector(viewProfile), for: .touchUpInside)
-            return cell
-        } else if notifications[indexPath.row].message == "match" {
-            let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
-            cell.matchInvite = notifications[indexPath.row]
-            cell.viewButton.tag = indexPath.row
-            cell.viewButton.addTarget(self, action: #selector(viewMatch), for: .touchUpInside)
-            return cell
-        } else if notifications[indexPath.row].message == "reject_match" {
-            let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
-            cell.matchInvite = notifications[indexPath.row]
-            cell.viewButton.setTitle("Dismiss", for: .normal)
-            cell.viewButton.tag = indexPath.row
-            cell.viewButton.addTarget(self, action: #selector(dismissNotification), for: .touchUpInside)
-            return cell
+        if notifications.count == 0 {
+            if noNotifications == 0 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
+                cell.backgroundView = activityIndicatorView
+                activityIndicatorView.startAnimating()
+                return cell
+            } else {
+                activityIndicatorView.stopAnimating()
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
+                cell.textLabel?.text = "No Notifications"
+                cell.textLabel?.textAlignment = .center
+                return cell
+            }
         } else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
-            return cell
+            activityIndicatorView.stopAnimating()
+            if notifications[indexPath.row].message == "friend" {
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
+                cell.friendInvite = notifications[indexPath.row]
+                cell.confirmButton.tag = indexPath.row
+                cell.confirmButton.addTarget(self, action: #selector(confirmFriend), for: .touchUpInside)
+                cell.rejectButton.tag = indexPath.row
+                cell.rejectButton.addTarget(self, action: #selector(rejectFriend), for: .touchUpInside)
+                cell.viewButton.tag = indexPath.row
+                cell.viewButton.addTarget(self, action: #selector(viewProfile), for: .touchUpInside)
+                return cell
+            } else if notifications[indexPath.row].message == "match" {
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
+                cell.matchInvite = notifications[indexPath.row]
+                cell.viewButton.tag = indexPath.row
+                cell.viewButton.addTarget(self, action: #selector(viewMatch), for: .touchUpInside)
+                return cell
+            } else if notifications[indexPath.row].message == "reject_match" {
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
+                cell.matchInvite = notifications[indexPath.row]
+                cell.viewButton.setTitle("Dismiss", for: .normal)
+                cell.viewButton.tag = indexPath.row
+                cell.viewButton.addTarget(self, action: #selector(dismissNotification), for: .touchUpInside)
+                return cell
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
+                return cell
+            }
         }
     }
     
@@ -264,6 +306,7 @@ class Notifications: UITableViewController {
             Database.database().reference().child("notifications").child(notificationId).removeValue()
             Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
             self.notifications.remove(at: whichNotif)
+            self.noNotifications = 1
             self.tableView.reloadData()
             
             print("Crazy data 2 saved!")

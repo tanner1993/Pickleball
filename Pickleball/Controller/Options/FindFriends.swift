@@ -164,7 +164,9 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if collectionView == self.collectionView {
             let playerProfile = StartupPage()
+            playerProfile.findFriends = self
             playerProfile.playerId = searchResults[indexPath.item].id ?? "none"
+            playerProfile.whichFriend = indexPath.item
             if searchResults[indexPath.item].friend == 2 {
                 playerProfile.isFriend = 2
             } else if searchResults[indexPath.item].friend == 1 {

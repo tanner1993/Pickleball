@@ -18,6 +18,17 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     var messages = [Message]()
     var messageChecker = 0
     var currentUser = "nothing"
+    var noNotifications = 0
+    let cellIdNone = "loading"
+    
+    var activityIndicatorView: UIActivityIndicatorView!
+    
+    override func loadView() {
+        super.loadView()
+        
+        activityIndicatorView = UIActivityIndicatorView(style: .gray)
+        
+    }
     
     let messagesLabel: UILabel = {
         let label = UILabel()
@@ -59,6 +70,7 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         currentUser = uid
 
         self.collectionView!.register(RecentMessagesCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+        self.collectionView!.register(EmptyCell.self, forCellWithReuseIdentifier: cellIdNone)
 
         collectionView.backgroundColor = .white
         collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
@@ -71,17 +83,21 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         self.navigationItem.titleView = titleLabel
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Friends", style: .plain, target: self, action: #selector(handleNewMessage))
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-//            self.collectionView.reloadData()
-//        }
-        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.fillInRow()
+        }
         fetchFirstMessages()
+    }
+    
+    func fillInRow() {
+        if messages.count == 0 {
+            noNotifications = 1
+            collectionView.reloadData()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         checkUser()
-        print("connect willappear")
-        print(currentUser)
     }
     
     func checkUser() {
@@ -89,9 +105,14 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             return
         }
         if currentUser != uid {
+            noNotifications = 0
             messages.removeAll()
             collectionView.collectionViewLayout.invalidateLayout()
+            collectionView.reloadData()
             messageChecker = 0
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                self.fillInRow()
+            }
             fetchFirstMessages()
             currentUser = uid
         }
@@ -110,21 +131,44 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return messages.count
+        return messages.count == 0 ? 1 : messages.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! RecentMessagesCell
-        cell.message = messages[indexPath.item]
-        
-        return cell
+        if messages.count == 0 {
+            if noNotifications == 0 {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdNone, for: indexPath) as! EmptyCell
+                cell.emptyLabel.text = ""
+                cell.backgroundView = activityIndicatorView
+                activityIndicatorView.startAnimating()
+                return cell
+            } else {
+                activityIndicatorView.stopAnimating()
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdNone, for: indexPath) as! EmptyCell
+                cell.emptyLabel.text = "No Messages"
+                return cell
+            }
+        } else {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! RecentMessagesCell
+            cell.message = messages[indexPath.item]
+            
+            return cell
+        }
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let recipientId = messages[indexPath.item].chatPartnerId() else {
-            return
+        if messages.count == 0 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                self.fillInRow()
+            }
+            noNotifications = 0
+            collectionView.reloadData()
+        } else {
+            guard let recipientId = messages[indexPath.item].chatPartnerId() else {
+                return
+            }
+            presentChatLogs(recipientId: recipientId)
         }
-        presentChatLogs(recipientId: recipientId)
     }
     
     func presentChatLogs(recipientId: String) {

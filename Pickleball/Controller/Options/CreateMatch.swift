@@ -33,7 +33,8 @@ class CreateMatch: UIViewController {
     
     let createLabel: UILabel = {
         let label = UILabel()
-        label.text = "Create a Match"
+        label.text = "Invite your friends to play a match with you"
+        label.numberOfLines = 3
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.textAlignment = .center
@@ -80,9 +81,9 @@ class CreateMatch: UIViewController {
         
         view.addSubview(createLabel)
         createLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        createLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+        createLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 45).isActive = true
         createLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
-        createLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        createLabel.heightAnchor.constraint(equalToConstant: 100).isActive = true
     }
     
     @objc func handleCancel() {
@@ -176,8 +177,8 @@ class CreateMatch: UIViewController {
     let createMatchButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Create Match", for: .normal)
-        button.setTitleColor(.blue, for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 28)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(handleCreateMatch), for: .touchUpInside)
         return button
@@ -192,11 +193,31 @@ class CreateMatch: UIViewController {
         return view
     }()
     
+    let userNameLabel: UILabel = {
+        let lb = UILabel()
+        lb.text = "loading..."
+        lb.translatesAutoresizingMaskIntoConstraints = false
+        lb.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        lb.textAlignment = .center
+        lb.textColor = .black
+        return lb
+    }()
+    
     let separatorView1: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
+    }()
+    
+    let vsLabel: UILabel = {
+        let lb = UILabel()
+        lb.text = "VS"
+        lb.translatesAutoresizingMaskIntoConstraints = false
+        lb.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        lb.textAlignment = .center
+        lb.textColor = .white
+        return lb
     }()
     
     let inputsContainerViewTeam2: UIView = {
@@ -218,8 +239,8 @@ class CreateMatch: UIViewController {
     let selectTeammateButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Select Teammate", for: .normal)
-        button.setTitleColor(.blue, for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.tag = 1
         button.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
@@ -231,15 +252,15 @@ class CreateMatch: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.textAlignment = .center
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.textColor = .black
         return label
     }()
     
     let selectOpponentButton1: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Select Opponent 1", for: .normal)
-        button.setTitleColor(.blue, for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.tag = 2
         button.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
@@ -251,15 +272,15 @@ class CreateMatch: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.textAlignment = .center
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.textColor = .black
         return label
     }()
     
     let selectOpponentButton2: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Select Opponent 2", for: .normal)
-        button.setTitleColor(.blue, for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.tag = 3
         button.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
@@ -271,7 +292,7 @@ class CreateMatch: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.textAlignment = .center
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.textColor = .black
         return label
     }()
     
@@ -289,6 +310,21 @@ class CreateMatch: UIViewController {
         inputsContainerViewTeam1.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         inputsContainerViewHeightAnchor = inputsContainerViewTeam1.heightAnchor.constraint(equalToConstant: 150)
         inputsContainerViewHeightAnchor?.isActive = true
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let userNameRef = Database.database().reference().child("users").child(uid)
+        userNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                self.userNameLabel.text = value["username"] as? String
+            }
+        })
+        
+        inputsContainerViewTeam1.addSubview(userNameLabel)
+        userNameLabel.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
+        userNameLabel.topAnchor.constraint(equalTo: inputsContainerViewTeam1.topAnchor).isActive = true
+        userNameLabel.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor).isActive = true
+        userNameLabel.heightAnchor.constraint(equalToConstant: 75).isActive = true
         
         inputsContainerViewTeam1.addSubview(selectTeammateButton)
         selectTeammateButton.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
@@ -309,6 +345,12 @@ class CreateMatch: UIViewController {
         inputsContainerViewTeam2.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         inputsContainerViewHeightAnchor2 = inputsContainerViewTeam2.heightAnchor.constraint(equalToConstant: 150)
         inputsContainerViewHeightAnchor2?.isActive = true
+        
+        view.addSubview(vsLabel)
+        vsLabel.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
+        vsLabel.topAnchor.constraint(equalTo: inputsContainerViewTeam1.bottomAnchor).isActive = true
+        vsLabel.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor).isActive = true
+        vsLabel.bottomAnchor.constraint(equalTo: inputsContainerViewTeam2.topAnchor).isActive = true
         
         inputsContainerViewTeam2.addSubview(selectOpponentButton1)
         selectOpponentButton1.leftAnchor.constraint(equalTo: inputsContainerViewTeam2.leftAnchor).isActive = true

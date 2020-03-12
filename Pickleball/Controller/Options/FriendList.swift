@@ -20,18 +20,60 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     var whoSent = 0
     var connect: Connect?
     var createMatch: CreateMatch?
+    var noNotifications = 0
+    
+    var activityIndicatorView: UIActivityIndicatorView!
+    
+    override func loadView() {
+        super.loadView()
+
+        activityIndicatorView = UIActivityIndicatorView(style: .gray)
+
+    }
+
+//    override func viewWillAppear(_ animated: Bool) {
+//        super.viewWillAppear(animated)
+//        self.fetchFriends()
+//        if (friends.count == 0) {
+//            activityIndicatorView.startAnimating()
+//
+//
+//            dispatchQueue.async {
+//                Thread.sleep(forTimeInterval: 3)
+//
+//                OperationQueue.main.addOperation() {
+//                    self.activityIndicatorView.stopAnimating()
+//
+//                    self.collectionView.reloadData()
+//
+//                }
+//            }
+//        }
+//    }
+    
+    let cellId = "poop"
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            self.fillInRow()
+        }
         fetchFriends()
         
         self.collectionView!.register(FriendListCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+        self.collectionView!.register(EmptyCell.self, forCellWithReuseIdentifier: cellId)
         collectionView.backgroundColor = .white
         if whoSent == 0 {
             setupNavbar()
         } else {
             setupForPlayerSelection()
+        }
+    }
+    
+    func fillInRow() {
+        if friends.count == 0 {
+            noNotifications = 1
+            collectionView.reloadData()
         }
     }
     
@@ -115,18 +157,33 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
 
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return friends.count
+        return friends.count == 0 ? 1 : friends.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! FriendListCell
-        cell.player = friends[indexPath.item]
-        cell.messageButton.tag = indexPath.item
-        cell.messageButton.addTarget(self, action: #selector(sendMessage), for: .touchUpInside)
-        if whoSent != 0 {
-            cell.messageButton.isHidden = true
+        if friends.count == 0 {
+            if noNotifications == 0 {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath)
+                cell.backgroundView = activityIndicatorView
+                activityIndicatorView.startAnimating()
+                return cell
+            } else {
+                activityIndicatorView.stopAnimating()
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! EmptyCell
+                cell.emptyLabel.text = "No Friends"
+                return cell
+            }
+        } else {
+            activityIndicatorView.stopAnimating()
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! FriendListCell
+            cell.player = friends[indexPath.item]
+            cell.messageButton.tag = indexPath.item
+            cell.messageButton.addTarget(self, action: #selector(sendMessage), for: .touchUpInside)
+            if whoSent != 0 {
+                cell.messageButton.isHidden = true
+            }
+            return cell
         }
-        return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {

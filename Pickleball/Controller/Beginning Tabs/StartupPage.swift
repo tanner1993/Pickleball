@@ -16,6 +16,8 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     let blackView = UIView()
     var playerId = "none"
     var isFriend = 0
+    var findFriends: FindFriends?
+    var whichFriend = -1
     
     let backgroundImage: UIImageView = {
         let bi = UIImageView()
@@ -312,6 +314,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 
                 
             })
+            findFriends?.searchResults[whichFriend].friend = 1
             isFriend = 1
             setupNavbarTitle()
         }

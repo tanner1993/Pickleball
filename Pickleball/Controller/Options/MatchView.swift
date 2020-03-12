@@ -10,7 +10,6 @@ import UIKit
 import Firebase
 
 class MatchView: UIViewController {
-    
     var match = Match2()
     var player = Player()
     var matchId = "none"
@@ -39,6 +38,26 @@ class MatchView: UIViewController {
         view.backgroundColor = .white
         setupViews()
         fetchMatch()
+    }
+    
+    func setupNavbarTitle(status: Int) {
+        let widthofscreen = Int(view.frame.width)
+        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+        switch status {
+        case 0:
+            titleLabel.text = "Prematch"
+        case 1:
+            titleLabel.text = "Mid-match"
+        case 2:
+            titleLabel.text = "Match Confirmation"
+        case 3:
+            titleLabel.text = "Match Complete"
+        default:
+            print("failed title")
+        }
+        titleLabel.textColor = .white
+        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        self.navigationItem.titleView = titleLabel
     }
     
     func fetchMatch() {
@@ -111,13 +130,14 @@ class MatchView: UIViewController {
             self.present(createMatchConfirmed, animated: true, completion: nil)
         } else if match.active == 2 {
             self.match.active = 1
+            setupNavbarTitle(status: 1)
             confirmCheck1.isHidden = true
             confirmCheck2.isHidden = true
             confirmCheck3.isHidden = true
             confirmCheck4.isHidden = true
-            let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1045, w: 532, h: 68, wib: 750, hib: 1150, wia: 375, hia: 575)
-            confirmMatchScoresImage.image = UIImage(named: "confirm_match_scores")
+            let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
             rejectMatchScores.isEnabled = false
+            rejectMatchScores.isHidden = true
             game1UserScore.isUserInteractionEnabled = true
             game2UserScore.isUserInteractionEnabled = true
             game3UserScore.isUserInteractionEnabled = true
@@ -129,24 +149,27 @@ class MatchView: UIViewController {
             game4OppScore.isUserInteractionEnabled = true
             game5OppScore.isUserInteractionEnabled = true
             
-            game1UserScore.text = "0"
-            game2UserScore.text = "0"
-            game3UserScore.text = "0"
-            game4UserScore.text = "0"
-            game5UserScore.text = "0"
-            game1OppScore.text = "0"
-            game2OppScore.text = "0"
-            game3OppScore.text = "0"
-            game4OppScore.text = "0"
-            game5OppScore.text = "0"
+            game1UserScore.text = ""
+            game2UserScore.text = ""
+            game3UserScore.text = ""
+            game4UserScore.text = ""
+            game5UserScore.text = ""
+            game1OppScore.text = ""
+            game2OppScore.text = ""
+            game3OppScore.text = ""
+            game4OppScore.text = ""
+            game5OppScore.text = ""
             
-            
+            confirmMatchScores.setTitle("Submit Scores to Opponent for Review", for: .normal)
+            confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
+            confirmMatchScores.titleLabel?.numberOfLines = 2
             confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X)
             confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W)
         }
     }
     
     func setupCorrectBottom(active: Int, submitter: Int, confirmers: [Int], team2: [Int], idList: [String]) {
+        setupNavbarTitle(status: active)
         guard let uid = Auth.auth().currentUser?.uid, let whichPerson = idList.firstIndex(of: uid) else {
             return
         }
@@ -157,7 +180,7 @@ class MatchView: UIViewController {
             userIsTeam1 = false
         }
         
-        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1045, w: 532, h: 68, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
         
         if active == 0 {
             view.bringSubviewToFront(whiteCover)
@@ -185,14 +208,12 @@ class MatchView: UIViewController {
         
         if active == 0 && confirmers[whichPerson] == 0 {
             confirmMatchScores.tag = whichPerson
-            confirmMatchScoresImage.image = UIImage(named: "confirm_or_reject_match")
-            view.addSubview(confirmMatchScoresImage)
-            confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-            confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-            confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-            confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
             
             view.addSubview(confirmMatchScores)
+            confirmMatchScores.setTitle("Yes I want to play in this match", for: .normal)
+            confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+            confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+            confirmMatchScores.titleLabel?.numberOfLines = 2
             confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
             confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X + (confirmMatchScoresLoc.W / 4)))
             confirmMatchScoresCenterXAnchor?.isActive = true
@@ -203,27 +224,29 @@ class MatchView: UIViewController {
             view.addSubview(rejectMatchScores)
             //rejectMatchScores.backgroundColor = .red
             rejectMatchScores.tag = whichPerson
+            rejectMatchScores.setTitle("No I don't want to play", for: .normal)
+            rejectMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+            rejectMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+            rejectMatchScores.titleLabel?.numberOfLines = 2
             rejectMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
             rejectMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X - (confirmMatchScoresLoc.W / 4))).isActive = true
             rejectMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
             rejectMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W / 2)).isActive = true
         } else if active == 0 && confirmers[whichPerson] == 1 {
-            confirmMatchScoresImage.image = UIImage(named: "waiting_match_start")
-            view.addSubview(confirmMatchScoresImage)
-            confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-            confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-            confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-            confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+            view.addSubview(matchStatusLabel)
+            matchStatusLabel.text = "Waiting for opponents to confirm match"
+            matchStatusLabel.numberOfLines = 2
+            matchStatusLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            matchStatusLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+            matchStatusLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            matchStatusLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
         } else if active == 1 {
             whiteCover.isHidden = true
-            confirmMatchScoresImage.image = UIImage(named: "confirm_match_scores")
-            view.addSubview(confirmMatchScoresImage)
-            confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-            confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-            confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-            confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
-            
             view.addSubview(confirmMatchScores)
+            confirmMatchScores.setTitle("Submit Scores to Opponent for Review", for: .normal)
+            confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
+            confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+            confirmMatchScores.titleLabel?.numberOfLines = 2
             confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
             confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X))
             confirmMatchScoresCenterXAnchor?.isActive = true
@@ -242,32 +265,23 @@ class MatchView: UIViewController {
             
             if userIsTeam1 && submitter == 1 || userIsTeam1 == false && submitter == 2 {
                 confirmMatchScores.isEnabled = false
-                confirmMatchScoresImage.image = UIImage(named: "waiting_confirm")
-                view.addSubview(confirmMatchScoresImage)
-                confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-                confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-                confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-                confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
-                
-                view.addSubview(confirmMatchScores)
-                confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-                confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X))
-                confirmMatchScoresCenterXAnchor?.isActive = true
-                confirmMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-                confirmMatchScoresWidthAnchor = confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W))
-                confirmMatchScoresWidthAnchor?.isActive = true
+                view.addSubview(matchStatusLabel)
+                matchStatusLabel.text = "Waiting for opponent to accept submitted scores"
+                matchStatusLabel.numberOfLines = 2
+                matchStatusLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+                matchStatusLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+                matchStatusLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+                matchStatusLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
                 disableScores(team1Scores: confirmers, team2Scores: team2)
             } else {
                 confirmMatchScores.isEnabled = true
                 rejectMatchScores.isEnabled = true
-                confirmMatchScoresImage.image = UIImage(named: "reject_confirm_scores")
-                view.addSubview(confirmMatchScoresImage)
-                confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-                confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-                confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-                confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
                 
                 view.addSubview(confirmMatchScores)
+                confirmMatchScores.setTitle("Yes these scores are right, finish the match", for: .normal)
+                confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+                confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+                confirmMatchScores.titleLabel?.numberOfLines = 3
                 confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
                 confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X + (confirmMatchScoresLoc.W / 4)))
                 confirmMatchScoresCenterXAnchor?.isActive = true
@@ -276,7 +290,10 @@ class MatchView: UIViewController {
                 confirmMatchScoresWidthAnchor?.isActive = true
                 
                 view.addSubview(rejectMatchScores)
-                //rejectMatchScores.backgroundColor = .red
+                rejectMatchScores.setTitle("No I want to edit the scores", for: .normal)
+                rejectMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+                rejectMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+                rejectMatchScores.titleLabel?.numberOfLines = 3
                 rejectMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
                 rejectMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X - (confirmMatchScoresLoc.W / 4))).isActive = true
                 rejectMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
@@ -436,7 +453,7 @@ class MatchView: UIViewController {
         let bi = UIImageView()
         bi.translatesAutoresizingMaskIntoConstraints = false
         bi.contentMode = .scaleAspectFit
-        bi.image = UIImage(named: "match_info_display")
+        bi.image = UIImage(named: "match_info_display2.0")
         bi.isUserInteractionEnabled = true
         return bi
     }()
@@ -647,10 +664,19 @@ class MatchView: UIViewController {
         return textField
     }()
     
+    let matchStatusLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = ""
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
     let confirmMatchScores: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = .white
-        button.alpha = 0.05
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.textAlignment = .center
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(handleConfirm), for: .touchUpInside)
         return button
@@ -658,24 +684,25 @@ class MatchView: UIViewController {
     
     let rejectMatchScores: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = .white
-        button.alpha = 0.05
+        button.setTitleColor(.red, for: .normal)
+        button.titleLabel?.textAlignment = .center
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(handleReject), for: .touchUpInside)
         return button
     }()
     
-    let confirmMatchScoresImage: UIImageView = {
-        let image = UIImageView()
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
-    }()
+//    let confirmMatchScoresImage: UIImageView = {
+//        let image = UIImageView()
+//        image.translatesAutoresizingMaskIntoConstraints = false
+//        return image
+//    }()
     
     let winnerConfirmed: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = " Won!"
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        label.text = " win!"
+        label.numberOfLines = 2
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .center
         return label
     }()
@@ -729,6 +756,9 @@ class MatchView: UIViewController {
     
     func setupViews() {
         
+        let matchInfoDisplayHeightBefore: Float = 1164
+        let matchInfoDisplayHeightAfter: Float = 582
+        
         view.addSubview(backgroundImage)
         backgroundImageCenterYAnchor = backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
         backgroundImageCenterYAnchor?.isActive = true
@@ -740,42 +770,42 @@ class MatchView: UIViewController {
         confirmCheck3.isHidden = true
         confirmCheck4.isHidden = true
         
-        let whiteCoverLoc = calculateButtonPosition(x: 479.5, y: 838.5, w: 275, h: 331, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let whiteCoverLoc = calculateButtonPosition(x: 479.5, y: 832, w: 275, h: 331, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         view.addSubview(whiteCover)
         whiteCover.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(whiteCoverLoc.Y)).isActive = true
         whiteCover.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(whiteCoverLoc.X)).isActive = true
         whiteCover.heightAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc.H)).isActive = true
         whiteCover.widthAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc.W)).isActive = true
         
-        let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 77, w: 74, h: 74, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 77, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         view.addSubview(confirmCheck1)
         confirmCheck1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck1Loc.Y)).isActive = true
         confirmCheck1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
         confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
         confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
         
-        let confirmCheck2Loc = calculateButtonPosition(x: 666, y: 163, w: 74, h: 74, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let confirmCheck2Loc = calculateButtonPosition(x: 666, y: 163, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         view.addSubview(confirmCheck2)
         confirmCheck2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck2Loc.Y)).isActive = true
         confirmCheck2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck2Loc.X)).isActive = true
         confirmCheck2.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck2Loc.H)).isActive = true
         confirmCheck2.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck2Loc.W)).isActive = true
         
-        let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 383, w: 74, h: 74, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 383, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         view.addSubview(confirmCheck3)
         confirmCheck3.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck3Loc.Y)).isActive = true
         confirmCheck3.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck3Loc.X)).isActive = true
         confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.H)).isActive = true
         confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.W)).isActive = true
         
-        let confirmCheck4Loc = calculateButtonPosition(x: 666, y: 469, w: 74, h: 74, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let confirmCheck4Loc = calculateButtonPosition(x: 666, y: 469, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         view.addSubview(confirmCheck4)
         confirmCheck4.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck4Loc.Y)).isActive = true
         confirmCheck4.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck4Loc.X)).isActive = true
         confirmCheck4.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck4Loc.H)).isActive = true
         confirmCheck4.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck4Loc.W)).isActive = true
         
-        let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 75, w: 327, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 75, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         view.addSubview(userPlayer1)
         userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
         userPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer1Loc.X)).isActive = true
@@ -794,7 +824,7 @@ class MatchView: UIViewController {
         userPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
         userPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
         
-        let userPlayer2Loc = calculateButtonPosition(x: 211.5, y: 165, w: 327, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let userPlayer2Loc = calculateButtonPosition(x: 211.5, y: 165, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(userPlayer2)
         userPlayer2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer2Loc.Y)).isActive = true
@@ -814,7 +844,7 @@ class MatchView: UIViewController {
         userPlayer2Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
         userPlayer2Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
         
-        let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 381, w: 327, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 381, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(oppPlayer1)
         oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
@@ -834,7 +864,7 @@ class MatchView: UIViewController {
         oppPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
         oppPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
         
-        let oppPlayer2Loc = calculateButtonPosition(x: 211.5, y: 471, w: 327, h: 85, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let oppPlayer2Loc = calculateButtonPosition(x: 211.5, y: 471, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(oppPlayer2)
         oppPlayer2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer2Loc.Y)).isActive = true
@@ -854,7 +884,7 @@ class MatchView: UIViewController {
         oppPlayer2Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
         oppPlayer2Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
         
-        let game1UserScoreLoc = calculateButtonPosition(x: 407.52, y: 705.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game1UserScoreLoc = calculateButtonPosition(x: 407.52, y: 698, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game1UserScore)
         game1UserScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game1UserScoreLoc.Y)).isActive = true
@@ -862,7 +892,7 @@ class MatchView: UIViewController {
         game1UserScore.heightAnchor.constraint(equalToConstant: CGFloat(game1UserScoreLoc.H)).isActive = true
         game1UserScore.widthAnchor.constraint(equalToConstant: CGFloat(game1UserScoreLoc.W)).isActive = true
         
-        let game1OppScoreLoc = calculateButtonPosition(x: 549.02, y: 705.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game1OppScoreLoc = calculateButtonPosition(x: 549.02, y: 698, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game1OppScore)
         game1OppScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game1OppScoreLoc.Y)).isActive = true
@@ -870,7 +900,7 @@ class MatchView: UIViewController {
         game1OppScore.heightAnchor.constraint(equalToConstant: CGFloat(game1OppScoreLoc.H)).isActive = true
         game1OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game1OppScoreLoc.W)).isActive = true
         
-        let game2UserScoreLoc = calculateButtonPosition(x: 407.52, y: 770.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game2UserScoreLoc = calculateButtonPosition(x: 407.52, y: 763, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game2UserScore)
         game2UserScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game2UserScoreLoc.Y)).isActive = true
@@ -878,7 +908,7 @@ class MatchView: UIViewController {
         game2UserScore.heightAnchor.constraint(equalToConstant: CGFloat(game2UserScoreLoc.H)).isActive = true
         game2UserScore.widthAnchor.constraint(equalToConstant: CGFloat(game2UserScoreLoc.W)).isActive = true
         
-        let game2OppScoreLoc = calculateButtonPosition(x: 549.02, y: 770.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game2OppScoreLoc = calculateButtonPosition(x: 549.02, y: 763, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game2OppScore)
         game2OppScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game2OppScoreLoc.Y)).isActive = true
@@ -886,7 +916,7 @@ class MatchView: UIViewController {
         game2OppScore.heightAnchor.constraint(equalToConstant: CGFloat(game2OppScoreLoc.H)).isActive = true
         game2OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game2OppScoreLoc.W)).isActive = true
         
-        let game3UserScoreLoc = calculateButtonPosition(x: 407.52, y: 835.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game3UserScoreLoc = calculateButtonPosition(x: 407.52, y: 828, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game3UserScore)
         game3UserScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game3UserScoreLoc.Y)).isActive = true
@@ -894,7 +924,7 @@ class MatchView: UIViewController {
         game3UserScore.heightAnchor.constraint(equalToConstant: CGFloat(game3UserScoreLoc.H)).isActive = true
         game3UserScore.widthAnchor.constraint(equalToConstant: CGFloat(game3UserScoreLoc.W)).isActive = true
         
-        let game3OppScoreLoc = calculateButtonPosition(x: 549.02, y: 835.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game3OppScoreLoc = calculateButtonPosition(x: 549.02, y: 828, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game3OppScore)
         game3OppScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game3OppScoreLoc.Y)).isActive = true
@@ -902,7 +932,7 @@ class MatchView: UIViewController {
         game3OppScore.heightAnchor.constraint(equalToConstant: CGFloat(game3OppScoreLoc.H)).isActive = true
         game3OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game3OppScoreLoc.W)).isActive = true
         
-        let game4UserScoreLoc = calculateButtonPosition(x: 407.52, y: 900.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game4UserScoreLoc = calculateButtonPosition(x: 407.52, y: 893, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game4UserScore)
         game4UserScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game4UserScoreLoc.Y)).isActive = true
@@ -910,7 +940,7 @@ class MatchView: UIViewController {
         game4UserScore.heightAnchor.constraint(equalToConstant: CGFloat(game4UserScoreLoc.H)).isActive = true
         game4UserScore.widthAnchor.constraint(equalToConstant: CGFloat(game4UserScoreLoc.W)).isActive = true
         
-        let game4OppScoreLoc = calculateButtonPosition(x: 549.02, y: 900.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game4OppScoreLoc = calculateButtonPosition(x: 549.02, y: 893, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game4OppScore)
         game4OppScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game4OppScoreLoc.Y)).isActive = true
@@ -918,7 +948,7 @@ class MatchView: UIViewController {
         game4OppScore.heightAnchor.constraint(equalToConstant: CGFloat(game4OppScoreLoc.H)).isActive = true
         game4OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game4OppScoreLoc.W)).isActive = true
         
-        let game5UserScoreLoc = calculateButtonPosition(x: 407.52, y: 965.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game5UserScoreLoc = calculateButtonPosition(x: 407.52, y: 958, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game5UserScore)
         game5UserScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game5UserScoreLoc.Y)).isActive = true
@@ -926,7 +956,7 @@ class MatchView: UIViewController {
         game5UserScore.heightAnchor.constraint(equalToConstant: CGFloat(game5UserScoreLoc.H)).isActive = true
         game5UserScore.widthAnchor.constraint(equalToConstant: CGFloat(game5UserScoreLoc.W)).isActive = true
         
-        let game5OppScoreLoc = calculateButtonPosition(x: 549.02, y: 965.75, w: 115, h: 55, wib: 750, hib: 1150, wia: 375, hia: 575)
+        let game5OppScoreLoc = calculateButtonPosition(x: 549.02, y: 958, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: 375, hia: matchInfoDisplayHeightAfter)
         
         view.addSubview(game5OppScore)
         game5OppScore.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(game5OppScoreLoc.Y)).isActive = true
@@ -992,6 +1022,7 @@ class MatchView: UIViewController {
     }
     
     func performConfirmActive0(whichOne: Int) {
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
         let ref = Database.database().reference().child("matches").child(matchId).child("team1_scores")
         match.team1_scores![whichOne] = 1
         switch whichOne {
@@ -1007,9 +1038,15 @@ class MatchView: UIViewController {
         ref.setValue(match.team1_scores)
         let matchReady = checkIfMatchReady()
         if matchReady == 0 {
-            confirmMatchScoresImage.image = UIImage(named: "waiting_match_start")
-            confirmMatchScores.isEnabled = false
-            rejectMatchScores.isEnabled = false
+            confirmMatchScores.isHidden = true
+            rejectMatchScores.isHidden = true
+            view.addSubview(matchStatusLabel)
+            matchStatusLabel.text = "Waiting for opponents to confirm match"
+            matchStatusLabel.numberOfLines = 2
+            matchStatusLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            matchStatusLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+            matchStatusLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            matchStatusLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
         } else {
             whiteCover.isHidden = true
             guard let uid = Auth.auth().currentUser?.uid else {
@@ -1031,6 +1068,7 @@ class MatchView: UIViewController {
                 }
                 
                 self.match.active = 1
+                self.setupNavbarTitle(status: 1)
                 
                 print("Crazy data 2 saved!")
                 uid != self.match.team_1_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
@@ -1041,9 +1079,11 @@ class MatchView: UIViewController {
                 
             })
             
-            let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1045, w: 532, h: 68, wib: 750, hib: 1150, wia: 375, hia: 575)
-            confirmMatchScoresImage.image = UIImage(named: "confirm_match_scores")
-            rejectMatchScores.isEnabled = false
+            rejectMatchScores.isHidden = true
+            confirmMatchScores.setTitle("Submit Scores to Opponent for Review", for: .normal)
+            confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
+            confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+            confirmMatchScores.titleLabel?.numberOfLines = 2
             game1UserScore.isUserInteractionEnabled = true
             game2UserScore.isUserInteractionEnabled = true
             game3UserScore.isUserInteractionEnabled = true
@@ -1062,6 +1102,7 @@ class MatchView: UIViewController {
     }
     
     func performConfirmActive1() {
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
         game1UserScore.resignFirstResponder()
         game2UserScore.resignFirstResponder()
         game3UserScore.resignFirstResponder()
@@ -1092,6 +1133,7 @@ class MatchView: UIViewController {
                 
                 print("Data saved successfully!")
                 self.match.active = 2
+                self.setupNavbarTitle(status: 2)
                 self.match.winner = self.winner
                 self.match.submitter = self.userIsTeam1 ? 1 : 2
                 self.match.team1_scores = self.finalTeam1Scores
@@ -1103,14 +1145,29 @@ class MatchView: UIViewController {
                     self.confirmCheck3.isHidden = false
                     self.confirmCheck4.isHidden = false
                 }
+                guard let uid = Auth.auth().currentUser?.uid else {
+                    return
+                }
+                
+                uid != self.match.team_1_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
+                uid != self.match.team_1_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
+                uid != self.match.team_2_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
+                uid != self.match.team_2_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
                 
             })
             
-            let newalert = UIAlertController(title: "Awesome", message: "\(winner)", preferredStyle: UIAlertController.Style.alert)
+            let newalert = UIAlertController(title: "Match Scores Confirmed", message: "Now just wait for opponent to confirm", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
             self.present(newalert, animated: true, completion: nil)
-            confirmMatchScores.isEnabled = false
-            confirmMatchScoresImage.image = UIImage(named: "waiting_confirm")
+            confirmMatchScores.isHidden = true
+            view.addSubview(matchStatusLabel)
+            matchStatusLabel.text = "Waiting for opponent to accept submitted scores"
+            matchStatusLabel.numberOfLines = 2
+            matchStatusLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            matchStatusLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+            matchStatusLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            matchStatusLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+            
         case 1:
             let newalert = UIAlertController(title: "Sorry", message: "At least 3 games need to be completed in order to determine the winner of a match", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
@@ -1140,6 +1197,7 @@ class MatchView: UIViewController {
     }
     
     func performConfirmActive2() {
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
         let values = ["active": 3] as [String : Any]
         let ref = Database.database().reference().child("matches").child(matchId)
         ref.updateChildValues(values, withCompletionBlock: {
@@ -1152,6 +1210,7 @@ class MatchView: UIViewController {
             
             print("Data saved successfully!")
             self.match.active = 3
+            self.setupNavbarTitle(status: 3)
             self.confirmCheck1.isHidden = false
             self.confirmCheck2.isHidden = false
             self.confirmCheck3.isHidden = false
@@ -1160,13 +1219,14 @@ class MatchView: UIViewController {
             
             
         })
-        let newalert = UIAlertController(title: "Awesome", message: "Match Confirmed", preferredStyle: UIAlertController.Style.alert)
+        let newalert = UIAlertController(title: "Match Complete", message: self.match.winner == 1 ? "\(userPlayer1.text!) and \(userPlayer2.text!) win!" : "\(oppPlayer1.text!) and \(oppPlayer2.text!) win!", preferredStyle: UIAlertController.Style.alert)
         newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
         self.present(newalert, animated: true, completion: nil)
-        confirmMatchScoresImage.image = UIImage(named: "winner_confirm")
-        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1045, w: 532, h: 68, wib: 750, hib: 1150, wia: 375, hia: 575)
+        confirmMatchScores.isHidden = true
+        rejectMatchScores.isHidden = true
         view.addSubview(winnerConfirmed)
-        winnerConfirmed.text = match.winner == 1 ? "\(userPlayer1.text!) & \(userPlayer2.text!) won!" : "\(oppPlayer1.text!) & \(oppPlayer2.text!) won!"
+        winnerConfirmed.text = match.winner == 1 ? "\(userPlayer1.text!) & \(userPlayer2.text!) win!" : "\(oppPlayer1.text!) & \(oppPlayer2.text!) win!"
+        winnerConfirmed.numberOfLines = 2
         winnerConfirmed.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
         winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
         winnerConfirmed.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
