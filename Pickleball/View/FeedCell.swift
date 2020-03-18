@@ -92,7 +92,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
             cell.contentView.backgroundColor = nil
         }
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let myTeamIndex = myTeamId else {
             return

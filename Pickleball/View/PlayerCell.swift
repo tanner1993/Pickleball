@@ -66,8 +66,27 @@ class PlayerCell: BaseCell {
 class FriendListCell: BaseCell {
     var player: Player? {
         didSet {
-            playerName.text = "\(player?.username ?? "none") | \(player?.state ?? "none"), \(player?.county ?? "none")"
-            skills.text = "Skill Level: \(player?.skill_level ?? 0.0)"
+            playerName.text = "\(player?.username ?? "none")"
+            skillLevel.text = "\(player?.skill_level ?? 0.0)"
+            appLevel.text = "\(player?.halo_level ?? 0)"
+            playerLocation.text = "\(player?.state ?? "none")\n\(player?.county ?? "none")"
+            let friendName = player?.name ?? "none"
+            var initials = ""
+            var finalChar = 0
+            for (index, char) in friendName.enumerated() {
+                if index == 0 {
+                    initials.append(char)
+                }
+                if finalChar == 1 {
+                    initials.append(char)
+                    break
+                }
+                
+                if char == " " {
+                    finalChar = 1
+                }
+            }
+            self.playerInitials.text = initials
         }
     }
     
@@ -75,8 +94,19 @@ class FriendListCell: BaseCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "playerName"
-        //label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.font = UIFont(name: "HelveticaNeue", size: 19)
         label.textAlignment = .left
+        return label
+    }()
+    
+    let playerLocation: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.text = ""
+        label.numberOfLines = 2
+        label.font = UIFont(name: "HelveticaNeue", size: 19)
+        label.textAlignment = .center
         return label
     }()
     
@@ -87,40 +117,38 @@ class FriendListCell: BaseCell {
         label.textColor = .white
         label.layer.cornerRadius = 35
         label.layer.masksToBounds = true
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.font = UIFont(name: "HelveticaNeue", size: 36)
         label.textAlignment = .center
         return label
     }()
     
-    let skills: UILabel = {
+    let skillLevel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "playerName"
-        //label.font = UIFont.boldSystemFont(ofSize: 20)
+        label.text = ""
+        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .left
         return label
     }()
     
-    let viewProfileButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
-        button.setTitle("View Profile", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 5
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        button.layer.masksToBounds = true
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
+    let appLevel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "playerName"
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .left
+        return label
     }()
     
     let messageButton: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
-        button.setTitle("Message", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 5
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
-        button.layer.masksToBounds = true
+        button.setTitle("Send Message", for: .normal)
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        button.titleLabel?.textAlignment = .center
+        button.titleLabel?.numberOfLines = 2
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -144,19 +172,31 @@ class FriendListCell: BaseCell {
         playerName.topAnchor.constraint(equalTo: topAnchor).isActive = true
         playerName.leftAnchor.constraint(equalTo: playerInitials.rightAnchor, constant: 4).isActive = true
         playerName.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
-        playerName.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        playerName.widthAnchor.constraint(equalToConstant: 160).isActive = true
         
-        addSubview(skills)
-        skills.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
-        skills.leftAnchor.constraint(equalTo: playerName.leftAnchor).isActive = true
-        skills.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
-        skills.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        addSubview(skillLevel)
+        skillLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
+        skillLevel.leftAnchor.constraint(equalTo: playerName.leftAnchor).isActive = true
+        skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        skillLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        addSubview(appLevel)
+        appLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
+        appLevel.leftAnchor.constraint(equalTo: skillLevel.rightAnchor, constant: 15).isActive = true
+        appLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        appLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
         
         addSubview(messageButton)
         messageButton.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
         messageButton.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 4).isActive = true
         messageButton.heightAnchor.constraint(equalToConstant: frame.height - 8).isActive = true
         messageButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        
+        addSubview(playerLocation)
+        playerLocation.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
+        playerLocation.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 4).isActive = true
+        playerLocation.heightAnchor.constraint(equalToConstant: frame.height - 8).isActive = true
+        playerLocation.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
         
         addSubview(separatorView)
         separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true

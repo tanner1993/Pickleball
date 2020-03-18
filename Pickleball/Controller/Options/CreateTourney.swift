@@ -197,7 +197,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         }
         let ref = Database.database().reference().child("tourneys")
         let tourneyref = ref.childByAutoId()
-        let values = ["name": name, "skill_level": skillLevel, "type": type, "sex": sex, "age_group": ageGroup, "start_date": startSpecific, "duration": duration, "creator": uid, "state": state, "county": county] as [String : Any]
+        let values = ["active": 0, "name": name, "skill_level": skillLevel, "type": type, "sex": sex, "age_group": ageGroup, "start_date": startSpecific, "duration": duration, "creator": uid, "state": state, "county": county] as [String : Any]
         tourneyref.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             

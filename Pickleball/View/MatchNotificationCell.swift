@@ -18,7 +18,7 @@ class MatchNotificationCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
-        
+        //backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -27,43 +27,69 @@ class MatchNotificationCell: UITableViewCell {
     
     var matchInvite: Message? {
         didSet {
-            let chatPartnerId = matchInvite?.chatPartnerId()
-            var chatPartnerName = "nothing"
-            let recipientNameRef = Database.database().reference().child("users").child(chatPartnerId ?? "No Id")
+            let fromId = matchInvite?.fromId ?? "none"
+            let recipientNameRef = Database.database().reference().child("users").child(fromId)
             recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    chatPartnerName = value["username"] as? String ?? "noname"
-                    let chatPartnerName2 = value["name"] as? String ?? "noname"
-                    let chatPartnerId = snapshot.key
-                    if chatPartnerId != self.matchInvite?.chatPartnerId() {
+                    let fromName = value["username"] as? String ?? "noname"
+                    self.matchTitleText.text = "Match: \(self.matchInvite?.toId ?? "none")"
+                    if let seconds = self.matchInvite?.timeStamp {
                         
-                    } else {
-                        if self.matchInvite?.message == "match" {
-                            self.invitationText.text = "\(chatPartnerName) invited you to play a match with him!"
-                        } else if self.matchInvite?.message == "reject_match" {
-                            self.invitationText.text = "\(chatPartnerName) has rejected playing the match with you"
+                        let dateTime = Date(timeIntervalSince1970: seconds)
+                        let days = self.dayDifference(from: seconds)
+                        
+                        let dateFormatter = DateFormatter()
+                        if days == "week" {
+                            dateFormatter.dateFormat = "MM/dd/yy"
+                            self.timeStamp.text = dateFormatter.string(from: dateTime)
+                        } else {
+                            dateFormatter.dateFormat = "hh:mm a"
+                            self.timeStamp.text = "Created by \(fromName): \(days), \(dateFormatter.string(from: dateTime))"
                         }
-                        var initials = ""
-                        var finalChar = 0
-                        for (index, char) in chatPartnerName2.enumerated() {
-                            if index == 0 {
-                                initials.append(char)
-                            }
-                            if finalChar == 1 {
-                                initials.append(char)
-                                break
-                            }
-                            
-                            if char == " " {
-                                finalChar = 1
-                            }
-                        }
-                        self.playerInitials.text = initials
                     }
                 }
             })
         }
     }
+    
+    func dayDifference(from interval : TimeInterval) -> String
+    {
+        let calendar = Calendar.current
+        let date = Date(timeIntervalSince1970: interval)
+        let startOfNow = calendar.startOfDay(for: Date())
+        let startOfTimeStamp = calendar.startOfDay(for: date)
+        let components = calendar.dateComponents([.day], from: startOfNow, to: startOfTimeStamp)
+        let day = components.day!
+        if abs(day) < 2 {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .none
+            formatter.doesRelativeDateFormatting = true
+            return formatter.string(from: date)
+        } else if abs(day) > 7 {
+            return "week"
+        } else {
+            return "\(-day) days ago"
+        }
+    }
+    
+    let matchSymbol: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.image = UIImage(named: "match_symbol")
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
+    
+    let matchSymbol2: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.image = UIImage(named: "match_symbol")
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
     
     let playerInitials: UILabel = {
         let label = UILabel()
@@ -89,35 +115,85 @@ class MatchNotificationCell: UITableViewCell {
         return button
     }()
     
-    let invitationText: UILabel = {
+    let matchTitleText: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.layer.cornerRadius = 24
-        label.layer.masksToBounds = true
-        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
+        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
         label.textAlignment = .center
+        return label
+    }()
+    
+    let matchInfoText: UILabel = {
+        let label = UILabel()
+        label.text = "Doubles, Best 3/5"
+        label.textColor = .black
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let separatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.init(r: 220, g: 220, b: 220)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let timeStamp: UILabel = {
+        let label = UILabel()
+        label.text = "HH:MM:SS"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = UIColor.init(r: 170, g: 170, b: 170)
+        label.font = UIFont(name: "HelveticaNeue", size: 12)
+        label.textAlignment = .right
         return label
     }()
     
     
     func setupViews() {
-        addSubview(invitationText)
-        invitationText.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
-        invitationText.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        invitationText.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        invitationText.widthAnchor.constraint(equalToConstant: frame.width - 10).isActive = true
         
-        addSubview(playerInitials)
-        playerInitials.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 4).isActive = true
-        playerInitials.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
-        playerInitials.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        playerInitials.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        addSubview(timeStamp)
+        timeStamp.topAnchor.constraint(equalTo: topAnchor, constant: 1).isActive = true
+        timeStamp.leftAnchor.constraint(equalTo: rightAnchor, constant: -250).isActive = true
+        timeStamp.heightAnchor.constraint(equalToConstant: 25).isActive = true
+        timeStamp.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
         
-        addSubview(viewButton)
-        viewButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 4).isActive = true
-        viewButton.leftAnchor.constraint(equalTo: playerInitials.rightAnchor, constant: 4).isActive = true
-        viewButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        viewButton.widthAnchor.constraint(equalToConstant: (frame.width - 70)).isActive = true
+        addSubview(matchSymbol)
+        matchSymbol.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 1).isActive = true
+        matchSymbol.leftAnchor.constraint(equalTo: leftAnchor, constant: 3).isActive = true
+        matchSymbol.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        matchSymbol.widthAnchor.constraint(equalToConstant: 85).isActive = true
+        
+        addSubview(matchSymbol2)
+        matchSymbol2.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 1).isActive = true
+        matchSymbol2.rightAnchor.constraint(equalTo: rightAnchor, constant: -3).isActive = true
+        matchSymbol2.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        matchSymbol2.widthAnchor.constraint(equalToConstant: 85).isActive = true
+        
+        addSubview(matchTitleText)
+        matchTitleText.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 1).isActive = true
+        matchTitleText.leftAnchor.constraint(equalTo: matchSymbol.rightAnchor, constant: 2).isActive = true
+        matchTitleText.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        matchTitleText.rightAnchor.constraint(equalTo: matchSymbol2.leftAnchor, constant: -2).isActive = true
+        
+//        addSubview(playerInitials)
+//        playerInitials.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 4).isActive = true
+//        playerInitials.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
+//        playerInitials.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//        playerInitials.widthAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        addSubview(matchInfoText)
+        matchInfoText.topAnchor.constraint(equalTo: matchTitleText.bottomAnchor, constant: 0).isActive = true
+        matchInfoText.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        matchInfoText.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        matchInfoText.widthAnchor.constraint(equalToConstant: frame.width - 10).isActive = true
+        
+        addSubview(separatorView)
+        separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+        separatorView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        separatorView.heightAnchor.constraint(equalToConstant: 2).isActive = true
+        separatorView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
     }
 }

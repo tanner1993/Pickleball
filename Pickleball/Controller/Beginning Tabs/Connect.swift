@@ -82,7 +82,7 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Friends", style: .plain, target: self, action: #selector(handleNewMessage))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "My Friends", style: .plain, target: self, action: #selector(handleNewMessage))
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.fillInRow()
         }
@@ -279,8 +279,6 @@ class RecentMessagesCell: BaseCell {
             })
             
             if let seconds = message?.timeStamp {
-//                let now = Date().timeIntervalSince1970
-//                if now -
                 
                 let dateTime = Date(timeIntervalSince1970: seconds)
                 let days = dayDifference(from: seconds)

@@ -44,7 +44,7 @@ class MainMenu: UITabBarController {
         notifications2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
         notifications2.navigationBar.isTranslucent = false
         notifications2.navigationBar.tintColor = .white
-        notifications2.tabBarItem = UITabBarItem(title: "Notifications", image: UIImage(named: "map"), tag: 3)
+        notifications2.tabBarItem = UITabBarItem(title: "Events", image: UIImage(named: "map"), tag: 3)
         
         
         

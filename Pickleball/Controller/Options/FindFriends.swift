@@ -32,7 +32,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         fetchUsers()
         setupViews()
         
-        self.collectionView!.register(PlayerCell.self, forCellWithReuseIdentifier: cellId)
+        self.collectionView!.register(FriendListCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.backgroundColor = .white
         collectionView?.contentInset = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
         collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
@@ -134,8 +134,10 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         if collectionView == self.collectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! PlayerCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FriendListCell
             cell.player = searchResults[indexPath.item]
+            cell.messageButton.isHidden = true
+            cell.playerLocation.isHidden = false
             if searchResults[indexPath.item].friend == 2 {
                 cell.backgroundColor = .green
             }
@@ -232,7 +234,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     let separatorView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        view.backgroundColor = UIColor.init(r: 220, g: 220, b: 220)
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()

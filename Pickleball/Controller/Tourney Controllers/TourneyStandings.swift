@@ -31,19 +31,45 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     let mmCellId = "mmCellId"
     let threeSectionTitles = ["Overall", "Recent Matches", "My Matches"]
     var tourneyIdentifier: String?
+    var notificationSentYou = 0
+    var active = -1
+    var tourneyOpenInvites = [String]()
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        observeTourneyInfo()
         observeTourneyTeams()
         observeMyTourneyMatches()
         observeAllTourneyMatches()
-        setupNavBarButtons()
-        setupTitle()
+        
+//        if notificationSentYou == 0 {
+//            setupNavBarButtons()
+//        }
+        
         setupTourneyMenuBar()
         setupCollectionView()
         
+    }
+    
+    func observeTourneyInfo() {
+        guard let tourneyId = tourneyIdentifier else {
+            return
+        }
+        let ref = Database.database().reference().child("tourneys").child(tourneyId)
+        ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                let tourneyName = value["name"] as? String ?? "none"
+                let tourneyActive = value["active"] as? Int ?? -1
+                if let invites = value["invites"] as? [String] {
+                    self.tourneyOpenInvites = invites
+                    self.setupNavBarButtons()
+                } else {
+                    self.setupNavBarButtons()
+                }
+                self.setupTitle(active1: tourneyActive, tournName: tourneyName)
+            }
+        }, withCancel: nil)
     }
     
     func observeTourneyTeams() {
@@ -157,7 +183,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     private func setupNavBarButtons() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Enter", style: .plain, target: self, action: #selector(handleEnterTourney))
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if tourneyOpenInvites.contains(uid) != true {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .plain, target: self, action: #selector(handleEnterTourney))
+        }
     }
     
     @objc func handleReturn() {
@@ -168,23 +199,21 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let layout = UICollectionViewFlowLayout()
         let friendList = FriendList(collectionViewLayout: layout)
         friendList.tourneyId = tourneyIdentifier!
-        let friendNavController = UINavigationController(rootViewController: friendList)
-        //friendList.hidesBottomBarWhenPushed = true
-        friendNavController.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
-        friendNavController.navigationBar.tintColor = .white
-        friendNavController.navigationBar.isTranslucent = false
-        navigationController?.present(friendNavController, animated: true, completion: nil)
+        friendList.tourneyOpenInvites = tourneyOpenInvites
+        friendList.tourneyStandings = self
+        navigationController?.present(friendList, animated: true, completion: nil)
         
     }
     
-    private func setupTitle() {
-        //navigationItem.title = "Tournament 1"
-        //navigationController?.navigationBar.isTranslucent = false
+    private func setupTitle(active1: Int, tournName: String) {
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        titleLabel.text = "Tourney Name"
-        titleLabel.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        titleLabel.font = UIFont(name: "ArialRoundedMTBold", size: 20)
+        active = active1
+        titleLabel.text = "\(tournName)\n(registration period)"
+        titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
+        titleLabel.numberOfLines = 2
+        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 14)
         navigationItem.titleView = titleLabel
     }
     private func setupCollectionView() {

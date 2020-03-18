@@ -11,8 +11,16 @@ import Firebase
 import FirebaseAuth
 
 class Notifications: UITableViewController {
-
-    var highestCurrentRank: Int = 0
+    
+    struct tourneyPlayer {
+        var idT: String
+        var playerId: String
+    }
+    
+    struct tourneyHighestRank {
+        var idT: String
+        var highestRank: Int
+    }
     //var invitations = [Invitation]()
     var notifications = [Message]()
     let cellId = "cellId"
@@ -21,6 +29,9 @@ class Notifications: UITableViewController {
     var cellTag = -1
     var currentUser2 = "nothing"
     var noNotifications = 0
+    var tourneyPlayers = [tourneyPlayer]()
+    var tourneyHighestRanks = [tourneyHighestRank]()
+    var tourneyOpenInvites = [String]()
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -32,12 +43,12 @@ class Notifications: UITableViewController {
     }
     
     func setupNavbarAndTitle() {
-        let plusImage = UIImage(named: "plus")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
-        let createNewMatchButton = UIBarButtonItem(image: plusImage, style: .plain, target: self, action: #selector(handleCreateNewMatch))
+        //let plusImage = UIImage(named: "plus")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
+        let createNewMatchButton = UIBarButtonItem(title: "Create Match", style: .plain, target: self, action: #selector(handleCreateNewMatch))
         self.navigationItem.rightBarButtonItem = createNewMatchButton
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        titleLabel.text = "Notifications"
+        titleLabel.text = "Events"
         titleLabel.textColor = .white
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
@@ -115,6 +126,10 @@ class Notifications: UITableViewController {
                     let toId = value["toId"] as? String ?? "No toId"
                     let fromId = value["fromId"] as? String ?? "No fromId"
                     notification.message = messageText
+                    if messageText == "tourney_invite" {
+                        let tourneyId = value["tourneyId"] as? String ?? "none"
+                        notification.tourneyId = tourneyId
+                    }
                     notification.timeStamp = timeStamp
                     notification.toId = toId
                     notification.fromId = fromId
@@ -212,6 +227,7 @@ class Notifications: UITableViewController {
         self.tableView.separatorStyle = .none
     }
     
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return notifications.count == 0 ? 1 : notifications.count
     }
@@ -226,7 +242,7 @@ class Notifications: UITableViewController {
             } else {
                 activityIndicatorView.stopAnimating()
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
-                cell.textLabel?.text = "No Notifications"
+                cell.textLabel?.text = "No Events"
                 cell.textLabel?.textAlignment = .center
                 return cell
             }
@@ -239,14 +255,10 @@ class Notifications: UITableViewController {
                 cell.confirmButton.addTarget(self, action: #selector(confirmFriend), for: .touchUpInside)
                 cell.rejectButton.tag = indexPath.row
                 cell.rejectButton.addTarget(self, action: #selector(rejectFriend), for: .touchUpInside)
-                cell.viewButton.tag = indexPath.row
-                cell.viewButton.addTarget(self, action: #selector(viewProfile), for: .touchUpInside)
                 return cell
             } else if notifications[indexPath.row].message == "match" {
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
                 cell.matchInvite = notifications[indexPath.row]
-                cell.viewButton.tag = indexPath.row
-                cell.viewButton.addTarget(self, action: #selector(viewMatch), for: .touchUpInside)
                 return cell
             } else if notifications[indexPath.row].message == "reject_match" {
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
@@ -255,11 +267,93 @@ class Notifications: UITableViewController {
                 cell.viewButton.tag = indexPath.row
                 cell.viewButton.addTarget(self, action: #selector(dismissNotification), for: .touchUpInside)
                 return cell
+            } else if notifications[indexPath.row].message == "tourney_invite" {
+                observeTourneyTeams(tourneyId: notifications[indexPath.row].tourneyId ?? "none")
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
+                cell.friendInvite = notifications[indexPath.row]
+                if let uid = Auth.auth().currentUser?.uid {
+                    if uid != notifications[indexPath.row].fromId {
+                        cell.confirmButton.tag = indexPath.row
+                        cell.confirmButton.addTarget(self, action: #selector(confirmTourney), for: .touchUpInside)
+                    } else {
+                        cell.confirmButton.isHidden = true
+                        cell.rejectButton.setTitle("Cancel", for: .normal)
+                    }
+                }
+                cell.rejectButton.tag = indexPath.row
+                cell.rejectButton.addTarget(self, action: #selector(rejectTourney), for: .touchUpInside)
+                return cell
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
                 return cell
             }
         }
+    }
+    
+    func observeTourneyTeams(tourneyId: String) {
+        
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
+        ref.observe(.childAdded, with: { (snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                //let player1Id = value["player1"] as? String ?? "Player not found"
+                //let player2Id = value["player2"] as? String ?? "Player not found"
+                let rank = value["rank"] as? Int ?? 100
+                self.checkRank(rank: rank, tourneyId: tourneyId)
+                //self.tourneyPlayers.append(tourneyPlayer(idT: tourneyId, playerId: player1Id))
+                //self.tourneyPlayers.append(tourneyPlayer(idT: tourneyId, playerId: player2Id))
+            }
+            
+        }, withCancel: nil)
+    }
+    
+    func checkRank(rank: Int, tourneyId: String) {
+        var addNewTourney = 0
+        if tourneyHighestRanks.count == 0 {
+            tourneyHighestRanks.append(tourneyHighestRank(idT: tourneyId, highestRank: rank))
+        } else {
+            for (index, element) in tourneyHighestRanks.enumerated() {
+                if element.idT == tourneyId && element.highestRank < rank {
+                    tourneyHighestRanks[index].highestRank = rank
+                } else if element.idT != tourneyId {
+                    addNewTourney += 1
+                }
+            }
+            if addNewTourney == tourneyHighestRanks.count {
+                tourneyHighestRanks.append(tourneyHighestRank(idT: tourneyId, highestRank: rank))
+            }
+        }
+        print(tourneyHighestRanks[0].highestRank)
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if notifications.count == 0 {
+            
+        } else {
+            if notifications[indexPath.row].message == "friend" {
+                let whichNotif = indexPath.row
+                let playerProfile = StartupPage()
+                playerProfile.playerId = notifications[whichNotif].fromId ?? "none"
+                playerProfile.isFriend = 3
+                playerProfile.hidesBottomBarWhenPushed = true
+                navigationController?.pushViewController(playerProfile, animated: true)
+            } else if notifications[indexPath.row].message == "match" {
+                let whichNotif = indexPath.row
+                let matchDisplay = MatchView()
+                matchDisplay.matchId = notifications[whichNotif].id ?? "none"
+                matchDisplay.hidesBottomBarWhenPushed = true
+                navigationController?.pushViewController(matchDisplay, animated: true)
+            } else if notifications[indexPath.row].message == "reject_match" {
+                
+            } else if notifications[indexPath.row].message == "tourney_invite" {
+                let layout = UICollectionViewFlowLayout()
+                let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
+                tourneyStandingsPage.hidesBottomBarWhenPushed = true
+                tourneyStandingsPage.notificationSentYou = 1
+                tourneyStandingsPage.tourneyIdentifier = notifications[indexPath.item].tourneyId
+                navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+            }
+        }
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     @objc func dismissNotification(sender: UIButton) {
@@ -274,7 +368,7 @@ class Notifications: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return CGFloat(88)
+        return CGFloat(102)
     }
     
     @objc func confirmFriend(sender: UIButton) {
@@ -328,6 +422,89 @@ class Notifications: UITableViewController {
         
         self.notifications.remove(at: whichNotif)
         self.tableView.reloadData()
+        self.noNotifications = 1
+    }
+    
+    func getHighestCurrentRank(tourneyId: String) -> Int {
+        for index in tourneyHighestRanks {
+            if index.idT == tourneyId {
+                return index.highestRank
+            }
+        }
+        return 0
+    }
+    
+    @objc func confirmTourney(sender: UIButton) {
+        let whichNotif = sender.tag
+        guard let tourneyId = notifications[whichNotif].tourneyId, let fromId = notifications[whichNotif].fromId, let uid = Auth.auth().currentUser?.uid, let notificationId = notifications[whichNotif].id else {
+            return
+        }
+        let highestCurrentRank = getHighestCurrentRank(tourneyId: tourneyId)
+        print(highestCurrentRank)
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
+        let createTeamInTourneyRef = ref.childByAutoId()
+        let values = ["player1": fromId, "player2": uid, "wins": 0, "losses": 0, "rank": highestCurrentRank + 1] as [String : Any]
+        createTeamInTourneyRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+        
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+        
+            let userNotificationsRef = Database.database().reference().child("user_tourneys").child(uid).child(tourneyId)
+            if let teamId = createTeamInTourneyRef.key {
+                userNotificationsRef.updateChildValues([teamId: 1])
+                let inviteeNotificationsRef = Database.database().reference().child("user_tourneys").child(fromId).child(tourneyId)
+                inviteeNotificationsRef.updateChildValues([teamId: 1])
+            }
+            
+            Database.database().reference().child("notifications").child(notificationId).removeValue()
+            Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
+            Database.database().reference().child("user_notifications").child(fromId).child(notificationId).removeValue()
+            self.notifications.remove(at: whichNotif)
+            self.tableView.reloadData()
+            self.noNotifications = 1
+            print("Data saved successfully!")
+        
+        
+        })
+    }
+    
+    @objc func rejectTourney(sender: UIButton) {
+        let whichNotif = sender.tag
+        guard let tourneyId = notifications[whichNotif].tourneyId, let fromId = notifications[whichNotif].fromId, let toId = notifications[whichNotif].toId, let notificationId = notifications[whichNotif].id else {
+            return
+        }
+        Database.database().reference().child("notifications").child(notificationId).removeValue()
+        Database.database().reference().child("user_notifications").child(toId).child(notificationId).removeValue()
+        Database.database().reference().child("user_notifications").child(fromId).child(notificationId).removeValue()
+        observeTourneyInfo(whichNotif: whichNotif, fromId: fromId, toId: toId, tourneyId: tourneyId)
+    }
+    
+    func observeTourneyInfo(whichNotif: Int, fromId: String, toId: String, tourneyId: String) {
+        guard let tourneyId = notifications[whichNotif].tourneyId else {
+            return
+        }
+        self.notifications.remove(at: whichNotif)
+        self.tableView.reloadData()
+        self.noNotifications = 1
+        let ref = Database.database().reference().child("tourneys").child(tourneyId)
+        ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                if let invites = value["invites"] as? [String] {
+                    self.deleteTourneyInvites(invites: invites, fromId: fromId, toId: toId, tourneyId: tourneyId)
+                }
+            }
+        }, withCancel: nil)
+    }
+    
+    func deleteTourneyInvites(invites: [String], fromId: String, toId: String, tourneyId: String) {
+        tourneyOpenInvites = invites
+        tourneyOpenInvites.remove(at: tourneyOpenInvites.firstIndex(of: fromId)!)
+        tourneyOpenInvites.remove(at: tourneyOpenInvites.firstIndex(of: toId)!)
+        
+        Database.database().reference().child("tourneys").child(tourneyId).child("invites").setValue(tourneyOpenInvites)
     }
     
     @objc func viewProfile(sender: UIButton) {

@@ -16,11 +16,17 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
 
     var friends = [Player]()
     var almostFriends = [Player]()
+    var teams = [Team]()
     var tourneyId = "none"
     var whoSent = 0
     var connect: Connect?
     var createMatch: CreateMatch?
     var noNotifications = 0
+    var teammateId = "none"
+    var opp1Id = "none"
+    var opp2Id = "none"
+    var tourneyOpenInvites = [String]()
+    var tourneyStandings = TourneyStandings()
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -63,10 +69,13 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         self.collectionView!.register(FriendListCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         self.collectionView!.register(EmptyCell.self, forCellWithReuseIdentifier: cellId)
         collectionView.backgroundColor = .white
-        if whoSent == 0 {
-            setupNavbar()
-        } else {
+        if whoSent != 0 || tourneyId != "none" {
             setupForPlayerSelection()
+        } else {
+            setupNavbar()
+        }
+        if tourneyId != "none" {
+            observeTourneyTeams()
         }
     }
     
@@ -80,6 +89,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     let selectPlayerLabel: UILabel = {
         let lb = UILabel()
         lb.text = "Select Player"
+        lb.numberOfLines = 2
         lb.translatesAutoresizingMaskIntoConstraints = false
         lb.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         lb.textAlignment = .center
@@ -102,15 +112,32 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         dismiss(animated: true, completion: nil)
     }
     
+    let whiteBox: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     func setupForPlayerSelection() {
-        collectionView?.contentInset = UIEdgeInsets(top: 60, left: 0, bottom: 0, right: 0)
-        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 60, left: 0, bottom: 0, right: 0)
+        collectionView?.contentInset = UIEdgeInsets(top: 90, left: 0, bottom: 0, right: 0)
+        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 90, left: 0, bottom: 0, right: 0)
+        if tourneyId != "none" {
+            selectPlayerLabel.text = "Invite a friend to join you in this tournament"
+            selectPlayerLabel.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        }
+        
+        view.addSubview(whiteBox)
+        whiteBox.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        whiteBox.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        whiteBox.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        whiteBox.heightAnchor.constraint(equalToConstant: 90).isActive = true
         
         view.addSubview(selectPlayerLabel)
         selectPlayerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        selectPlayerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+        selectPlayerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 40).isActive = true
         selectPlayerLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
-        selectPlayerLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        selectPlayerLabel.heightAnchor.constraint(equalToConstant: tourneyId != "none" ? 60 : 40).isActive = true
         
         view.addSubview(backButton)
         backButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true
@@ -121,7 +148,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     
     func setupNavbar() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Return", style: .plain, target: self, action: #selector(handleCancel))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "+Friend", style: .plain, target: self, action: #selector(handleSearchFriends))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Find Friends", style: .plain, target: self, action: #selector(handleSearchFriends))
         
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
@@ -179,7 +206,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
             cell.player = friends[indexPath.item]
             cell.messageButton.tag = indexPath.item
             cell.messageButton.addTarget(self, action: #selector(sendMessage), for: .touchUpInside)
-            if whoSent != 0 {
+            if whoSent != 0 || tourneyId != "none" {
                 cell.messageButton.isHidden = true
             }
             return cell
@@ -236,10 +263,25 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     }
     
     func sendTourneyInvitation(toId: String) {
+        let check = checkAlreadyRegistered(toId: toId)
+        if check == false {
+            let alreadyRegistered = UIAlertController(title: "Sorry", message: "This player has already registered for this tourney", preferredStyle: .alert)
+            alreadyRegistered.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alreadyRegistered, animated: true, completion: nil)
+            return
+        }
+        let checkI = checkAlreadyInvited(toId: toId)
+        if checkI == false {
+            let alreadyInvited = UIAlertController(title: "Sorry", message: "This player has already been invited to this tourney", preferredStyle: .alert)
+            alreadyInvited.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alreadyInvited, animated: true, completion: nil)
+            return
+        }
         let uid = Auth.auth().currentUser!.uid
+        let timeStamp = Int(Date().timeIntervalSince1970)
         let ref = Database.database().reference().child("notifications")
         let notificationRef = ref.childByAutoId()
-        let values = ["fromId": uid, "toId": toId, "requiresInput": 1, "tourneyId": tourneyId] as [String : Any]
+        let values = ["type": "tourney_invite", "fromId": uid, "toId": toId, "timestamp": timeStamp, "tourneyId": tourneyId] as [String : Any]
         notificationRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -248,9 +290,11 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
                 return
             }
             
-            let notificationsRef = Database.database().reference().child("user_notifications")
+            let notificationsRef = Database.database().reference()
             let notificationId = notificationRef.key!
-            let childUpdates = ["/\(uid)/\(notificationId)/": 1, "/\(toId)/\(notificationId)/": 1]
+            self.tourneyOpenInvites.append(uid)
+            self.tourneyOpenInvites.append(toId)
+            let childUpdates = ["/\("user_notifications")/\(uid)/\(notificationId)/": 0, "/\("user_notifications")/\(toId)/\(notificationId)/": 1, "/\("tourneys")/\(self.tourneyId)/\("invites")/": self.tourneyOpenInvites] as [String : Any]
             notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -263,11 +307,60 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
                 }
                 
                 print("Crazy data 2 saved!")
-                
+                let joinInviteConfirmed = UIAlertController(title: "Successfully sent tourney invite", message: "Have your friend check their notifications to accept!", preferredStyle: .alert)
+                joinInviteConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
+                self.present(joinInviteConfirmed, animated: true, completion: nil)
                 
             })
             
         })
+    }
+    
+    func handleDismiss(action: UIAlertAction) {
+        tourneyStandings.navigationItem.rightBarButtonItem = nil
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func observeTourneyTeams() {
+
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
+        ref.observe(.childAdded, with: { (snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                let team = Team()
+                let player1Id = value["player1"] as? String ?? "Player not found"
+                let player2Id = value["player2"] as? String ?? "Player not found"
+                let rank = value["rank"] as? Int ?? 100
+                let wins = value["wins"] as? Int ?? -1
+                let losses = value["losses"] as? Int ?? -1
+                
+                
+                team.player2 = player2Id
+                team.player1 = player1Id
+                team.rank = rank
+                team.wins = wins
+                team.losses = losses
+                team.teamId = snapshot.key
+                self.teams.append(team)
+            }
+            
+        }, withCancel: nil)
+    }
+    
+    func checkAlreadyRegistered(toId: String) -> Bool {
+        for index in teams {
+            if index.player1 == toId || index.player2 == toId {
+                return false
+            }
+        }
+        return true
+    }
+    
+    func checkAlreadyInvited(toId: String) -> Bool {
+        if tourneyOpenInvites.contains(toId) == true {
+            return false
+        } else {
+            return true
+        }
     }
 
     func fetchFriends() {
@@ -299,7 +392,9 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
                     if fullFriend == false {
                         self.almostFriends.append(player)
                     } else {
-                        self.friends.append(player)
+                        if friendId != self.teammateId && friendId != self.opp1Id && friendId != self.opp2Id {
+                            self.friends.append(player)
+                        }
                     }
                     DispatchQueue.main.async { self.collectionView.reloadData() }
                 }

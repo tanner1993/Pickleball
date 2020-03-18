@@ -11,6 +11,15 @@ import Firebase
 
 class CreateMatch: UIViewController {
     
+//    var activityIndicatorView: UIActivityIndicatorView!
+//
+//    override func loadView() {
+//        super.loadView()
+//
+//        activityIndicatorView = UIActivityIndicatorView(style: .gray)
+//
+//    }
+    
     struct player {
         var id: String
         var username: String
@@ -73,17 +82,23 @@ class CreateMatch: UIViewController {
     }
     
     func setupNavbarAndTitle() {
+        view.addSubview(matchSymbol)
+        matchSymbol.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        matchSymbol.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 6).isActive = true
+        matchSymbol.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -150).isActive = true
+        matchSymbol.heightAnchor.constraint(equalToConstant: 55).isActive = true
+        
+        view.addSubview(createLabel)
+        createLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        createLabel.topAnchor.constraint(equalTo: matchSymbol.bottomAnchor, constant: 2).isActive = true
+        createLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
+        createLabel.heightAnchor.constraint(equalToConstant: 70).isActive = true
+        
         view.addSubview(cancelButton)
         cancelButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true
         cancelButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
         cancelButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
         cancelButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        
-        view.addSubview(createLabel)
-        createLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        createLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 45).isActive = true
-        createLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
-        createLabel.heightAnchor.constraint(equalToConstant: 100).isActive = true
     }
     
     @objc func handleCancel() {
@@ -95,10 +110,19 @@ class CreateMatch: UIViewController {
         let friendList = FriendList(collectionViewLayout: layout)
         friendList.whoSent = sender.tag
         friendList.createMatch = self
+        friendList.teammateId = teammate.id
+        friendList.opp1Id = opponent1.id
+        friendList.opp2Id = opponent2.id
         present(friendList, animated: true, completion: nil)
     }
     
     @objc func handleCreateMatch() {
+        if teammate.id == "none" || opponent1.id == "none" || opponent2.id == "none" {
+            let createMatchFailed = UIAlertController(title: "Cannot create match", message: "Must choose 1 teammate and 2 opponents", preferredStyle: .alert)
+            createMatchFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(createMatchFailed, animated: true, completion: nil)
+            return
+        }
         let uid = Auth.auth().currentUser!.uid
         let timeOfChallenge = Date().timeIntervalSince1970
         let ref = Database.database().reference().child("matches")
@@ -117,7 +141,7 @@ class CreateMatch: UIViewController {
             
             let ref = Database.database().reference()
             let notifications2Ref = ref.child("notifications").child(matchId)
-            let toId = matchId
+            let toId = "\(Int.random(in: 1000 ..< 10000))"
             let fromId = uid
             let timeStamp = Int(Date().timeIntervalSince1970)
             let values = ["type": "match", "toId": toId, "fromId" :fromId, "timestamp": timeStamp] as [String : Any]
@@ -168,7 +192,7 @@ class CreateMatch: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        activityView.startAnimating()
         setupNavbarAndTitle()
         view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         setupViews()
@@ -176,12 +200,23 @@ class CreateMatch: UIViewController {
     
     let createMatchButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Create Match", for: .normal)
+        button.setTitle("Send Match Invitations", for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.titleLabel?.textAlignment = .center
         button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 28)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 28)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(handleCreateMatch), for: .touchUpInside)
         return button
+    }()
+    
+    let matchSymbol: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.image = UIImage(named: "match_symbol")
+        bi.isUserInteractionEnabled = true
+        return bi
     }()
 
     let inputsContainerViewTeam1: UIView = {
@@ -195,12 +230,19 @@ class CreateMatch: UIViewController {
     
     let userNameLabel: UILabel = {
         let lb = UILabel()
-        lb.text = "loading..."
+        //lb.text = "loading..."
         lb.translatesAutoresizingMaskIntoConstraints = false
         lb.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         lb.textAlignment = .center
         lb.textColor = .black
         return lb
+    }()
+    
+    let activityView: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView()
+        view.style = .gray
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
     let separatorView1: UIView = {
@@ -301,6 +343,15 @@ class CreateMatch: UIViewController {
     
     var inputsContainerViewHeightAnchor2: NSLayoutConstraint?
     var inputsContainerViewCenterYAnchor2: NSLayoutConstraint?
+    
+    func stopActivityIndicator(username: String) {
+        if username.count > 0 {
+            activityView.stopAnimating()
+            activityView.isHidden = true
+            self.userNameLabel.text = username
+            self.userNameLabel.isHidden = false
+        }
+    }
 
     func setupViews() {
         view.addSubview(inputsContainerViewTeam1)
@@ -316,15 +367,21 @@ class CreateMatch: UIViewController {
         let userNameRef = Database.database().reference().child("users").child(uid)
         userNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                self.userNameLabel.text = value["username"] as? String
+                self.stopActivityIndicator(username: (value["username"] as? String) ?? "")
             }
         })
-        
+        userNameLabel.isHidden = true
         inputsContainerViewTeam1.addSubview(userNameLabel)
         userNameLabel.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
         userNameLabel.topAnchor.constraint(equalTo: inputsContainerViewTeam1.topAnchor).isActive = true
         userNameLabel.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor).isActive = true
         userNameLabel.heightAnchor.constraint(equalToConstant: 75).isActive = true
+        
+        inputsContainerViewTeam1.addSubview(activityView)
+        activityView.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
+        activityView.topAnchor.constraint(equalTo: inputsContainerViewTeam1.topAnchor).isActive = true
+        activityView.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor).isActive = true
+        activityView.heightAnchor.constraint(equalToConstant: 75).isActive = true
         
         inputsContainerViewTeam1.addSubview(selectTeammateButton)
         selectTeammateButton.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
@@ -372,8 +429,8 @@ class CreateMatch: UIViewController {
         
         view.addSubview(createMatchButton)
         createMatchButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        createMatchButton.topAnchor.constraint(equalTo: inputsContainerViewTeam2.bottomAnchor, constant: 50).isActive = true
+        createMatchButton.topAnchor.constraint(equalTo: inputsContainerViewTeam2.bottomAnchor, constant: 25).isActive = true
         createMatchButton.widthAnchor.constraint(equalToConstant: 200).isActive = true
-        createMatchButton.heightAnchor.constraint(equalToConstant: 75).isActive = true
+        createMatchButton.heightAnchor.constraint(equalToConstant: 90).isActive = true
     }
 }
