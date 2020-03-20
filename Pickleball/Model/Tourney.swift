@@ -20,4 +20,5 @@ class Tourney: NSObject {
     var creator: String?
     var state: String?
     var county: String?
+    var active: Int?
 }

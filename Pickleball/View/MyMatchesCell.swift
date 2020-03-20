@@ -15,7 +15,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     var delegate: FeedCellProtocol?
     var userIsChallenger = 0
     
-    var matches = [Match]() {
+    var matches = [Match2]() {
         didSet {
             collectionView.reloadData()
         }
@@ -31,7 +31,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     var challengedTeamPlayer2Name = [String?]()
     var userTeamId = ""
     
-    var myMatches = [Match]()
+    var myMatches = [Match2]()
     
     var tourneyIdentifier: String?
     
@@ -69,51 +69,106 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! RecentMatchesCell
         let uid = Auth.auth().currentUser?.uid
         let match = matches[indexPath.item]
-        for index in teams {
-            if index.teamId == match.challengerTeamId {
-                if index.player1 == uid || index.player2 == uid {
-                    //userIsChallenger = 0
-                    cell.challengerPlaceholder.image = UIImage(named: "user_team_placeholder")
-                    cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
-                }
-                cell.teamRank1.text = "\(index.rank ?? -1)"
-                let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
-                player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
-                    if let value = snapshot.value as? [String: AnyObject] {
-                        cell.challengerTeam1.text = value["name"] as? String
-                    }
-                })
-                
-                let player2ref = Database.database().reference().child("users").child(index.player2 ?? "nope")
-                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-                    if let value = snapshot.value as? [String: AnyObject] {
-                        cell.challengerTeam2.text = value["name"] as? String
-                    }
-                })
-                
+        if match.active == 3 {
+            if match.winner == 1 {
+                cell.challengerPlaceholder.image = UIImage(named: "winning_team_placeholder")
+                cell.challengedPlaceholder.image = UIImage(named: "challenger_team_placeholder")
+            } else if match.winner == 2 {
+                cell.challengerPlaceholder.image = UIImage(named: "challenger_team_placeholder")
+                cell.challengedPlaceholder.image = UIImage(named: "winning_team_placeholder")
             }
-            if index.teamId == match.challengedTeamId {
-                if index.player1 == uid || index.player2 == uid {
-                    userIsChallenger = 1
-                    cell.challengedPlaceholder.image = UIImage(named: "user_team_placeholder")
-                    cell.challengerPlaceholder.image = UIImage(named: "challenger_team_placeholder")
-                }
-                cell.teamRank2.text = "\(index.rank ?? -1)"
-                let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
-                player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
-                    if let value = snapshot.value as? [String: AnyObject] {
-                        cell.challengedTeam1.text = value["name"] as? String
-                    }
-                })
-                
-                let player2ref = Database.database().reference().child("users").child(index.player2 ?? "nope")
-                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-                    if let value = snapshot.value as? [String: AnyObject] {
-                        cell.challengedTeam2.text = value["name"] as? String
-                    }
-                })
+        } else {
+            if uid == match.team_1_player_1 || uid == match.team_1_player_2 {
+                cell.challengerPlaceholder.image = UIImage(named: "user_team_placeholder")
+                cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
+            } else if uid == match.team_2_player_1 || uid == match.team_2_player_2 {
+                cell.challengerPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                cell.challengedPlaceholder.image = UIImage(named: "user_team_placeholder")
+            } else {
+                cell.challengerPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
             }
         }
+        for index in teams {
+            if match.team_1_player_1 == index.player1 {
+                cell.teamRank1.text = "\(index.rank ?? 0)"
+            } else if match.team_2_player_1 == index.player1 {
+                cell.teamRank2.text = "\(index.rank ?? 0)"
+            }
+        }
+        let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
+        player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                cell.challengerTeam1.text = value["name"] as? String
+            }
+        })
+        
+        let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
+        player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                cell.challengerTeam2.text = value["name"] as? String
+            }
+        })
+        
+        let player1ref2 = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope")
+        player1ref2.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                cell.challengedTeam1.text = value["name"] as? String
+            }
+        })
+        
+        let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
+        player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                cell.challengedTeam2.text = value["name"] as? String
+            }
+        })
+        
+//        for index in teams {
+//            if index.teamId == match.challengerTeamId {
+//                if index.player1 == uid || index.player2 == uid {
+//                    //userIsChallenger = 0
+//                    cell.challengerPlaceholder.image = UIImage(named: "user_team_placeholder")
+//                    cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
+//                }
+//                cell.teamRank1.text = "\(index.rank ?? -1)"
+//                let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
+//                player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+//                    if let value = snapshot.value as? [String: AnyObject] {
+//                        cell.challengerTeam1.text = value["name"] as? String
+//                    }
+//                })
+//
+//                let player2ref = Database.database().reference().child("users").child(index.player2 ?? "nope")
+//                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+//                    if let value = snapshot.value as? [String: AnyObject] {
+//                        cell.challengerTeam2.text = value["name"] as? String
+//                    }
+//                })
+//
+//            }
+//            if index.teamId == match.challengedTeamId {
+//                if index.player1 == uid || index.player2 == uid {
+//                    userIsChallenger = 1
+//                    cell.challengedPlaceholder.image = UIImage(named: "user_team_placeholder")
+//                    cell.challengerPlaceholder.image = UIImage(named: "challenger_team_placeholder")
+//                }
+//                cell.teamRank2.text = "\(index.rank ?? -1)"
+//                let player1ref = Database.database().reference().child("users").child(index.player1 ?? "nope")
+//                player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+//                    if let value = snapshot.value as? [String: AnyObject] {
+//                        cell.challengedTeam1.text = value["name"] as? String
+//                    }
+//                })
+//
+//                let player2ref = Database.database().reference().child("users").child(index.player2 ?? "nope")
+//                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+//                    if let value = snapshot.value as? [String: AnyObject] {
+//                        cell.challengedTeam2.text = value["name"] as? String
+//                    }
+//                })
+//            }
+//        }
         cell.match = match
         cell.teams = teams
         cell.backgroundColor = UIColor.white
@@ -125,38 +180,42 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let vc = MatchView()
         for index in teams {
-            if index.player1 == Auth.auth().currentUser?.uid || index.player2 == Auth.auth().currentUser?.uid {
-                userTeamId = index.teamId!
+            if matches[indexPath.item].team_1_player_1 == index.player1 {
+                vc.team1 = index
+            } else if matches[indexPath.item].team_2_player_1 == index.player1 {
+                vc.team2 = index
             }
         }
-        let vc = MatchInfoDisplay()
-        vc.match = matches[indexPath.item]
+        vc.teams = teams
+        vc.matchId = matches[indexPath.item].matchId ?? "none"
         vc.tourneyId = tourneyIdentifier ?? ""
+        self.delegate?.pushNavigation(vc)
         print(userTeamId)
-        if userTeamId == matches[indexPath.item].challengerTeamId {
-            vc.userIsChallenger = 0
-            for index in teams {
-                if index.teamId == userTeamId {
-                    vc.userTeam = index
-                } else if index.teamId == matches[indexPath.item].challengedTeamId {
-                    vc.oppTeam = index
-                }
-            }
-            self.delegate?.pushNavigation(vc)
-        } else if userTeamId == matches[indexPath.item].challengedTeamId {
-            vc.userIsChallenger = 1
-            for index in teams {
-                if index.teamId == userTeamId {
-                    vc.userTeam = index
-                } else if index.teamId == matches[indexPath.item].challengerTeamId {
-                    vc.oppTeam = index
-                }
-            }
-            vc.teams = teams
-            vc.tourneyStandings = TourneyStandings()
-            self.delegate?.pushNavigation(vc)
-        }
+//        if userTeamId == matches[indexPath.item].challengerTeamId {
+//            vc.userIsChallenger = 0
+//            for index in teams {
+//                if index.teamId == userTeamId {
+//                    vc.userTeam = index
+//                } else if index.teamId == matches[indexPath.item].challengedTeamId {
+//                    vc.oppTeam = index
+//                }
+//            }
+//            self.delegate?.pushNavigation(vc)
+//        } else if userTeamId == matches[indexPath.item].challengedTeamId {
+//            vc.userIsChallenger = 1
+//            for index in teams {
+//                if index.teamId == userTeamId {
+//                    vc.userTeam = index
+//                } else if index.teamId == matches[indexPath.item].challengerTeamId {
+//                    vc.oppTeam = index
+//                }
+//            }
+//            vc.teams = teams
+//            vc.tourneyStandings = TourneyStandings()
+//            self.delegate?.pushNavigation(vc)
+//        }
         
     }
     

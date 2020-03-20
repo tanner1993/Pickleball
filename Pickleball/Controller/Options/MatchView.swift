@@ -12,6 +12,10 @@ import Firebase
 class MatchView: UIViewController {
     var match = Match2()
     var player = Player()
+    var team1 = Team()
+    var team2 = Team()
+    var teams = [Team]()
+    var tourneyId = "none"
     var matchId = "none"
     var confirmMatchScoresWidthAnchor: NSLayoutConstraint?
     var confirmMatchScoresCenterXAnchor: NSLayoutConstraint?
@@ -61,7 +65,7 @@ class MatchView: UIViewController {
     }
     
     func fetchMatch() {
-        let matchReference = Database.database().reference().child("matches").child(matchId)
+        let matchReference = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
         
         matchReference.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
@@ -1122,7 +1126,7 @@ class MatchView: UIViewController {
         switch scoresValidation {
         case 0:
             let values = ["winner": winner, "active": 2, "submitter": userIsTeam1 ? 1 : 2, "team_1_player_1": match.team_1_player_1!, "team_1_player_2": match.team_1_player_2!, "team_2_player_1": match.team_2_player_1!, "team_2_player_2": match.team_2_player_2!, "team1_scores": finalTeam1Scores, "team2_scores": finalTeam2Scores] as [String : Any]
-            let ref = Database.database().reference().child("matches").child(matchId)
+            let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
             ref.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -1149,10 +1153,18 @@ class MatchView: UIViewController {
                     return
                 }
                 
-                uid != self.match.team_1_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
-                uid != self.match.team_1_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
-                uid != self.match.team_2_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
-                uid != self.match.team_2_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
+                if self.tourneyId == "none" {
+                    uid != self.match.team_1_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
+                    uid != self.match.team_1_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
+                    uid != self.match.team_2_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
+                    uid != self.match.team_2_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
+                } else {
+                    uid != self.match.team_1_player_1 ? Database.database().reference().child("tourney_notifications").child(self.match.team_1_player_1!).child(self.tourneyId).setValue(1) : print("nope")
+                    uid != self.match.team_1_player_2 ? Database.database().reference().child("tourney_notifications").child(self.match.team_1_player_2!).child(self.tourneyId).setValue(1) : print("nope")
+                    uid != self.match.team_2_player_1 ? Database.database().reference().child("tourney_notifications").child(self.match.team_2_player_1!).child(self.tourneyId).setValue(1) : print("nope")
+                    uid != self.match.team_2_player_2 ? Database.database().reference().child("tourney_notifications").child(self.match.team_2_player_2!).child(self.tourneyId).setValue(1) : print("nope")
+                }
+                
                 
             })
             
@@ -1199,7 +1211,7 @@ class MatchView: UIViewController {
     func performConfirmActive2() {
         let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
         let values = ["active": 3] as [String : Any]
-        let ref = Database.database().reference().child("matches").child(matchId)
+        let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
         ref.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -1216,6 +1228,8 @@ class MatchView: UIViewController {
             self.confirmCheck3.isHidden = false
             self.confirmCheck4.isHidden = false
             self.updatePlayerStats()
+            self.tourneyId != "none" ? self.updateTourneyStandings() : print("nope")
+            self.removeCantChallenge()
             
             
         })
@@ -1231,6 +1245,22 @@ class MatchView: UIViewController {
         winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
         winnerConfirmed.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
         winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+    }
+    
+    func removeCantChallenge() {
+        let ref = Database.database().reference().child("tourneys").child(tourneyId)
+        ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                if let cantChallenge = value["cant_challenge"] as? [String] {
+                    var tourneyCantChallenge = cantChallenge
+                    tourneyCantChallenge.remove(at: tourneyCantChallenge.firstIndex(of: self.match.team_1_player_1!)!)
+                    tourneyCantChallenge.remove(at: tourneyCantChallenge.firstIndex(of: self.match.team_1_player_2!)!)
+                    tourneyCantChallenge.remove(at: tourneyCantChallenge.firstIndex(of: self.match.team_2_player_1!)!)
+                    tourneyCantChallenge.remove(at: tourneyCantChallenge.firstIndex(of: self.match.team_2_player_2!)!)
+                    Database.database().reference().child("tourneys").child(self.tourneyId).child("cant_challenge").setValue(tourneyCantChallenge)
+                }
+            }
+        }, withCancel: nil)
     }
     
     func updatePlayerStats() {
@@ -1450,6 +1480,132 @@ class MatchView: UIViewController {
                 return -1
             }
         }
+    }
+    
+    func reorganizeTeams() -> [Int] {
+        var newTeam1Rank = -10
+        var newTeam2Rank = -10
+        var effectedRanks = [Int]()
+        var effectedIndices = [Int]()
+        guard let team1Rank = team1.rank else {
+            return [-1]
+        }
+        guard let team2Rank = team2.rank else {
+            return [-1]
+        }
+        let team1IsLeading = team1Rank < team2Rank ? 0 : 1
+        if match.winner == 1 {
+            if team1IsLeading == 0 {
+                newTeam1Rank = team1Rank != 1 ? team1Rank - 1 : 1
+                newTeam2Rank = team2Rank
+                for (index, element) in teams.enumerated() {
+                    if element.rank == newTeam1Rank {
+                        if team1Rank != 1 {
+                            element.rank = team1Rank
+                            effectedIndices.append(index)
+                        }
+                    } else if element.teamId == team1.teamId {
+                        element.rank = newTeam1Rank
+                    }
+                }
+                return effectedIndices
+            } else {
+                newTeam1Rank = team2Rank
+                newTeam2Rank = team2Rank + 1
+                if team1Rank - team2Rank > 1 {
+                    for index in team2Rank + 1..<team1Rank {
+                        effectedRanks.append(index)
+                    }
+                }
+                for (index, element) in teams.enumerated() {
+                    if effectedRanks.contains(element.rank!) {
+                        element.rank = element.rank! + 1
+                        effectedIndices.append(index)
+                    } else if element.teamId == team1.teamId {
+                        element.rank = newTeam1Rank
+                    } else if element.teamId == team2.teamId {
+                        element.rank = newTeam2Rank
+                    }
+                }
+                return effectedIndices
+            }
+        } else if match.winner == 2 {
+            if team1IsLeading == 1 {
+                newTeam2Rank = team2Rank != 1 ? team2Rank - 1 : 1
+                newTeam1Rank = team1Rank
+                for (index, element) in teams.enumerated() {
+                    if element.rank == newTeam2Rank {
+                        if team2Rank != 1 {
+                            element.rank = team2Rank
+                            effectedIndices.append(index)
+                        }
+                    } else if element.teamId == team2.teamId {
+                        element.rank = newTeam2Rank
+                    }
+                }
+                return effectedIndices
+            } else {
+                newTeam2Rank = team1Rank
+                newTeam1Rank = team1Rank + 1
+                if team2Rank - team1Rank > 1 {
+                    for index in team1Rank + 1..<team2Rank {
+                        effectedRanks.append(index)
+                    }
+                }
+                for (index, element) in teams.enumerated() {
+                    if effectedRanks.contains(element.rank!) {
+                        element.rank = element.rank! + 1
+                        effectedIndices.append(index)
+                    } else if element.teamId == team2.teamId {
+                        element.rank = newTeam2Rank
+                    } else if element.teamId == team1.teamId {
+                        element.rank = newTeam1Rank
+                    }
+                }
+                return effectedIndices
+            }
+        } else {
+            return [-1]
+        }
+    }
+    
+    func updateTourneyStandings() {
+        var team1Index = -1
+        var team2Index = -1
+        for (index, element) in teams.enumerated() {
+            if element.teamId == team1.teamId ?? "no user id" {
+                team1Index = index
+            } else if element.teamId == team2.teamId {
+                team2Index = index
+            }
+        }
+        let effectedIndices = reorganizeTeams()
+        
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
+        let valuesTeam1 = ["rank": teams[team1Index].rank, "wins": match.winner == 1 ? team1.wins! + 1 : team1.wins!, "losses": match.winner == 2 ? team1.losses! + 1 : team1.losses!, "player1": team1.player1, "player2": team1.player2] as [String : Any]
+        let valuesTeam2 = ["rank": teams[team2Index].rank, "wins": match.winner == 2 ? team2.wins! + 1 : team2.wins!, "losses": match.winner == 1 ? team2.losses! + 1 : team2.losses!, "player1": team2.player1, "player2": team2.player2] as [String : Any]
+        var childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2]
+        if effectedIndices.count == 1 {
+            let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
+            childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2, "/\(teams[effectedIndices[0]].teamId ?? "none")/": valuesEffected1]
+        } else if effectedIndices.count == 2 {
+            let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
+            let valuesEffected2 = ["rank": teams[effectedIndices[1]].rank as Any, "wins": teams[effectedIndices[1]].wins as Any, "losses": teams[effectedIndices[1]].losses as Any, "player1": teams[effectedIndices[1]].player1 as Any, "player2": teams[effectedIndices[1]].player2 as Any] as [String : Any]
+            childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2, "/\(teams[effectedIndices[0]].teamId ?? "none")/": valuesEffected1, "/\(teams[effectedIndices[1]].teamId ?? "none")/": valuesEffected2]
+        }
+        ref.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            print("Crazy data saved!")
+            
+            
+        })
+        
     }
     
     func disableScores(team1Scores: [Int], team2Scores: [Int]) {

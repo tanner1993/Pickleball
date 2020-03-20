@@ -22,6 +22,14 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     var cellTag = -1
     var myTeamId: Int?
     var tourneyIdentifier: String?
+    var active = 0 {
+        didSet {
+            if active == 2 {
+                collectionView.contentInset = UIEdgeInsets(top: 300, left: 0, bottom: 0, right: 0)
+                collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 300, left: 0, bottom: 0, right: 0)
+            }
+        }
+    }
     var tourneyStandings = TourneyStandings()
     
     
@@ -104,6 +112,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         vc.teamIdSelected = teams[indexPath.item]
         vc.usersTeamId = teams[myTeamIndex]
         vc.tourneyId = tourneyId
+        vc.active = active
         self.delegate?.pushNavigation(vc)
     }
     

@@ -13,28 +13,95 @@ import FirebaseAuth
 class RecentMatchesCell: BaseCell {
     var teams = [Team]() {
         didSet {
-            match1Label.text = "\(match?.challengerScores?[0] ?? -1)/\(match?.challengedScores?[0] ?? -1)"
-            match2Label.text = "\(match?.challengerScores?[1] ?? -1)/\(match?.challengedScores?[1] ?? -1)"
-            match3Label.text = "\(match?.challengerScores?[2] ?? -1)/\(match?.challengedScores?[2] ?? -1)"
-            match4Label.text = "\(match?.challengerScores?[3] ?? -1)/\(match?.challengedScores?[3] ?? -1)"
-            match5Label.text = "\(match?.challengerScores?[4] ?? -1)/\(match?.challengedScores?[4] ?? -1)"
+            if match?.active == 3 {
+                grayBox.isHidden = false
+                addSubview(grayBox)
+                grayBox.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+                grayBox.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+                grayBox.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+                grayBox.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+                teamRank1.isHidden = true
+                teamRank2.isHidden = true
+                if match?.winner == 1 {
+                    tourneySymbol.isHidden = false
+                    tourneySymbol2.isHidden = true
+                    bringSubviewToFront(grayBox)
+                    bringSubviewToFront(challengerPlaceholder)
+                    bringSubviewToFront(challengerTeam1)
+                    bringSubviewToFront(challengerTeam2)
+                    bringSubviewToFront(tourneySymbol)
+                    addSubview(tourneySymbol)
+                    let tourneyLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: 375, hia: 200)
+                    tourneySymbol.centerYAnchor.constraint(equalTo: topAnchor, constant: CGFloat(tourneyLoc.Y)).isActive = true
+                    tourneySymbol.centerXAnchor.constraint(equalTo: leftAnchor, constant: CGFloat(tourneyLoc.X)).isActive = true
+                    tourneySymbol.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.H)).isActive = true
+                    tourneySymbol.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.W)).isActive = true
+                } else if match?.winner == 2 {
+                    tourneySymbol.isHidden = true
+                    tourneySymbol2.isHidden = false
+                    bringSubviewToFront(grayBox)
+                    bringSubviewToFront(challengedPlaceholder)
+                    bringSubviewToFront(challengedTeam1)
+                    bringSubviewToFront(challengedTeam2)
+                    bringSubviewToFront(tourneySymbol2)
+                    let tourneyLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: 375, hia: 200)
+                    
+                    addSubview(tourneySymbol2)
+                    tourneySymbol2.centerYAnchor.constraint(equalTo: topAnchor, constant: CGFloat(tourneyLoc2.Y)).isActive = true
+                    tourneySymbol2.centerXAnchor.constraint(equalTo: leftAnchor, constant: CGFloat(tourneyLoc2.X)).isActive = true
+                    tourneySymbol2.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.H)).isActive = true
+                    tourneySymbol2.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.W)).isActive = true
+                }
+            } else {
+                teamRank1.isHidden = false
+                teamRank2.isHidden = false
+                tourneySymbol.isHidden = true
+                grayBox.isHidden = true
+            }
+            match1Label.text = "\(match?.team1_scores?[0] ?? -1)/\(match?.team2_scores?[0] ?? -1)"
+            match2Label.text = "\(match?.team1_scores?[1] ?? -1)/\(match?.team2_scores?[1] ?? -1)"
+            match3Label.text = "\(match?.team1_scores?[2] ?? -1)/\(match?.team2_scores?[2] ?? -1)"
+            match4Label.text = "\(match?.team1_scores?[3] ?? -1)/\(match?.team2_scores?[3] ?? -1)"
+            match5Label.text = "\(match?.team1_scores?[4] ?? -1)/\(match?.team2_scores?[4] ?? -1)"
             guard let startTime = match?.time else {
                 return
             }
-            if (startTime + (86400 * 3)) < Date().timeIntervalSince1970 {
-                timeLeftLabel.text = "0\ndays\nleft"
+            if match?.active == 3 {
+                timeLeftLabel.text = "FIN"
             } else {
-                let daysLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 86400
-                let daysRounded = daysLeft.round(nearest: 0.5)
-                if daysRounded == 0 {
-                    timeLeftLabel.text = "<0.5\ndays\nleft"
+                if (startTime + (86400 * 3)) < Date().timeIntervalSince1970 {
+                    timeLeftLabel.text = "0\ndays\nleft"
                 } else {
-                    timeLeftLabel.text = "\(daysRounded)\ndays\nleft"
+                    let daysLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 86400
+                    let daysRounded = daysLeft.round(nearest: 0.5)
+                    if daysRounded == 0 {
+                        timeLeftLabel.text = "<0.5\ndays\nleft"
+                    } else {
+                        timeLeftLabel.text = "\(daysRounded)\ndays\nleft"
+                    }
                 }
             }
         }
     }
-    var match: Match?
+    var match: Match2?
+    
+    let tourneySymbol: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.isUserInteractionEnabled = true
+        bi.image = UIImage(named: "tourney_symbol")
+        return bi
+    }()
+    
+    let tourneySymbol2: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.isUserInteractionEnabled = true
+        bi.image = UIImage(named: "tourney_symbol")
+        return bi
+    }()
     
     let challengerPlaceholder: UIImageView = {
         let image = UIImageView()
@@ -202,6 +269,13 @@ class RecentMatchesCell: BaseCell {
         label.font = UIFont(name: "ArialRoundedMTBold", size: 20)
         label.textAlignment = .center
         return label
+    }()
+    
+    let grayBox: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor(displayP3Red: 220/255, green: 220/255, blue: 220/255, alpha: 0.7)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
 
