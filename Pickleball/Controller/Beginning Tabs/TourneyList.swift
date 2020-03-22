@@ -121,6 +121,9 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     let state = value["state"] as? String ?? "No State"
                     let county = value["county"] as? String ?? "No State"
                     let active = value["active"] as? Int ?? -1
+                    let finals1 = value["finals1"] as? Int ?? -1
+                    let finals2 = value["finals2"] as? Int ?? -1
+                    let winner = value["winner"] as? Int ?? -1
                     
                     tourney.name = name
                     tourney.type = type
@@ -134,6 +137,9 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     tourney.state = state
                     tourney.county = county
                     tourney.active = active
+                    tourney.finals1 = finals1
+                    tourney.finals2 = finals2
+                    tourney.winner = winner
                     self.tourneys.append(tourney)
                     
                     DispatchQueue.main.async { self.collectionView.reloadData() }
@@ -185,6 +191,9 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
             tourneyStandingsPage.hidesBottomBarWhenPushed = true
             tourneyStandingsPage.tourneyIdentifier = tourneys[indexPath.item].id
             tourneyStandingsPage.active = tourneys[indexPath.item].active ?? -1
+            tourneyStandingsPage.finals1 = tourneys[indexPath.item].finals1 ?? -1
+            tourneyStandingsPage.finals2 = tourneys[indexPath.item].finals2 ?? -1
+            tourneyStandingsPage.winner = tourneys[indexPath.item].winner ?? -1
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
         } else {
             

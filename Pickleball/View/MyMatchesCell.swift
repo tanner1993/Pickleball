@@ -25,6 +25,16 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
             collectionView.reloadData()
         }
     }
+    var active = 0 {
+        didSet {
+            if active >= 2 {
+                collectionView.contentInset = UIEdgeInsets(top: 320, left: 0, bottom: 0, right: 0)
+                collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 320, left: 0, bottom: 0, right: 0)
+            }
+        }
+    }
+    var finals1 = 0
+    var finals2 = 0
     var challengerTeamPlayer1Name = [String?]()
     var challengerTeamPlayer2Name = [String?]()
     var challengedTeamPlayer1Name = [String?]()
@@ -191,6 +201,9 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         vc.teams = teams
         vc.matchId = matches[indexPath.item].matchId ?? "none"
         vc.tourneyId = tourneyIdentifier ?? ""
+        vc.tourneyActive = active
+        vc.finals1 = finals1
+        vc.finals2 = finals2
         self.delegate?.pushNavigation(vc)
         print(userTeamId)
 //        if userTeamId == matches[indexPath.item].challengerTeamId {

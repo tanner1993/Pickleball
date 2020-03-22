@@ -308,8 +308,10 @@ class TeamInfoDisplay: UIViewController {
             
         } else if active == 1 && (cantChallenge.contains(uid) == true || cantChallenge.contains(teamIdSelected.player1 ?? "none") == true) {
             challengeButton.alpha = 0.2
-        } else if active == 2 || active == 3 {
+        } else if active == 2 || active == 3 || active == 4 || active == 5 {
             challengeButton.alpha = 0.2
+        } else if active == 6 {
+            challengeButton.isHidden = true
         }
     }
     
@@ -540,7 +542,17 @@ class TeamInfoDisplay: UIViewController {
     }
     
     @objc func handleChallengeConfirmed() {
-        if active == 0 {
+        if active == 5 {
+            let newalert = UIAlertController(title: "No can do", message: "The ladder is over, now it's semifinals!", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        } else if active >= 3 {
+            let newalert = UIAlertController(title: "No can do", message: "The ladder is over, now it's finals!", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        } else if active == 0 {
             let newalert = UIAlertController(title: "No can do", message: "The Tourney has not begun yet! Once it begins, challenge away.", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
@@ -557,17 +569,6 @@ class TeamInfoDisplay: UIViewController {
         }
         if tourneyCantChallenge.contains(teamIdSelected.player1 ?? "none") == true {
             let newalert = UIAlertController(title: "Impossible", message: "This team still has an open match, once they finish that, then you can challenge them", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
-            self.present(newalert, animated: true, completion: nil)
-            return
-        }
-        if active == 2 {
-            let newalert = UIAlertController(title: "No can do", message: "The ladder is over, now it's semifinals!", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
-            self.present(newalert, animated: true, completion: nil)
-            return
-        } else if active == 3 {
-            let newalert = UIAlertController(title: "No can do", message: "The ladder is over, now it's finals!", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
             return

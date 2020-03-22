@@ -33,6 +33,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     var tourneyIdentifier: String?
     var notificationSentYou = 0
     var active = -1
+    var finals1 = -1
+    var finals2 = -1
+    var winner = -1
     var tourneyOpenInvites = [String]()
     let blackView = UIView()
     var tourneyNameAll = "none"
@@ -51,7 +54,86 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         
         setupTourneyMenuBar()
         setupCollectionView()
-        
+    }
+    
+    func changeViews() {
+        if self.active == 3 {
+            if finals1 == 1 {
+                player1s[1].alpha = 0.2
+                player2s[1].alpha = 0.2
+                wins[1].alpha = 0.2
+                losses[1].alpha = 0.2
+                tourneySymbols[0].isHidden = false
+            } else {
+                player1s[0].alpha = 0.2
+                player2s[0].alpha = 0.2
+                wins[0].alpha = 0.2
+                losses[0].alpha = 0.2
+                tourneySymbols[1].isHidden = false
+                tourneySymbols[1].image = UIImage(named: "tourney_symbol")
+            }
+        } else if self.active == 4 {
+            if finals2 == 1 {
+                player1s[3].alpha = 0.2
+                player2s[3].alpha = 0.2
+                wins[3].alpha = 0.2
+                losses[3].alpha = 0.2
+            } else {
+                player1s[2].alpha = 0.2
+                player2s[2].alpha = 0.2
+                wins[2].alpha = 0.2
+                losses[2].alpha = 0.2
+            }
+        } else if self.active >= 5 {
+            if finals1 == 1 {
+                player1s[1].alpha = 0.2
+                player2s[1].alpha = 0.2
+                wins[1].alpha = 0.2
+                losses[1].alpha = 0.2
+            } else {
+                player1s[0].alpha = 0.2
+                player2s[0].alpha = 0.2
+                wins[0].alpha = 0.2
+                losses[0].alpha = 0.2
+            }
+            if finals2 == 1 {
+                player1s[3].alpha = 0.2
+                player2s[3].alpha = 0.2
+                wins[3].alpha = 0.2
+                losses[3].alpha = 0.2
+            } else {
+                player1s[2].alpha = 0.2
+                player2s[2].alpha = 0.2
+                wins[2].alpha = 0.2
+                losses[2].alpha = 0.2
+            }
+        }
+        if self.active == 6 {
+            var correctTeam = 0
+            switch self.winner {
+            case 1:
+                correctTeam = 1
+            case 2:
+                correctTeam = 3
+            case 3:
+                correctTeam = 4
+            case 4:
+                correctTeam = 2
+            default:
+                print("failed correct")
+            }
+            if correctTeam == 1 || correctTeam == 2 {
+                player1s[5].alpha = 0.2
+                player2s[5].alpha = 0.2
+                wins[5].alpha = 0.2
+                losses[5].alpha = 0.2
+            } else {
+                player1s[4].alpha = 0.2
+                player2s[4].alpha = 0.2
+                wins[4].alpha = 0.2
+                losses[4].alpha = 0.2
+            }
+        }
     }
     
     func observeTourneyInfo() {
@@ -64,7 +146,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 let tourneyName = value["name"] as? String ?? "none"
                 self.tourneyNameAll = tourneyName
                 let tourneyActive = value["active"] as? Int ?? -1
-                if tourneyActive == 2 {
+                if tourneyActive >= 2 {
                     self.setupSemisView()
                 }
                 let tourneyCreator = value["creator"] as? String ?? "none"
@@ -103,7 +185,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         finalsScrollView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         finalsScrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: 35).isActive = true
         finalsScrollView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        finalsScrollView.heightAnchor.constraint(equalToConstant: 300).isActive = true
+        finalsScrollView.heightAnchor.constraint(equalToConstant: 320).isActive = true
         
         finalsScrollView.addSubview(finalsBackground)
         finalsBackground.leftAnchor.constraint(equalTo: finalsScrollView.leftAnchor).isActive = true
@@ -133,16 +215,16 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 team.rank = rank
                 team.wins = wins
                 team.losses = losses
-                if self.active == 2 {
+                if self.active >= 2 {
                     switch rank {
                     case 1:
-                        self.getNamesAndWins(which: 1, player1: player1Id, player2: player2Id, wins: wins, losses: losses)
+                        self.getNamesAndWins(which: 1, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
                     case 2:
-                        self.getNamesAndWins(which: 2, player1: player1Id, player2: player2Id, wins: wins, losses: losses)
+                        self.getNamesAndWins(which: 3, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
                     case 3:
-                        self.getNamesAndWins(which: 3, player1: player1Id, player2: player2Id, wins: wins, losses: losses)
+                        self.getNamesAndWins(which: 4, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
                     case 4:
-                        self.getNamesAndWins(which: 4, player1: player1Id, player2: player2Id, wins: wins, losses: losses)
+                        self.getNamesAndWins(which: 2, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
                     default:
                         print("not top 4")
                     }
@@ -155,23 +237,100 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         }, withCancel: nil)
     }
     
-    func getNamesAndWins(which: Int, player1: String, player2: String, wins: Int, losses: Int) {
+    func getNamesAndWins(which: Int, player1: String, player2: String, winsf: Int, lossesf: Int) {
         let player1ref = Database.database().reference().child("users").child(player1)
         player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                self.player1_1.text = value["username"] as? String
+                self.player1s[which - 1].text = value["username"] as? String
+                if self.active == 3 {
+                    self.player1s[4].text = self.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
+                } else if self.active == 4 {
+                    self.player1s[5].text = self.finals2 == 2 ? self.player1s[1].text : self.player1s[2].text
+                } else if self.active >= 5 {
+                    self.player1s[4].text = self.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
+                    self.player1s[5].text = self.finals2 == 2 ? self.player1s[1].text : self.player1s[2].text
+                }
+                if self.active == 6 {
+                    var correctTeam = 0
+                    switch self.winner {
+                    case 1:
+                        correctTeam = 1
+                    case 2:
+                        correctTeam = 3
+                    case 3:
+                        correctTeam = 4
+                    case 4:
+                        correctTeam = 2
+                    default:
+                        print("failed correct")
+                    }
+                    self.player1s[6].text = self.player1s[correctTeam - 1].text
+                }
             }
         })
         
         let player2ref = Database.database().reference().child("users").child(player2)
         player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                self.player2_1.text = value["username"] as? String
+                self.player2s[which - 1].text = value["username"] as? String
+                if self.active == 3 {
+                    self.player2s[4].text = self.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
+                } else if self.active == 4 {
+                    self.player2s[5].text = self.finals2 == 2 ? self.player2s[1].text : self.player2s[2].text
+                } else if self.active >= 5 {
+                    self.player2s[4].text = self.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
+                    self.player2s[5].text = self.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
+                }
+                if self.active == 6 {
+                    var correctTeam = 0
+                    switch self.winner {
+                    case 1:
+                        correctTeam = 1
+                    case 2:
+                        correctTeam = 3
+                    case 3:
+                        correctTeam = 4
+                    case 4:
+                        correctTeam = 2
+                    default:
+                        print("failed correct")
+                    }
+                    self.player2s[6].text = self.player2s[correctTeam - 1].text
+                }
             }
         })
         
-        wins_1.text = "Wins: \(wins)"
-        losses_1.text = "Losses: \(losses)"
+        wins[which - 1].text = "Wins: \(winsf)"
+        losses[which - 1].text = "Losses: \(lossesf)"
+        if self.active == 3 {
+            self.wins[4].text = self.finals1 == 1 ? self.wins[0].text : self.wins[1].text
+            self.losses[4].text = self.finals1 == 1 ? self.losses[0].text : self.losses[1].text
+        } else if self.active == 4 {
+            self.wins[5].text = self.finals2 == 2 ? self.wins[2].text : self.wins[3].text
+            self.losses[5].text = self.finals2 == 2 ? self.losses[2].text : self.losses[3].text
+        } else if self.active >= 5 {
+            self.wins[4].text = self.finals1 == 1 ? self.wins[0].text : self.wins[1].text
+            self.losses[4].text = self.finals1 == 1 ? self.losses[0].text : self.losses[1].text
+            self.wins[5].text = self.finals2 == 2 ? self.wins[2].text : self.wins[3].text
+            self.losses[5].text = self.finals2 == 2 ? self.losses[2].text : self.losses[3].text
+        }
+        if self.active == 6 {
+            var correctTeam = 0
+            switch self.winner {
+            case 1:
+                correctTeam = 1
+            case 2:
+                correctTeam = 3
+            case 3:
+                correctTeam = 4
+            case 4:
+                correctTeam = 2
+            default:
+                print("failed correct")
+            }
+            self.wins[6].text = self.wins[correctTeam - 1].text
+            self.losses[6].text = self.losses[correctTeam - 1].text
+        }
     }
     
 //    func observeMyTourneyMatches() {
@@ -300,9 +459,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             titleLabel.text = "\(tournName)\n(registration period)"
         } else if active == 1 {
             titleLabel.text = "\(tournName)\n(ongoing)"
-        } else if active == 2 {
+        } else if active > 1 && active < 5 {
             titleLabel.text = "\(tournName)\n(semifinal)"
-        } else if active == 3 {
+        } else if active == 5 {
             titleLabel.text = "\(tournName)\n(final)"
         }
         titleLabel.textColor = .white
@@ -447,6 +606,9 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 cell.tourneyIdentifier = tourneyIdentifier
                 cell.matches = matches
                 cell.teams = teams
+                cell.active = active
+                cell.finals1 = finals1
+                cell.finals2 = finals2
                 cell.delegate = self
                 return cell
             }
@@ -491,10 +653,10 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             titleLabel.text = "\(tourneyNameAll)\n(registration period)"
         } else if active == 1 {
             titleLabel.text = "\(tourneyNameAll)\n(ongoing)"
-        } else if active == 2 {
+        } else if active >= 2 {
             titleLabel.text = "\(tourneyNameAll)\n(semifinal)"
             handleSetupSemifinal1()
-        } else if active == 3 {
+        } else if active == 5 {
             titleLabel.text = "\(tourneyNameAll)\n(final)"
         }
         titleLabel.textColor = .white
@@ -568,74 +730,129 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         })
     }
     
+    var player1s = [UILabel]()
+    var player2s = [UILabel]()
+    var wins = [UILabel]()
+    var losses = [UILabel]()
+    var tourneySymbols = [UIImageView]()
+    
     func setupSemiTeams() {
-        finalsBackground.addSubview(player1_1)
         
-        let player1_1Loc = calculateButtonPosition(x: 197.5, y: 53.7, w: 340, h: 70, wib: 2250, hib: 600, wia: 1125, hia: 300)
-        player1_1.centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(player1_1Loc.Y)).isActive = true
-        player1_1.centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(player1_1Loc.X)).isActive = true
-        player1_1.heightAnchor.constraint(equalToConstant: CGFloat(player1_1Loc.H)).isActive = true
-        player1_1.widthAnchor.constraint(equalToConstant: CGFloat(player1_1Loc.W)).isActive = true
-        
-        finalsBackground.addSubview(player2_1)
-        
-        let player2_1Loc = calculateButtonPosition(x: 537.2, y: 53.7, w: 340, h: 70, wib: 2250, hib: 600, wia: 1125, hia: 300)
-        player2_1.centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(player2_1Loc.Y)).isActive = true
-        player2_1.centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(player2_1Loc.X)).isActive = true
-        player2_1.heightAnchor.constraint(equalToConstant: CGFloat(player2_1Loc.H)).isActive = true
-        player2_1.widthAnchor.constraint(equalToConstant: CGFloat(player2_1Loc.W)).isActive = true
-        
-        finalsBackground.addSubview(wins_1)
-        
-        let wins_1Loc = calculateButtonPosition(x: 250, y: 115.6, w: 180, h: 38, wib: 2250, hib: 600, wia: 1125, hia: 300)
-        wins_1.centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(wins_1Loc.Y)).isActive = true
-        wins_1.centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(wins_1Loc.X)).isActive = true
-        wins_1.heightAnchor.constraint(equalToConstant: CGFloat(wins_1Loc.H)).isActive = true
-        wins_1.widthAnchor.constraint(equalToConstant: CGFloat(wins_1Loc.W)).isActive = true
-        
-        finalsBackground.addSubview(losses_1)
-        
-        let losses_1Loc = calculateButtonPosition(x: 483, y: 115.6, w: 180, h: 38, wib: 2250, hib: 600, wia: 1125, hia: 300)
-        losses_1.centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(losses_1Loc.Y)).isActive = true
-        losses_1.centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(losses_1Loc.X)).isActive = true
-        losses_1.heightAnchor.constraint(equalToConstant: CGFloat(losses_1Loc.H)).isActive = true
-        losses_1.widthAnchor.constraint(equalToConstant: CGFloat(losses_1Loc.W)).isActive = true
+        for index in 1...7 {
+            let player1_1: UILabel = {
+                let label = UILabel()
+                label.text = "???"
+                label.translatesAutoresizingMaskIntoConstraints = false
+                label.font = UIFont(name: "HelveticaNeue", size: 24)
+                label.textAlignment = .left
+                return label
+            }()
+            
+            let player2_1: UILabel = {
+                let label = UILabel()
+                label.text = "???"
+                label.translatesAutoresizingMaskIntoConstraints = false
+                label.font = UIFont(name: "HelveticaNeue", size: 24)
+                label.textAlignment = .left
+                return label
+            }()
+            
+            let wins_1: UILabel = {
+                let label = UILabel()
+                label.text = "???"
+                label.translatesAutoresizingMaskIntoConstraints = false
+                label.textColor = UIColor.init(r: 32, g: 140, b: 21)
+                label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+                label.textAlignment = .right
+                return label
+            }()
+            
+            let losses_1: UILabel = {
+                let label = UILabel()
+                label.text = "???"
+                label.textColor = UIColor.init(r: 252, g: 16, b: 13)
+                label.translatesAutoresizingMaskIntoConstraints = false
+                label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+                label.textAlignment = .right
+                return label
+            }()
+            
+            let tourneySymbol: UIImageView = {
+                let bi = UIImageView()
+                bi.translatesAutoresizingMaskIntoConstraints = false
+                bi.contentMode = .scaleAspectFit
+                bi.backgroundColor = .white
+                bi.image = UIImage(named: "tourney_symbol")
+                bi.isHidden = true
+                return bi
+            }()
+            
+            player1s.append(player1_1)
+            player2s.append(player2_1)
+            wins.append(wins_1)
+            losses.append(losses_1)
+            tourneySymbols.append(tourneySymbol)
+            
+            finalsBackground.addSubview(player1s[index - 1])
+            
+            let player1_1Loc = calculateButtonPosition(x: playerXs[index - 1], y: player1Ys[index - 1], w: playerLabelWidth, h: playerLabelHeight, wib: 2250, hib: 600, wia: 1125, hia: 300)
+            player1s[index - 1].centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(player1_1Loc.Y)).isActive = true
+            player1s[index - 1].centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(player1_1Loc.X)).isActive = true
+            player1s[index - 1].heightAnchor.constraint(equalToConstant: CGFloat(player1_1Loc.H)).isActive = true
+            player1s[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(player1_1Loc.W)).isActive = true
+            
+            finalsBackground.addSubview(player2s[index - 1])
+            
+            let player2_1Loc = calculateButtonPosition(x: playerXs[index - 1], y: player2Ys[index - 1], w: playerLabelWidth, h: playerLabelHeight, wib: 2250, hib: 600, wia: 1125, hia: 300)
+            player2s[index - 1].centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(player2_1Loc.Y)).isActive = true
+            player2s[index - 1].centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(player2_1Loc.X)).isActive = true
+            player2s[index - 1].heightAnchor.constraint(equalToConstant: CGFloat(player2_1Loc.H)).isActive = true
+            player2s[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(player2_1Loc.W)).isActive = true
+            
+            finalsBackground.addSubview(wins[index - 1])
+            
+            let wins_1Loc = calculateButtonPosition(x: winXs[index - 1], y: winYs[index - 1], w: teamWinWidth, h: teamWinHeight, wib: 2250, hib: 600, wia: 1125, hia: 300)
+            wins[index - 1].centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(wins_1Loc.Y)).isActive = true
+            wins[index - 1].centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(wins_1Loc.X)).isActive = true
+            wins[index - 1].heightAnchor.constraint(equalToConstant: CGFloat(wins_1Loc.H)).isActive = true
+            wins[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(wins_1Loc.W)).isActive = true
+            
+            finalsBackground.addSubview(losses[index - 1])
+            
+            let losses_1Loc = calculateButtonPosition(x: winXs[index - 1], y: lossYs[index - 1], w: teamWinWidth, h: teamWinHeight, wib: 2250, hib: 600, wia: 1125, hia: 300)
+            losses[index - 1].centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(losses_1Loc.Y)).isActive = true
+            losses[index - 1].centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(losses_1Loc.X)).isActive = true
+            losses[index - 1].heightAnchor.constraint(equalToConstant: CGFloat(losses_1Loc.H)).isActive = true
+            losses[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(losses_1Loc.W)).isActive = true
+            
+            finalsBackground.addSubview(tourneySymbols[index - 1])
+            
+            let tourneySymbolLoc = calculateButtonPosition(x: tourneyXs[index - 1], y: tourneyYs[index - 1], w: tourneyWidth, h: tourneyHeight, wib: 2250, hib: 600, wia: 1125, hia: 300)
+            tourneySymbols[index - 1].centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(tourneySymbolLoc.Y)).isActive = true
+            tourneySymbols[index - 1].centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(tourneySymbolLoc.X)).isActive = true
+            tourneySymbols[index - 1].heightAnchor.constraint(equalToConstant: CGFloat(tourneySymbolLoc.H)).isActive = true
+            tourneySymbols[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(tourneySymbolLoc.W)).isActive = true
+        }
+        changeViews()
     }
+    
+    let playerLabelWidth: Float = 350
+    let playerLabelHeight: Float = 70
+    let teamWinWidth: Float = 180
+    let teamWinHeight: Float = 38
+    let playerXs: [Float] = [345, 345, 345, 345, 1106.6, 1106.6, 1858.1]
+    let player1Ys: [Float] = [53.7, 188.7, 365.7, 500, 209.8, 343.9, 276.7]
+    let player2Ys: [Float] = [110, 245, 422, 556, 266.1, 400.2, 333]
+    let winXs: [Float] = [600, 600, 600, 600, 1361.6, 1361.6, 2113.1]
+    let winYs: [Float] = [53.7, 188.7, 365.7, 500, 209.8, 343.9, 276.7]
+    let lossYs: [Float] = [110, 245, 422, 556, 266.1, 400.2, 333]
+    let tourneyXs: [Float] = [93, 93, 93, 93, 854.4, 854.4, 1604.6]
+    let tourneyYs: [Float] = [77.36, 211.5, 389.5, 523.5, 233.36, 367.6, 300.76]
+    let tourneyWidth: Float = 128
+    let tourneyHeight: Float = 100
     
     let nameFonts = UIFont(name: "HelveticaNeue", size: 25)
     let winFonts = UIFont(name: "HelveticaNeue-Light", size: 20)
-    
-    let player1_1: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let player2_1: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let wins_1: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let losses_1: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.textAlignment = .center
-        return label
-    }()
     
     func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
         let X = x / wib * wia

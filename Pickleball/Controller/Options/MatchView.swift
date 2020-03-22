@@ -17,6 +17,7 @@ class MatchView: UIViewController {
     var teams = [Team]()
     var tourneyId = "none"
     var matchId = "none"
+    var tourneyActive = 0
     var confirmMatchScoresWidthAnchor: NSLayoutConstraint?
     var confirmMatchScoresCenterXAnchor: NSLayoutConstraint?
     var backgroundImageCenterYAnchor: NSLayoutConstraint?
@@ -36,12 +37,15 @@ class MatchView: UIViewController {
     var team2_P1_Lev = -1
     var team2_P2_Lev = -1
     var rejectIndex = -1
+    var finals1 = 0
+    var finals2 = 0
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupViews()
         fetchMatch()
+        
     }
     
     func setupNavbarTitle(status: Int) {
@@ -1228,8 +1232,13 @@ class MatchView: UIViewController {
             self.confirmCheck3.isHidden = false
             self.confirmCheck4.isHidden = false
             self.updatePlayerStats()
-            self.tourneyId != "none" ? self.updateTourneyStandings() : print("nope")
-            self.removeCantChallenge()
+            if self.tourneyActive >= 2 {
+                self.adjustTourneyFinals()
+                self.updateTeamWins()
+            } else {
+                self.tourneyId != "none" ? self.updateTourneyStandings() : print("nope")
+                self.removeCantChallenge()
+            }
             
             
         })
@@ -1245,6 +1254,25 @@ class MatchView: UIViewController {
         winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
         winnerConfirmed.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
         winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+    }
+    
+    func updateTeamWins() {
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
+        let valuesTeam1 = ["rank": team1.rank, "wins": match.winner == 1 ? team1.wins! + 1 : team1.wins!, "losses": match.winner == 2 ? team1.losses! + 1 : team1.losses!, "player1": team1.player1, "player2": team1.player2] as [String : Any]
+        let valuesTeam2 = ["rank": team2.rank, "wins": match.winner == 2 ? team2.wins! + 1 : team2.wins!, "losses": match.winner == 1 ? team2.losses! + 1 : team2.losses!, "player1": team2.player1, "player2": team2.player2] as [String : Any]
+        var childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2]
+        ref.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            print("Crazy data saved!")
+            
+            
+        })
     }
     
     func removeCantChallenge() {
@@ -1606,6 +1634,87 @@ class MatchView: UIViewController {
             
         })
         
+    }
+    
+    func adjustTourneyFinals() {
+        if tourneyActive == 2 {
+            if team1.rank == 1 {
+                Database.database().reference().child("tourneys").child(tourneyId).child("active").setValue(3)
+                let finalsTeam = self.match.winner == 1 ? 1 : 4
+                Database.database().reference().child("tourneys").child(tourneyId).child("finals1").setValue(finalsTeam)
+            } else if team1.rank == 2 {
+                Database.database().reference().child("tourneys").child(tourneyId).child("active").setValue(4)
+                let finalsTeam = self.match.winner == 1 ? 2 : 3
+                Database.database().reference().child("tourneys").child(tourneyId).child("finals2").setValue(finalsTeam)
+            }
+        } else if tourneyActive == 3 {
+            Database.database().reference().child("tourneys").child(tourneyId).child("active").setValue(5)
+            let finalsTeam = self.match.winner == 1 ? 2 : 3
+            Database.database().reference().child("tourneys").child(tourneyId).child("finals2").setValue(finalsTeam)
+            finals2 = self.match.winner == 1 ? 2 : 3
+            setupFinalMatch()
+        } else if tourneyActive == 4 {
+            Database.database().reference().child("tourneys").child(tourneyId).child("active").setValue(5)
+            let finalsTeam = self.match.winner == 1 ? 1 : 4
+            finals1 = self.match.winner == 1 ? 1 : 4
+            Database.database().reference().child("tourneys").child(tourneyId).child("finals1").setValue(finalsTeam)
+            setupFinalMatch()
+        } else if tourneyActive == 5 {
+            Database.database().reference().child("tourneys").child(tourneyId).child("active").setValue(6)
+            let finalsTeam = self.match.winner == 1 ? team1.rank : team2.rank
+            Database.database().reference().child("tourneys").child(tourneyId).child("winner").setValue(finalsTeam)
+        }
+    }
+    
+    func setupFinalMatch() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        var team1stIndex = 0
+        var team2ndIndex = 0
+        for (index, element) in teams.enumerated() {
+            if element.rank == finals1 {
+                team1stIndex = index
+            } else if element.rank == finals2 {
+                team2ndIndex = index
+            }
+        }
+        let team1st = teams[team1stIndex]
+        let team2nd = teams[team2ndIndex]
+        let timeOfChallenge = Date().timeIntervalSince1970
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches")
+        let createMatchRef = ref.childByAutoId()
+        let values = ["active": 1, "team_1_player_1": team1st.player1, "team_1_player_2": team1st.player2, "team_2_player_1": team2nd.player1, "team_2_player_2": team2nd.player2, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
+        createMatchRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            guard let matchId = createMatchRef.key else {
+                return
+            }
+            
+            let notificationsRef = Database.database().reference()
+            let childUpdates = ["/\("tourney_notifications")/\(team1st.player1)/\(self.tourneyId)/": team1st.player1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team1st.player2)/\(self.tourneyId)/": team1st.player2 == uid ? 0 : 1, "/\("tourney_notifications")/\(team2nd.player1)/\(self.tourneyId)/": team2nd.player1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team2nd.player2)/\(self.tourneyId)/": team2nd.player2 == uid ? 0 : 1] as [String : Any]
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self.present(messageSendFailed, animated: true, completion: nil)
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                
+                print("Crazy data 2 saved!")
+                
+                
+            })
+            
+        })
     }
     
     func disableScores(team1Scores: [Int], team2Scores: [Int]) {

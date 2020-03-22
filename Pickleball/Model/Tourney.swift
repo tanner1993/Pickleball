@@ -21,4 +21,7 @@ class Tourney: NSObject {
     var state: String?
     var county: String?
     var active: Int?
+    var finals1: Int?
+    var finals2: Int?
+    var winner: Int?
 }
