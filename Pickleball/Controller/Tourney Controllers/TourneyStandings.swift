@@ -22,6 +22,7 @@ extension TourneyStandings: FeedCellProtocol {
 
 class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
+    var tourneyListPage: TourneyList?
     var matches = [Match2]()
     var allMatches = [Match2]()
     var teams = [Team]()
@@ -29,7 +30,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     let cellId = "cellId"
     let rmCellId = "rmCellId"
     let mmCellId = "mmCellId"
-    let threeSectionTitles = ["Overall", "Recent Matches", "My Matches"]
+    let threeSectionTitles = ["Overall", "My Matches", "Recent Matches"]
     var tourneyIdentifier: String?
     var notificationSentYou = 0
     var active = -1
@@ -37,8 +38,10 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     var finals2 = -1
     var winner = -1
     var tourneyOpenInvites = [String]()
+    var yetToView = [String]()
     let blackView = UIView()
     var tourneyNameAll = "none"
+    var tourneyListIndex = -1
     
     
     override func viewDidLoad() {
@@ -47,92 +50,31 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         observeTourneyTeams()
         //observeMyTourneyMatches()
         observeAllTourneyMatches()
-        
-//        if notificationSentYou == 0 {
-//            setupNavBarButtons()
-//        }
+        makeBubble()
         
         setupTourneyMenuBar()
         setupCollectionView()
     }
     
-    func changeViews() {
-        if self.active == 3 {
-            if finals1 == 1 {
-                player1s[1].alpha = 0.2
-                player2s[1].alpha = 0.2
-                wins[1].alpha = 0.2
-                losses[1].alpha = 0.2
-                tourneySymbols[0].isHidden = false
-            } else {
-                player1s[0].alpha = 0.2
-                player2s[0].alpha = 0.2
-                wins[0].alpha = 0.2
-                losses[0].alpha = 0.2
-                tourneySymbols[1].isHidden = false
-                tourneySymbols[1].image = UIImage(named: "tourney_symbol")
-            }
-        } else if self.active == 4 {
-            if finals2 == 1 {
-                player1s[3].alpha = 0.2
-                player2s[3].alpha = 0.2
-                wins[3].alpha = 0.2
-                losses[3].alpha = 0.2
-            } else {
-                player1s[2].alpha = 0.2
-                player2s[2].alpha = 0.2
-                wins[2].alpha = 0.2
-                losses[2].alpha = 0.2
-            }
-        } else if self.active >= 5 {
-            if finals1 == 1 {
-                player1s[1].alpha = 0.2
-                player2s[1].alpha = 0.2
-                wins[1].alpha = 0.2
-                losses[1].alpha = 0.2
-            } else {
-                player1s[0].alpha = 0.2
-                player2s[0].alpha = 0.2
-                wins[0].alpha = 0.2
-                losses[0].alpha = 0.2
-            }
-            if finals2 == 1 {
-                player1s[3].alpha = 0.2
-                player2s[3].alpha = 0.2
-                wins[3].alpha = 0.2
-                losses[3].alpha = 0.2
-            } else {
-                player1s[2].alpha = 0.2
-                player2s[2].alpha = 0.2
-                wins[2].alpha = 0.2
-                losses[2].alpha = 0.2
-            }
+    func makeBubble() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
         }
-        if self.active == 6 {
-            var correctTeam = 0
-            switch self.winner {
-            case 1:
-                correctTeam = 1
-            case 2:
-                correctTeam = 3
-            case 3:
-                correctTeam = 4
-            case 4:
-                correctTeam = 2
-            default:
-                print("failed correct")
-            }
-            if correctTeam == 1 || correctTeam == 2 {
-                player1s[5].alpha = 0.2
-                player2s[5].alpha = 0.2
-                wins[5].alpha = 0.2
-                losses[5].alpha = 0.2
-            } else {
-                player1s[4].alpha = 0.2
-                player2s[4].alpha = 0.2
-                wins[4].alpha = 0.2
-                losses[4].alpha = 0.2
-            }
+        if yetToView.contains(uid) {
+            notifBadge.isHidden = false
+        }
+    }
+    
+    func destroyBubble() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if yetToView.contains(uid) {
+            notifBadge.isHidden = true
+            Database.database().reference().child("tourney_notifications").child(uid).child(tourneyIdentifier!).removeValue()
+            yetToView.remove(at: yetToView.firstIndex(of: uid)!)
+            Database.database().reference().child("tourneys").child(tourneyIdentifier!).child("yet_to_view").setValue(yetToView)
+            tourneyListPage?.removeBadge(whichOne: tourneyListIndex)
         }
     }
     
@@ -179,6 +121,13 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         return bi
     }()
     
+    let separatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     func setupSemisView() {
         
         view.addSubview(finalsScrollView)
@@ -192,6 +141,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         finalsBackground.topAnchor.constraint(equalTo: finalsScrollView.topAnchor).isActive = true
         finalsBackground.widthAnchor.constraint(equalToConstant: 1125).isActive = true
         finalsBackground.heightAnchor.constraint(equalToConstant: 300).isActive = true
+        
+        finalsBackground.addSubview(separatorView)
+        separatorView.leftAnchor.constraint(equalTo: finalsBackground.leftAnchor).isActive = true
+        separatorView.bottomAnchor.constraint(equalTo: view.topAnchor, constant: 355).isActive = true
+        separatorView.widthAnchor.constraint(equalToConstant: 1125).isActive = true
+        separatorView.heightAnchor.constraint(equalToConstant: 2).isActive = true
         
         setupSemiTeams()
     }
@@ -245,10 +200,10 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 if self.active == 3 {
                     self.player1s[4].text = self.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
                 } else if self.active == 4 {
-                    self.player1s[5].text = self.finals2 == 2 ? self.player1s[1].text : self.player1s[2].text
+                    self.player1s[5].text = self.finals2 == 2 ? self.player1s[2].text : self.player1s[3].text
                 } else if self.active >= 5 {
                     self.player1s[4].text = self.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
-                    self.player1s[5].text = self.finals2 == 2 ? self.player1s[1].text : self.player1s[2].text
+                    self.player1s[5].text = self.finals2 == 2 ? self.player1s[2].text : self.player1s[3].text
                 }
                 if self.active == 6 {
                     var correctTeam = 0
@@ -276,7 +231,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 if self.active == 3 {
                     self.player2s[4].text = self.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
                 } else if self.active == 4 {
-                    self.player2s[5].text = self.finals2 == 2 ? self.player2s[1].text : self.player2s[2].text
+                    self.player2s[5].text = self.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
                 } else if self.active >= 5 {
                     self.player2s[4].text = self.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
                     self.player2s[5].text = self.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
@@ -332,54 +287,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             self.losses[6].text = self.losses[correctTeam - 1].text
         }
     }
-    
-//    func observeMyTourneyMatches() {
-//        guard let uid = Auth.auth().currentUser?.uid else {
-//            return
-//        }
-//        let ref = Database.database().reference().child("user-notifications").child(uid)
-//        ref.observe(.childAdded, with: { (snapshot) in
-//            let matchId = snapshot.key
-//            guard let tourneyId = snapshot.value as? String else {
-//                return
-//            }
-//            if tourneyId == self.tourneyIdentifier {
-//                let matchReference = Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
-//
-//                matchReference.observeSingleEvent(of: .value, with: {(snapshot) in
-//                    if let value = snapshot.value as? NSDictionary {
-//                        let match = Match()
-//                        let active = value["active"] as? Int ?? 0
-//                        let challengerTeamId = value["challenger_team"] as? String ?? "Team not found"
-//                        let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
-//                        let challengerScores = value["challenger_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
-//                        let challengedScores = value["challenged_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
-//                        let submitter = value["submitter"] as? String ?? "No submitter yet"
-//                        let winner = value["winner"] as? String ?? "No winner yet"
-//                        let time = value["time"] as? Double ?? Date().timeIntervalSince1970
-//                        match.active = active
-//                        match.submitter = submitter
-//                        match.winner = winner
-//                        match.challengerTeamId = challengerTeamId
-//                        match.challengedTeamId = challengedTeamId
-//                        match.challengerScores = challengerScores
-//                        match.challengedScores = challengedScores
-//                        match.matchId = matchId
-//                        match.time = time
-//                        self.matches.append(match)
-//                        self.matches = self.matches.sorted { p1, p2 in
-//                            return (p1.time!) > (p2.time!)
-//                        }
-//                        //DispatchQueue.main.async { self.collectionView.reloadData() }
-//                    }
-//
-//                }, withCancel: nil)
-//            }
-//
-//
-//        }, withCancel: nil)
-//
-//    }
     
     func observeAllTourneyMatches() {
         guard let tourneyId = tourneyIdentifier, let uid = Auth.auth().currentUser?.uid else {
@@ -565,11 +472,32 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         return mb
     }()
     
+    let notifBadge: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+    
     private func setupTourneyMenuBar() {
         
         view.addSubview(menusBar)
-        view.addConstraintsWithFormat(format: "H:|[v0]|", views: menusBar)
-        view.addConstraintsWithFormat(format: "V:|[v0(35)]", views: menusBar)
+        menusBar.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        menusBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        menusBar.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        menusBar.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        
+        view.addSubview(notifBadge)
+        notifBadge.leftAnchor.constraint(equalTo: view.centerXAnchor, constant: 38).isActive = true
+        notifBadge.topAnchor.constraint(equalTo: menusBar.topAnchor, constant: 1).isActive = true
+        notifBadge.widthAnchor.constraint(equalToConstant: 16).isActive = true
+        notifBadge.heightAnchor.constraint(equalToConstant: 16).isActive = true
     }
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -595,21 +523,24 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == self.collectionView {
-            if indexPath.item == 1 {
+            if indexPath.item == 2 {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath) as! MatchCell
                 cell.tourneyIdentifier = tourneyIdentifier
                 cell.matches = allMatches
                 cell.teams = teams
+                cell.active = active
                 return cell
-            } else if indexPath.item == 2 {
+            } else if indexPath.item == 1 {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath) as! MyMatchesCell
                 cell.tourneyIdentifier = tourneyIdentifier
                 cell.matches = matches
                 cell.teams = teams
                 cell.active = active
+                cell.yetToView = yetToView
                 cell.finals1 = finals1
                 cell.finals2 = finals2
                 cell.delegate = self
+                destroyBubble()
                 return cell
             }
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
@@ -735,6 +666,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     var wins = [UILabel]()
     var losses = [UILabel]()
     var tourneySymbols = [UIImageView]()
+    var whiteViews = [UIView]()
     
     func setupSemiTeams() {
         
@@ -781,10 +713,17 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 let bi = UIImageView()
                 bi.translatesAutoresizingMaskIntoConstraints = false
                 bi.contentMode = .scaleAspectFit
-                bi.backgroundColor = .white
                 bi.image = UIImage(named: "tourney_symbol")
                 bi.isHidden = true
                 return bi
+            }()
+            
+            let whiteView: UIView = {
+                let view = UIView()
+                view.backgroundColor = .white
+                view.isHidden = true
+                view.translatesAutoresizingMaskIntoConstraints = false
+                return view
             }()
             
             player1s.append(player1_1)
@@ -792,6 +731,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             wins.append(wins_1)
             losses.append(losses_1)
             tourneySymbols.append(tourneySymbol)
+            whiteViews.append(whiteView)
             
             finalsBackground.addSubview(player1s[index - 1])
             
@@ -825,13 +765,21 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             losses[index - 1].heightAnchor.constraint(equalToConstant: CGFloat(losses_1Loc.H)).isActive = true
             losses[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(losses_1Loc.W)).isActive = true
             
+            finalsBackground.addSubview(whiteViews[index - 1])
+            let tourneySymbolLoc = calculateButtonPosition(x: tourneyXs[index - 1], y: tourneyYs[index - 1], w: tourneyWidth, h: tourneyHeight, wib: 2250, hib: 600, wia: 1125, hia: 300)
+            
+            whiteViews[index - 1].centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(tourneySymbolLoc.Y)).isActive = true
+            whiteViews[index - 1].centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(tourneySymbolLoc.X)).isActive = true
+            whiteViews[index - 1].heightAnchor.constraint(equalToConstant: CGFloat(tourneySymbolLoc.H)).isActive = true
+            whiteViews[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(tourneySymbolLoc.W)).isActive = true
+            
             finalsBackground.addSubview(tourneySymbols[index - 1])
             
-            let tourneySymbolLoc = calculateButtonPosition(x: tourneyXs[index - 1], y: tourneyYs[index - 1], w: tourneyWidth, h: tourneyHeight, wib: 2250, hib: 600, wia: 1125, hia: 300)
             tourneySymbols[index - 1].centerYAnchor.constraint(equalTo: finalsBackground.topAnchor, constant: CGFloat(tourneySymbolLoc.Y)).isActive = true
             tourneySymbols[index - 1].centerXAnchor.constraint(equalTo: finalsBackground.leftAnchor, constant: CGFloat(tourneySymbolLoc.X)).isActive = true
             tourneySymbols[index - 1].heightAnchor.constraint(equalToConstant: CGFloat(tourneySymbolLoc.H)).isActive = true
             tourneySymbols[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(tourneySymbolLoc.W)).isActive = true
+            
         }
         changeViews()
     }
@@ -860,6 +808,123 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let W = w / wib * wia
         let H = h / hib * hia
         return (X, Y, W, H)
+    }
+    
+    func changeViews() {
+        if self.active == 3 {
+            tourneySymbols[0].isHidden = false
+            tourneySymbols[1].isHidden = false
+            whiteViews[0].isHidden = false
+            whiteViews[1].isHidden = false
+            if finals1 == 1 {
+                player1s[1].alpha = 0.2
+                player2s[1].alpha = 0.2
+                wins[1].alpha = 0.2
+                losses[1].alpha = 0.2
+                tourneySymbols[1].image = UIImage(named: "tourney_symbol_br")
+                tourneySymbols[1].alpha = 0.4
+            } else {
+                player1s[0].alpha = 0.2
+                player2s[0].alpha = 0.2
+                wins[0].alpha = 0.2
+                losses[0].alpha = 0.2
+                tourneySymbols[0].image = UIImage(named: "tourney_symbol_br")
+                tourneySymbols[0].alpha = 0.4
+            }
+        } else if self.active == 4 {
+            tourneySymbols[2].isHidden = false
+            tourneySymbols[3].isHidden = false
+            whiteViews[2].isHidden = false
+            whiteViews[3].isHidden = false
+            if finals2 == 2 {
+                player1s[3].alpha = 0.2
+                player2s[3].alpha = 0.2
+                wins[3].alpha = 0.2
+                losses[3].alpha = 0.2
+                tourneySymbols[3].image = UIImage(named: "tourney_symbol_br")
+                tourneySymbols[3].alpha = 0.4
+            } else {
+                player1s[2].alpha = 0.2
+                player2s[2].alpha = 0.2
+                wins[2].alpha = 0.2
+                losses[2].alpha = 0.2
+                tourneySymbols[2].image = UIImage(named: "tourney_symbol_br")
+                tourneySymbols[2].alpha = 0.4
+            }
+        } else if self.active >= 5 {
+            tourneySymbols[0].isHidden = false
+            tourneySymbols[1].isHidden = false
+            tourneySymbols[2].isHidden = false
+            tourneySymbols[3].isHidden = false
+            whiteViews[0].isHidden = false
+            whiteViews[1].isHidden = false
+            whiteViews[2].isHidden = false
+            whiteViews[3].isHidden = false
+            if finals1 == 1 {
+                player1s[1].alpha = 0.2
+                player2s[1].alpha = 0.2
+                wins[1].alpha = 0.2
+                losses[1].alpha = 0.2
+                tourneySymbols[1].image = UIImage(named: "tourney_symbol_br")
+                tourneySymbols[1].alpha = 0.4
+            } else {
+                player1s[0].alpha = 0.2
+                player2s[0].alpha = 0.2
+                wins[0].alpha = 0.2
+                losses[0].alpha = 0.2
+                tourneySymbols[0].image = UIImage(named: "tourney_symbol_br")
+                tourneySymbols[0].alpha = 0.4
+            }
+            if finals2 == 2 {
+                player1s[3].alpha = 0.2
+                player2s[3].alpha = 0.2
+                wins[3].alpha = 0.2
+                losses[3].alpha = 0.2
+                tourneySymbols[3].image = UIImage(named: "tourney_symbol_br")
+                tourneySymbols[3].alpha = 0.4
+            } else {
+                player1s[2].alpha = 0.2
+                player2s[2].alpha = 0.2
+                wins[2].alpha = 0.2
+                losses[2].alpha = 0.2
+                tourneySymbols[2].image = UIImage(named: "tourney_symbol_br")
+                tourneySymbols[2].alpha = 0.4
+            }
+        }
+        if self.active == 6 {
+            tourneySymbols[4].isHidden = false
+            tourneySymbols[5].isHidden = false
+            tourneySymbols[6].isHidden = false
+            tourneySymbols[6].image = UIImage(named: "tourney_symbol_go")
+            var correctTeam = 0
+            switch self.winner {
+            case 1:
+                correctTeam = 1
+            case 2:
+                correctTeam = 3
+            case 3:
+                correctTeam = 4
+            case 4:
+                correctTeam = 2
+            default:
+                print("failed correct")
+            }
+            if correctTeam == 1 || correctTeam == 2 {
+                player1s[5].alpha = 0.2
+                player2s[5].alpha = 0.2
+                wins[5].alpha = 0.2
+                losses[5].alpha = 0.2
+                tourneySymbols[5].image = UIImage(named: "tourney_symbol_si")
+                tourneySymbols[5].alpha = 0.6
+            } else {
+                player1s[4].alpha = 0.2
+                player2s[4].alpha = 0.2
+                wins[4].alpha = 0.2
+                losses[4].alpha = 0.2
+                tourneySymbols[4].image = UIImage(named: "tourney_symbol_si")
+                tourneySymbols[4].alpha = 0.6
+            }
+        }
     }
 
 }

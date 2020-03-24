@@ -83,29 +83,6 @@ class Notifications: UITableViewController {
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        checkUser()
-        print("notifications willload")
-        print(currentUser2)
-    }
-    
-    
-    func checkUser() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        if currentUser2 != uid {
-            noNotifications = 0
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                self.fillInRow()
-            }
-            notifications.removeAll()
-            tableView.reloadData()
-            fetchNotifications()
-            currentUser2 = uid
-        }
-    }
-    
     func fetchNotifications() {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
@@ -144,80 +121,6 @@ class Notifications: UITableViewController {
             tabItem.badgeValue = .none
         }
     }
-    
-//    func oberveUserNotifications() {
-//        invitations.removeAll()
-//        guard let uid = Auth.auth().currentUser?.uid else {
-//            return
-//        }
-//        let ref = Database.database().reference().child("user-notifications").child(uid)
-//        ref.observe(.childAdded, with: { (snapshot) in
-//            let notificationId = snapshot.key
-//            let potentialTourneyId = snapshot.value as? String ?? "none"
-//
-//            if potentialTourneyId == "1" {
-//            let notificationReference = Database.database().reference().child("notifications").child(notificationId)
-//            notificationReference.observeSingleEvent(of: .value, with: {(snapshot) in
-//                    if let value = snapshot.value as? NSDictionary {
-//                        let invitation = Invitation()
-//                        let player1Id = value["player1"] as? String ?? "Player not found"
-//                        let player2Id = value["player2"] as? String ?? "Player not found"
-//                        let active = value["active"] as? String ?? "active not found"
-//                        let tourneyId = value["tourneyId"] as? String ?? "Tourney not found"
-//                        let rejection = value["rejection"] as? String ?? "rejection not found"
-//                        invitation.player1 = player1Id
-//                        invitation.player2 = player2Id
-//                        invitation.active = active
-//                        invitation.tourneyid = tourneyId
-//                        invitation.invitationId = notificationId
-//                        invitation.rejection = rejection
-//                        self.invitations.append(invitation)
-//                        DispatchQueue.main.async { self.collectionView.reloadData() }
-//                    }
-//
-//                print(snapshot)
-//            }, withCancel: nil)
-//            } else {
-//                let challengeReference = Database.database().reference().child("tourneys").child(potentialTourneyId).child("matches").child(notificationId)
-//                challengeReference.observeSingleEvent(of: .value, with: {(snapshot) in
-//                    if let value = snapshot.value as? NSDictionary {
-//                        let match = Match()
-//                        let challengerTeamId = value["challenger_team"] as? String ?? "Team not found"
-//                        let challengedTeamId = value["challenged_team"] as? String ?? "Team not found"
-//                        match.challengerTeamId = challengerTeamId
-//                        match.challengedTeamId = challengedTeamId
-//                        match.matchId = notificationId
-//                        match.tourneyId = potentialTourneyId
-//                        self.matches.append(match)
-//                        DispatchQueue.main.async { self.collectionView.reloadData() }
-//                    }
-//
-//                    print(snapshot)
-//                }, withCancel: nil)
-//            }
-//
-//            }, withCancel: nil)
-//    }
-    
-//    func fetchNotifications() {
-//        let uid = Auth.auth().currentUser!.uid
-//        let rootRef = Database.database().reference()
-//        let notificationRef = rootRef.child("user-notifications").child(uid)
-//        notificationRef.observe(.value) { (snapshot) in
-//            for child in snapshot.children.allObjects as! [DataSnapshot] {
-//                if let value = child.value as? NSDictionary {
-//                    let player = Player()
-//                    let name = value["name"] as? String ?? "Name not found"
-//                    let email = value["email"] as? String ?? "Email not found"
-//                    player.name = name
-//                    player.email = email
-//                    player.id = child.key
-//                    self.players.append(player)
-//                    DispatchQueue.main.async { self.collectionView.reloadData() }
-//                }
-//            }
-//        }
-//    }
     
     func setupCollectionView() {
         tableView?.register(FriendInviteCell.self, forCellReuseIdentifier: cellId)

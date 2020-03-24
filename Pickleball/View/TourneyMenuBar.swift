@@ -20,7 +20,7 @@ class TourneyMenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelega
     let tourneystatus = 1
     let cellID = "CellID"
     let displayNames0 = ["Reg. Teams", "Enter Tourney", "More Info"]
-    let displayNames1 = ["Overall", "Recent Matches", "My Matches"]
+    let displayNames1 = ["Overall", "My Matches", "Recent Matches"]
     
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {

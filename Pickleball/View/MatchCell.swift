@@ -27,6 +27,14 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
     var challengedTeamPlayer1Name = [String?]()
     var challengedTeamPlayer2Name = [String?]()
     var userTeamId = ""
+    var active = 0 {
+        didSet {
+            if active >= 2 {
+                collectionView.contentInset = UIEdgeInsets(top: 320, left: 0, bottom: 0, right: 0)
+                collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 320, left: 0, bottom: 0, right: 0)
+            }
+        }
+    }
     
     var myMatches = [Match2]()
     

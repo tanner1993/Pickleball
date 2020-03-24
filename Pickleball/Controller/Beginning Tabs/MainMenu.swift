@@ -11,6 +11,8 @@ import Firebase
 import FirebaseAuth
 
 class MainMenu: UITabBarController {
+    
+    var welcomePage: WelcomePage?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,6 +29,7 @@ class MainMenu: UITabBarController {
         tourneyList2.tabBarItem = UITabBarItem(title: "Tourneys", image: UIImage(named: "map"), tag: 0)
         
         let myProfile = StartupPage()
+        myProfile.mainMenu = self
         let myProfile2 = UINavigationController(rootViewController: myProfile)
         myProfile2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
         myProfile2.navigationBar.isTranslucent = false

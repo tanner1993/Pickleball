@@ -96,28 +96,6 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        checkUser()
-    }
-    
-    func checkUser() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        if currentUser != uid {
-            noNotifications = 0
-            messages.removeAll()
-            collectionView.collectionViewLayout.invalidateLayout()
-            collectionView.reloadData()
-            messageChecker = 0
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                self.fillInRow()
-            }
-            fetchFirstMessages()
-            currentUser = uid
-        }
-    }
-    
     @objc func handleNewMessage(){
         let layout = UICollectionViewFlowLayout()
         let friendList = FriendList(collectionViewLayout: layout)

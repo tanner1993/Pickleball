@@ -20,7 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
         //window?.rootViewController?.navigationController?.navigationBar.isTranslucent = false
-        window?.rootViewController = MainMenu()
+        window?.rootViewController = WelcomePage()
         
         return true
     }

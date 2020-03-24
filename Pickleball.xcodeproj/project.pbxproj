@@ -34,6 +34,7 @@
 		77427F3123CFBD6C00372773 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77427F3023CFBD6C00372773 /* Message.swift */; };
 		7745AC72240CA413008C8900 /* FriendInviteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7745AC71240CA413008C8900 /* FriendInviteCell.swift */; };
 		7757C4742419AAF5006E059A /* EmptyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7757C4732419AAF5006E059A /* EmptyCell.swift */; };
+		7757C4762427F372006E059A /* WelcomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7757C4752427F372006E059A /* WelcomePage.swift */; };
 		7760977B240EF21100AD30F5 /* CreateMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977A240EF21100AD30F5 /* CreateMatch.swift */; };
 		7760977D241000C400AD30F5 /* MatchNotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977C241000C400AD30F5 /* MatchNotificationCell.swift */; };
 		7760977F2410534D00AD30F5 /* MatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977E2410534D00AD30F5 /* MatchView.swift */; };
@@ -83,6 +84,7 @@
 		77427F3023CFBD6C00372773 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		7745AC71240CA413008C8900 /* FriendInviteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendInviteCell.swift; sourceTree = "<group>"; };
 		7757C4732419AAF5006E059A /* EmptyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyCell.swift; sourceTree = "<group>"; };
+		7757C4752427F372006E059A /* WelcomePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomePage.swift; sourceTree = "<group>"; };
 		7760977A240EF21100AD30F5 /* CreateMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMatch.swift; sourceTree = "<group>"; };
 		7760977C241000C400AD30F5 /* MatchNotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationCell.swift; sourceTree = "<group>"; };
 		7760977E2410534D00AD30F5 /* MatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchView.swift; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 				7718BDC4233ADDAF0004777C /* TourneyList.swift */,
 				7739865C23BBEF6D00195253 /* Connect.swift */,
 				7718BD83232C13C00004777C /* Notifications.swift */,
+				7757C4752427F372006E059A /* WelcomePage.swift */,
 			);
 			path = "Beginning Tabs";
 			sourceTree = "<group>";
@@ -396,6 +399,7 @@
 				7718BD702322D4EC0004777C /* MatchCell.swift in Sources */,
 				7718BD82232AC84A0004777C /* StartupPage.swift in Sources */,
 				77BBB0452320838F006CB608 /* Team.swift in Sources */,
+				7757C4762427F372006E059A /* WelcomePage.swift in Sources */,
 				77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */,
 				77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */,
 				7739865D23BBEF6D00195253 /* Connect.swift in Sources */,

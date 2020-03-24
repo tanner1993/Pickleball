@@ -124,6 +124,21 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     let finals1 = value["finals1"] as? Int ?? -1
                     let finals2 = value["finals2"] as? Int ?? -1
                     let winner = value["winner"] as? Int ?? -1
+                    let teams = value["teams"]
+                    if let turd = teams {
+                        tourney.regTeams = turd.count
+                    } else {
+                        tourney.regTeams = 0
+                    }
+                    if let tourneyYetToView = value["yet_to_view"] as? [String] {
+                        guard let uid = Auth.auth().currentUser?.uid else {
+                            return
+                        }
+                        tourney.yetToView = tourneyYetToView
+                        if tourneyYetToView.contains(uid) {
+                            tourney.notifBubble = 1
+                        }
+                    }
                     
                     tourney.name = name
                     tourney.type = type
@@ -168,12 +183,16 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
             cell.tourney = tourneys[indexPath.item]
             if indexPath.item % 2 == 0 {
                 cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
+            } else {
+                cell.backgroundColor = .white
             }
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: myCellId, for: indexPath) as! TourneyCell
             if indexPath.item % 2 == 0 {
                 cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
+            } else {
+                cell.backgroundColor = .white
             }
             //cell.playerName.text = menuItems[indexPath.item]
             
@@ -181,7 +200,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
         }
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 80)
+        return CGSize(width: view.frame.width, height: 175)
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -194,9 +213,29 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
             tourneyStandingsPage.finals1 = tourneys[indexPath.item].finals1 ?? -1
             tourneyStandingsPage.finals2 = tourneys[indexPath.item].finals2 ?? -1
             tourneyStandingsPage.winner = tourneys[indexPath.item].winner ?? -1
+            tourneyStandingsPage.yetToView = tourneys[indexPath.item].yetToView ?? [String]()
+            tourneyStandingsPage.tourneyListIndex = indexPath.item
+            tourneyStandingsPage.tourneyListPage = self
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
         } else {
             
+        }
+    }
+    
+    func removeBadge(whichOne: Int) {
+        tourneys[whichOne].notifBubble = 0
+        collectionView.reloadData()
+        var checker = 0
+        for index in tourneys {
+            if index.notifBubble == 1 {
+                checker += 1
+            }
+        }
+        if checker == 0 {
+            if let tabItems = self.tabBarController?.tabBar.items {
+                let tabItem = tabItems[1]
+                tabItem.badgeValue = .none
+            }
         }
     }
     
@@ -227,9 +266,61 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
 class TourneyCell: BaseCell {
     var tourney: Tourney? {
         didSet {
+            
+            if tourney?.notifBubble == 1 {
+                notifBadge.isHidden = false
+            } else {
+                notifBadge.isHidden = true
+            }
+            
+            let normalSkill = "Skill Level: "
+            let boldSkill = "\(tourney?.skill_level ?? 0)"
+            let attributedSkill = NSMutableAttributedString(string: normalSkill)
+            let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 20), NSAttributedString.Key.foregroundColor : UIColor.init(r: 88, g: 148, b: 200)]
+            let boldSkillString = NSAttributedString(string: boldSkill, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedSkill.append(boldSkillString)
             tournamentName.text = tourney?.name
-            sexAndType.text = "\(tourney?.sex ?? "none")\nDoubles"
-            levelAndFormat.text = "\(tourney?.skill_level ?? 0)\n\(tourney?.type ?? "None")"
+            sexAndType.text = "\(tourney?.sex ?? "none") Doubles"
+            skillLevel.attributedText = attributedSkill
+            
+            let normalType = "Type: "
+            let boldType = "\(tourney?.type ?? "None")"
+            let attributedType = NSMutableAttributedString(string: normalType)
+            let boldTypeString = NSAttributedString(string: boldType, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedType.append(boldTypeString)
+            
+            type.attributedText = attributedType
+            
+            let normalTime = "Start Date: "
+            let attributedTime = NSMutableAttributedString(string: normalTime)
+            
+            let normalState = "State: "
+            let boldState = "\(tourney?.state ?? "No State")"
+            let attributedState = NSMutableAttributedString(string: normalState)
+            let boldStateString = NSAttributedString(string: boldState, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedState.append(boldStateString)
+            state.attributedText = attributedState
+            
+            let normalCounty = "County: "
+            let boldCounty = "\(tourney?.county ?? "No County")"
+            let attributedCounty = NSMutableAttributedString(string: normalCounty)
+            let boldCountyString = NSAttributedString(string: boldCounty, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedCounty.append(boldCountyString)
+            county.attributedText = attributedCounty
+            
+            let normalDuration = "Duration: "
+            let boldDuration = "\(tourney?.duration ?? 0) weeks"
+            let attributedDuration = NSMutableAttributedString(string: normalDuration)
+            let boldDurationString = NSAttributedString(string: boldDuration, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedDuration.append(boldDurationString)
+            duration.attributedText = attributedDuration
+            
+            let normalReg = "Reg. Teams: "
+            let boldReg = "\(tourney?.regTeams ?? 0)"
+            let attributedReg = NSMutableAttributedString(string: normalReg)
+            let boldRegString = NSAttributedString(string: boldReg, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedReg.append(boldRegString)
+            registered.attributedText = attributedReg
             
             guard let startTime = tourney?.start_date else {
                 return
@@ -239,15 +330,31 @@ class TourneyCell: BaseCell {
             let components = calendar.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater)
             let monthInt = components.month!
             let monthAbb = months[monthInt - 1].prefix(3)
-            startDate.text = "\(monthAbb). \(components.day!)\n\(tourney?.state ?? "No State"), \(tourney?.county ?? "No County")"
+            let boldTime = "\(monthAbb). \(components.day!)"
+            let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb)
+            attributedTime.append(boldTimeString)
+            startDate.attributedText = attributedTime
         }
     }
+    
+    let notifBadge: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.layer.cornerRadius = 14
+        label.layer.masksToBounds = true
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
     
     let tournamentName: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Tourney Name"
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 26)
         label.textAlignment = .center
         return label
     }()
@@ -256,19 +363,27 @@ class TourneyCell: BaseCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Mens\nDoubles"
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 17)
-        label.textAlignment = .center
-        label.numberOfLines = 2
+        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+        label.textAlignment = .left
         return label
     }()
     
-    let levelAndFormat: UILabel = {
+    let skillLevel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "3.5\nLadder"
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 17)
-        label.textAlignment = .center
-        label.numberOfLines = 2
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .left
+        return label
+    }()
+    
+    let type: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "3.5\nLadder"
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .left
         return label
     }()
     
@@ -276,9 +391,44 @@ class TourneyCell: BaseCell {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Start Date\nJanuary 15"
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 17)
-        label.textAlignment = .center
-        label.numberOfLines = 2
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .left
+        return label
+    }()
+    
+    let state: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Start Date\nJanuary 15"
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .left
+        return label
+    }()
+    
+    let county: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Start Date\nJanuary 15"
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .left
+        return label
+    }()
+    
+    let duration: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Start Date\nJanuary 15"
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .left
+        return label
+    }()
+    
+    let registered: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Start Date\nJanuary 15"
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .left
         return label
     }()
     
@@ -307,38 +457,68 @@ class TourneyCell: BaseCell {
         addSubview(tournamentName)
         tournamentName.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         tournamentName.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
-        tournamentName.heightAnchor.constraint(equalToConstant: 24).isActive = true
-        tournamentName.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        tournamentName.heightAnchor.constraint(equalToConstant: 34).isActive = true
+        tournamentName.widthAnchor.constraint(equalTo: widthAnchor, constant: -80).isActive = true
+        
+        addSubview(notifBadge)
+        notifBadge.leftAnchor.constraint(equalTo: tournamentName.rightAnchor).isActive = true
+        notifBadge.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
+        notifBadge.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        notifBadge.widthAnchor.constraint(equalToConstant: 28).isActive = true
         
         addSubview(sexAndType)
         sexAndType.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
         sexAndType.topAnchor.constraint(equalTo: tournamentName.bottomAnchor, constant: 2).isActive = true
-        sexAndType.heightAnchor.constraint(equalToConstant: 45).isActive = true
-        sexAndType.widthAnchor.constraint(equalToConstant: (frame.width-16) / 3).isActive = true
+        sexAndType.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        sexAndType.rightAnchor.constraint(equalTo: centerXAnchor, constant: -2).isActive = true
         
-        addSubview(levelAndFormat)
-        levelAndFormat.leftAnchor.constraint(equalTo: sexAndType.rightAnchor, constant: 4).isActive = true
-        levelAndFormat.topAnchor.constraint(equalTo: tournamentName.bottomAnchor, constant: 2).isActive = true
-        levelAndFormat.heightAnchor.constraint(equalToConstant: 45).isActive = true
-        levelAndFormat.widthAnchor.constraint(equalToConstant: (frame.width-16) / 3).isActive = true
+        addSubview(skillLevel)
+        skillLevel.leftAnchor.constraint(equalTo: sexAndType.leftAnchor).isActive = true
+        skillLevel.topAnchor.constraint(equalTo: sexAndType.bottomAnchor, constant: 2).isActive = true
+        skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        skillLevel.rightAnchor.constraint(equalTo: sexAndType.rightAnchor).isActive = true
+        
+        addSubview(type)
+        type.leftAnchor.constraint(equalTo: sexAndType.leftAnchor).isActive = true
+        type.topAnchor.constraint(equalTo: skillLevel.bottomAnchor, constant: 2).isActive = true
+        type.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        type.rightAnchor.constraint(equalTo: sexAndType.rightAnchor).isActive = true
         
         addSubview(startDate)
-        startDate.leftAnchor.constraint(equalTo: levelAndFormat.rightAnchor, constant: 4).isActive = true
-        startDate.topAnchor.constraint(equalTo: tournamentName.bottomAnchor, constant: 2).isActive = true
-        startDate.heightAnchor.constraint(equalToConstant: 45).isActive = true
-        startDate.widthAnchor.constraint(equalToConstant: (frame.width-16) / 3).isActive = true
+        startDate.leftAnchor.constraint(equalTo: sexAndType.leftAnchor).isActive = true
+        startDate.topAnchor.constraint(equalTo: type.bottomAnchor, constant: 2).isActive = true
+        startDate.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        startDate.rightAnchor.constraint(equalTo: sexAndType.rightAnchor).isActive = true
+        
+        addSubview(duration)
+        duration.leftAnchor.constraint(equalTo: centerXAnchor, constant: 4).isActive = true
+        duration.topAnchor.constraint(equalTo: tournamentName.bottomAnchor, constant: 2).isActive = true
+        duration.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        duration.rightAnchor.constraint(equalTo: rightAnchor, constant: -2).isActive = true
+        
+        addSubview(state)
+        state.leftAnchor.constraint(equalTo: duration.leftAnchor).isActive = true
+        state.topAnchor.constraint(equalTo: sexAndType.bottomAnchor, constant: 2).isActive = true
+        state.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        state.rightAnchor.constraint(equalTo: duration.rightAnchor).isActive = true
+        
+        addSubview(county)
+        county.leftAnchor.constraint(equalTo: duration.leftAnchor).isActive = true
+        county.topAnchor.constraint(equalTo: skillLevel.bottomAnchor, constant: 2).isActive = true
+        county.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        county.rightAnchor.constraint(equalTo: duration.rightAnchor).isActive = true
+        
+        addSubview(registered)
+        registered.leftAnchor.constraint(equalTo: duration.leftAnchor).isActive = true
+        registered.topAnchor.constraint(equalTo: type.bottomAnchor, constant: 2).isActive = true
+        registered.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        registered.rightAnchor.constraint(equalTo: duration.rightAnchor).isActive = true
         
         addSubview(verticalSeparatorView)
-        verticalSeparatorView.rightAnchor.constraint(equalTo: sexAndType.rightAnchor, constant: 2).isActive = true
-        verticalSeparatorView.centerYAnchor.constraint(equalTo: sexAndType.centerYAnchor).isActive = true
+        verticalSeparatorView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        verticalSeparatorView.topAnchor.constraint(equalTo: sexAndType.topAnchor).isActive = true
         verticalSeparatorView.widthAnchor.constraint(equalToConstant: 1).isActive = true
-        verticalSeparatorView.heightAnchor.constraint(equalTo: sexAndType.heightAnchor, constant: -12).isActive = true
-        
-        addSubview(verticalSeparatorView2)
-        verticalSeparatorView2.rightAnchor.constraint(equalTo: levelAndFormat.rightAnchor, constant: 2).isActive = true
-        verticalSeparatorView2.centerYAnchor.constraint(equalTo: sexAndType.centerYAnchor).isActive = true
-        verticalSeparatorView2.widthAnchor.constraint(equalToConstant: 1).isActive = true
-        verticalSeparatorView2.heightAnchor.constraint(equalTo: sexAndType.heightAnchor, constant: -12).isActive = true
+        verticalSeparatorView.bottomAnchor.constraint(equalTo: startDate.bottomAnchor, constant: -12).isActive = true
         
         addSubview(separatorView)
         separatorView.leftAnchor.constraint(equalTo: leftAnchor, constant: 2).isActive = true

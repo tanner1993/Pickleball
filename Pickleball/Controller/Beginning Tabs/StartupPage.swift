@@ -18,6 +18,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     var isFriend = 0
     var findFriends: FindFriends?
     var whichFriend = -1
+    var mainMenu: MainMenu?
     
     let backgroundImage: UIImageView = {
         let bi = UIImageView()
@@ -139,26 +140,18 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         return label
     }()
     
-    func checkIfUserLoggedIn() {
-        if Auth.auth().currentUser?.uid == nil {
-            perform(#selector(handleLogout), with: nil, afterDelay: 0)
-        } else {
-            fetchNotifications()
-            fetchMessages()
-            observePlayerProfile()
-        }
-    }
-    
     @objc func handleLogout() {
-        do {
-            try Auth.auth().signOut()
-        } catch let logoutError {
-            print(logoutError)
-        }
-        
-        let loginController = LoginPage()
-        loginController.startupPage = self
-        present(loginController, animated: true, completion: nil)
+//        do {
+//            try Auth.auth().signOut()
+//        } catch let logoutError {
+//            print(logoutError)
+//        }
+//
+//        let loginController = LoginPage()
+//        loginController.startupPage = self
+//        present(loginController, animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
+        mainMenu?.welcomePage?.handleLogout()
     }
     
     @objc func handleViewTourneys() {
@@ -328,10 +321,33 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         setupNavbarTitle()
         if playerId == "none" {
             setupCollectionView()
-            checkIfUserLoggedIn()
+            fetchNotifications()
+            fetchMessages()
+            fetchTourneyNotifications()
+            observePlayerProfile()
         } else {
             observePlayerProfile()
         }
+    }
+    
+    func fetchTourneyNotifications() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("tourney_notifications").child(uid)
+        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+            guard let notificationSeen = snapshot.value else {
+                return
+            }
+                let notifNumber = notificationSeen as! Int
+                if notifNumber == 1 {
+                    if let tabItems = self.tabBarController?.tabBar.items {
+                        let tabItem = tabItems[1]
+                        tabItem.badgeValue = "1"
+                    }
+                }
+            
+        })
     }
     
     func fetchNotifications() {

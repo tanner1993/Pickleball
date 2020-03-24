@@ -33,6 +33,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
             }
         }
     }
+    var yetToView = [String]()
     var finals1 = 0
     var finals2 = 0
     var challengerTeamPlayer1Name = [String?]()
@@ -204,6 +205,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         vc.tourneyActive = active
         vc.finals1 = finals1
         vc.finals2 = finals2
+        vc.yetToView = yetToView
         self.delegate?.pushNavigation(vc)
         print(userTeamId)
 //        if userTeamId == matches[indexPath.item].challengerTeamId {

@@ -15,6 +15,7 @@ class MatchView: UIViewController {
     var team1 = Team()
     var team2 = Team()
     var teams = [Team]()
+    var yetToView = [String]()
     var tourneyId = "none"
     var matchId = "none"
     var tourneyActive = 0
@@ -137,6 +138,7 @@ class MatchView: UIViewController {
             createMatchConfirmed.addAction(UIAlertAction(title: "Reject", style: .default, handler: self.handleRejectConfirmed))
             self.present(createMatchConfirmed, animated: true, completion: nil)
         } else if match.active == 2 {
+            confirmMatchScores.isHidden = true
             self.match.active = 1
             setupNavbarTitle(status: 1)
             confirmCheck1.isHidden = true
@@ -144,6 +146,12 @@ class MatchView: UIViewController {
             confirmCheck3.isHidden = true
             confirmCheck4.isHidden = true
             let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
+            confirmMatchScores.setTitle("Submit Scores to Opponent for Review", for: .normal)
+            confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
+            confirmMatchScores.titleLabel?.numberOfLines = 2
+            confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X)
+            confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W)
+            confirmMatchScores.isHidden = false
             rejectMatchScores.isEnabled = false
             rejectMatchScores.isHidden = true
             game1UserScore.isUserInteractionEnabled = true
@@ -168,11 +176,6 @@ class MatchView: UIViewController {
             game4OppScore.text = ""
             game5OppScore.text = ""
             
-            confirmMatchScores.setTitle("Submit Scores to Opponent for Review", for: .normal)
-            confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
-            confirmMatchScores.titleLabel?.numberOfLines = 2
-            confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X)
-            confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W)
         }
     }
     
@@ -1163,10 +1166,7 @@ class MatchView: UIViewController {
                     uid != self.match.team_2_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
                     uid != self.match.team_2_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
                 } else {
-                    uid != self.match.team_1_player_1 ? Database.database().reference().child("tourney_notifications").child(self.match.team_1_player_1!).child(self.tourneyId).setValue(1) : print("nope")
-                    uid != self.match.team_1_player_2 ? Database.database().reference().child("tourney_notifications").child(self.match.team_1_player_2!).child(self.tourneyId).setValue(1) : print("nope")
-                    uid != self.match.team_2_player_1 ? Database.database().reference().child("tourney_notifications").child(self.match.team_2_player_1!).child(self.tourneyId).setValue(1) : print("nope")
-                    uid != self.match.team_2_player_2 ? Database.database().reference().child("tourney_notifications").child(self.match.team_2_player_2!).child(self.tourneyId).setValue(1) : print("nope")
+                    self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
                 }
                 
                 
@@ -1232,6 +1232,10 @@ class MatchView: UIViewController {
             self.confirmCheck3.isHidden = false
             self.confirmCheck4.isHidden = false
             self.updatePlayerStats()
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
+            self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
             if self.tourneyActive >= 2 {
                 self.adjustTourneyFinals()
                 self.updateTeamWins()

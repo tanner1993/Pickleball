@@ -13,6 +13,7 @@ import FirebaseAuth
 class LoginPage: UIViewController {
     
     var startupPage: StartupPage?
+    var welcomePage: WelcomePage?
     var usernames = [String]()
     var emails = [String]()
     
@@ -267,9 +268,9 @@ class LoginPage: UIViewController {
                 self.present(newalert, animated: true, completion: nil)
                 return
             }
-            self.startupPage?.observePlayerProfile()
-            self.startupPage?.fetchMessages()
-            self.startupPage?.fetchNotifications()
+//            self.startupPage?.observePlayerProfile()
+//            self.startupPage?.fetchMessages()
+//            self.startupPage?.fetchNotifications()
             
             self.dismiss(animated: true, completion: nil)
             print("Yay! You've logged in")
@@ -331,6 +332,7 @@ class LoginPage: UIViewController {
                 editProfile.loginPage = self
                 self.present(editProfile, animated: true, completion: nil)
                 //self.startupPage?.observePlayerProfile()
+                //self.welcomePage?.newUser = 1
                 //self.dismiss(animated: true, completion: nil)
                 
                 print("Data saved successfully!")

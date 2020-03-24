@@ -100,7 +100,7 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
             self.dismiss(animated: true, completion: nil)
             if self.sender == 1 {
                 self.loginPage?.dismiss(animated: true, completion: nil)
-                self.loginPage?.startupPage?.observePlayerProfile()
+                //self.loginPage?.startupPage?.observePlayerProfile()
             } else if self.sender == 2 {
                 self.startupPage?.observePlayerProfile()
             }

@@ -24,4 +24,7 @@ class Tourney: NSObject {
     var finals1: Int?
     var finals2: Int?
     var winner: Int?
+    var yetToView: [String]?
+    var notifBubble: Int?
+    var regTeams: Int?
 }
