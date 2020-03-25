@@ -58,26 +58,35 @@ class RecentMatchesCell: BaseCell {
                 tourneySymbol.isHidden = true
                 grayBox.isHidden = true
             }
-            match1Label.text = "\(match?.team1_scores?[0] ?? -1)/\(match?.team2_scores?[0] ?? -1)"
-            match2Label.text = "\(match?.team1_scores?[1] ?? -1)/\(match?.team2_scores?[1] ?? -1)"
-            match3Label.text = "\(match?.team1_scores?[2] ?? -1)/\(match?.team2_scores?[2] ?? -1)"
-            match4Label.text = "\(match?.team1_scores?[3] ?? -1)/\(match?.team2_scores?[3] ?? -1)"
-            match5Label.text = "\(match?.team1_scores?[4] ?? -1)/\(match?.team2_scores?[4] ?? -1)"
+            if match?.active != 0 {
+                match1Label.text = "\(match?.team1_scores?[0] ?? -1)/\(match?.team2_scores?[0] ?? -1)"
+                match2Label.text = "\(match?.team1_scores?[1] ?? -1)/\(match?.team2_scores?[1] ?? -1)"
+                match3Label.text = "\(match?.team1_scores?[2] ?? -1)/\(match?.team2_scores?[2] ?? -1)"
+                match4Label.text = "\(match?.team1_scores?[3] ?? -1)/\(match?.team2_scores?[3] ?? -1)"
+                match5Label.text = "\(match?.team1_scores?[4] ?? -1)/\(match?.team2_scores?[4] ?? -1)"
+            }
             guard let startTime = match?.time else {
                 return
             }
             if match?.active == 3 {
                 timeLeftLabel.text = "FIN"
             } else {
-                if (startTime + (86400 * 3)) < Date().timeIntervalSince1970 {
-                    timeLeftLabel.text = "0\ndays\nleft"
+                if match?.active == 0 && (startTime + 86400) < Date().timeIntervalSince1970 {
+                    timeLeftLabel.text = "match\nexp"
+                } else if (startTime + (86400 * 3)) < Date().timeIntervalSince1970 {
+                    timeLeftLabel.text = "match\nexp"
                 } else {
-                    let daysLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 86400
-                    let daysRounded = daysLeft.round(nearest: 0.5)
-                    if daysRounded == 0 {
+                    var hoursLeft: Double = 0
+                    if match?.active == 0 {
+                        hoursLeft = ((startTime + 86400) - Date().timeIntervalSince1970) / 3600
+                    } else {
+                        hoursLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 3600
+                    }
+                    let hoursRounded = hoursLeft.round(nearest: 1)
+                    if hoursRounded == 0 {
                         timeLeftLabel.text = "<0.5\ndays\nleft"
                     } else {
-                        timeLeftLabel.text = "\(daysRounded)\ndays\nleft"
+                        timeLeftLabel.text = "\(hoursRounded)\nhours\nleft"
                     }
                 }
             }

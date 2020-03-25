@@ -86,8 +86,9 @@ class MatchView: UIViewController {
                 self.getPlayerNames(idList: idList)
                 let team1_scores = value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                 let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
-                self.setupCorrectBottom(active: active, submitter: submitter, confirmers: team1_scores, team2: team2_scores, idList: idList)
                 let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+                let forfeit = value["forfeit"] as? Int ?? 0
+                self.setupCorrectBottom(active: active, submitter: submitter, confirmers: team1_scores, team2: team2_scores, idList: idList, startTime: time, forfeit: forfeit)
                 matchT.active = active
                 matchT.winner = winner
                 matchT.submitter = submitter
@@ -99,10 +100,16 @@ class MatchView: UIViewController {
                 matchT.team2_scores = team2_scores
                 matchT.matchId = self.matchId
                 matchT.time = time
+                matchT.forfeit = forfeit
                 self.match = matchT
             }
             
         }, withCancel: nil)
+    }
+    
+    @objc func handleTimeExpired(action: UIAlertAction) {
+        Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId).removeValue()
+        removeCantChallenge()
     }
     
     @objc func handleConfirm(sender: UIButton) {
@@ -126,17 +133,38 @@ class MatchView: UIViewController {
     }
     
     func handleRejectConfirmed(action: UIAlertAction) {
-        performRejectActive0(whichOne: rejectIndex)
-        dismiss(animated: true, completion: nil)
+        if tourneyId == "none" {
+            performRejectActive0(whichOne: rejectIndex)
+            dismiss(animated: true, completion: nil)
+        } else {
+            performRejectActive0Tourney()
+        }
     }
     
     @objc func handleReject(sender: UIButton) {
         if match.active == 0 {
             rejectIndex = sender.tag
-            let createMatchConfirmed = UIAlertController(title: "Are you sure?", message: "Rejecting this match invite will notify whoever invited you that you don't want to play.", preferredStyle: .alert)
-            createMatchConfirmed.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
-            createMatchConfirmed.addAction(UIAlertAction(title: "Reject", style: .default, handler: self.handleRejectConfirmed))
-            self.present(createMatchConfirmed, animated: true, completion: nil)
+            if tourneyId == "none" {
+                let createMatchConfirmed = UIAlertController(title: "Are you sure?", message: "Rejecting this match invite will notify whoever invited you that you don't want to play.", preferredStyle: .alert)
+                createMatchConfirmed.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+                createMatchConfirmed.addAction(UIAlertAction(title: "Reject", style: .default, handler: self.handleRejectConfirmed))
+                self.present(createMatchConfirmed, animated: true, completion: nil)
+            } else {
+                guard let uid = Auth.auth().currentUser?.uid else {
+                    return
+                }
+                if uid == match.team_1_player_1 || uid == match.team_1_player_2 {
+                    let forfeitMatch = UIAlertController(title: "Ok", message: "Rejecting this match will count as a forfeit for the opponent which is a loss", preferredStyle: .alert)
+                    forfeitMatch.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+                    forfeitMatch.addAction(UIAlertAction(title: "Opponent Forfeit", style: .default, handler: self.handleRejectConfirmed))
+                    self.present(forfeitMatch, animated: true, completion: nil)
+                } else {
+                    let forfeitMatch = UIAlertController(title: "Are you sure?", message: "Rejecting this match will count as a forfeit resulting in the same effect as a loss", preferredStyle: .alert)
+                    forfeitMatch.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
+                    forfeitMatch.addAction(UIAlertAction(title: "Forfeit", style: .default, handler: self.handleRejectConfirmed))
+                    self.present(forfeitMatch, animated: true, completion: nil)
+                }
+            }
         } else if match.active == 2 {
             confirmMatchScores.isHidden = true
             self.match.active = 1
@@ -179,7 +207,7 @@ class MatchView: UIViewController {
         }
     }
     
-    func setupCorrectBottom(active: Int, submitter: Int, confirmers: [Int], team2: [Int], idList: [String]) {
+    func setupCorrectBottom(active: Int, submitter: Int, confirmers: [Int], team2: [Int], idList: [String], startTime: Double, forfeit: Int) {
         setupNavbarTitle(status: active)
         guard let uid = Auth.auth().currentUser?.uid, let whichPerson = idList.firstIndex(of: uid) else {
             return
@@ -216,8 +244,19 @@ class MatchView: UIViewController {
             game4OppScore.isUserInteractionEnabled = false
             game5OppScore.isUserInteractionEnabled = false
         }
-        
-        if active == 0 && confirmers[whichPerson] == 0 {
+        let currentTime = Date().timeIntervalSince1970
+        if active == 0 && confirmers[whichPerson] == 1 && tourneyId != "none" && (startTime + 86400) < currentTime {
+            view.addSubview(rejectMatchScores)
+            rejectMatchScores.tag = whichPerson
+            rejectMatchScores.setTitle("Submit a forfeit for the opposing team as it's been over 24 hours", for: .normal)
+            rejectMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 18)
+            rejectMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+            rejectMatchScores.titleLabel?.numberOfLines = 2
+            rejectMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+            rejectMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+            rejectMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+            rejectMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+        } else if active == 0 && confirmers[whichPerson] == 0 {
             confirmMatchScores.tag = whichPerson
             
             view.addSubview(confirmMatchScores)
@@ -251,6 +290,10 @@ class MatchView: UIViewController {
             matchStatusLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
             matchStatusLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
             matchStatusLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+        } else if active == 1 && (startTime + (86400 * 3)) < currentTime {
+            let matchdeleted = UIAlertController(title: "Sorry", message: "It's been 3 days and you failed to play in the time limit, the match will be deleted and you will be free to challenge someone else", preferredStyle: .alert)
+            matchdeleted.addAction(UIAlertAction(title: "Ok", style: .default, handler: self.handleTimeExpired))
+            self.present(matchdeleted, animated: true, completion: nil)
         } else if active == 1 {
             whiteCover.isHidden = true
             view.addSubview(confirmMatchScores)
@@ -312,17 +355,31 @@ class MatchView: UIViewController {
                 disableScores(team1Scores: confirmers, team2Scores: team2)
             }
         } else if active == 3 {
-            whiteCover.isHidden = true
-            confirmCheck1.isHidden = false
-            confirmCheck2.isHidden = false
-            confirmCheck3.isHidden = false
-            confirmCheck4.isHidden = false
-            disableScores(team1Scores: confirmers, team2Scores: team2)
-            view.addSubview(winnerConfirmed)
-            winnerConfirmed.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-            winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-            winnerConfirmed.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-            winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+            if forfeit == 1 {
+                whiteCover.isHidden = false
+                disableScores(team1Scores: confirmers, team2Scores: team2)
+                confirmCheck1.isHidden = false
+                confirmCheck2.isHidden = false
+                confirmCheck3.isHidden = false
+                confirmCheck4.isHidden = false
+                view.addSubview(forfeitLabel)
+                forfeitLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+                forfeitLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+                forfeitLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+                forfeitLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+            } else {
+                whiteCover.isHidden = true
+                confirmCheck1.isHidden = false
+                confirmCheck2.isHidden = false
+                confirmCheck3.isHidden = false
+                confirmCheck4.isHidden = false
+                disableScores(team1Scores: confirmers, team2Scores: team2)
+                view.addSubview(winnerConfirmed)
+                winnerConfirmed.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+                winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+                winnerConfirmed.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+                winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+            }
         }
 //                if match.active == 0 {
 //        
@@ -718,6 +775,16 @@ class MatchView: UIViewController {
         return label
     }()
     
+    let forfeitLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "The challenged team forfeited!"
+        label.numberOfLines = 2
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
     let confirmCheck1: UIImageView = {
         let image = UIImageView()
         image.contentMode = .scaleAspectFit
@@ -976,6 +1043,50 @@ class MatchView: UIViewController {
         game5OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game5OppScoreLoc.W)).isActive = true
     }
     
+    func performRejectActive0Tourney() {
+        match.winner = 1
+        winner = 1
+        //let values = ["active": 3] as [String : Any]
+        match.team1_scores = [0, 0, 0, 0, 0]
+        match.forfeit = 1
+        let childUpdates = ["/\("team1_scores")/": match.team1_scores, "/\("active")/": 3, "/\("forfeit")/": 1] as [String : Any]
+        let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
+        ref.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            print("Data saved successfully!")
+            self.match.active = 3
+            self.setupNavbarTitle(status: 3)
+            self.confirmCheck1.isHidden = false
+            self.confirmCheck2.isHidden = false
+            self.confirmCheck3.isHidden = false
+            self.confirmCheck4.isHidden = false
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
+            self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
+
+            self.updateTourneyStandings()
+            self.removeCantChallenge()
+            
+            
+            
+        })
+        rejectMatchScores.isHidden = true
+        confirmMatchScores.isHidden = true
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
+        view.addSubview(forfeitLabel)
+        forfeitLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+        forfeitLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+        forfeitLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+        forfeitLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+    }
+    
     func performRejectActive0(whichOne: Int) {
         Database.database().reference().child("matches").child(matchId).removeValue()
         Database.database().reference().child("notifications").child(matchId).removeValue()
@@ -1034,20 +1145,27 @@ class MatchView: UIViewController {
     
     func performConfirmActive0(whichOne: Int) {
         let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
-        let ref = Database.database().reference().child("matches").child(matchId).child("team1_scores")
-        match.team1_scores![whichOne] = 1
-        switch whichOne {
-        case 1:
-            confirmCheck2.isHidden = false
-        case 2:
+        var matchReady = -1
+        if tourneyId == "none" {
+            let ref = Database.database().reference().child("matches").child(matchId).child("team1_scores")
+            match.team1_scores![whichOne] = 1
+            switch whichOne {
+            case 1:
+                confirmCheck2.isHidden = false
+            case 2:
+                confirmCheck3.isHidden = false
+            case 3:
+                confirmCheck4.isHidden = false
+            default:
+                print("failed to confirm")
+            }
+            ref.setValue(match.team1_scores)
+            matchReady = checkIfMatchReady()
+        } else {
             confirmCheck3.isHidden = false
-        case 3:
             confirmCheck4.isHidden = false
-        default:
-            print("failed to confirm")
+            matchReady = 1
         }
-        ref.setValue(match.team1_scores)
-        let matchReady = checkIfMatchReady()
         if matchReady == 0 {
             confirmMatchScores.isHidden = true
             rejectMatchScores.isHidden = true
@@ -1063,10 +1181,10 @@ class MatchView: UIViewController {
             guard let uid = Auth.auth().currentUser?.uid else {
                 return
             }
-            let matchActiveRef = Database.database().reference().child("matches").child(matchId)
+            let matchActiveRef = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
             match.team1_scores = [0, 0, 0, 0, 0]
-            
-            let childUpdates = ["/\("team1_scores")/": match.team1_scores, "/\("active")/": 1] as [String : Any]
+            let timeOfChallenge = Date().timeIntervalSince1970
+            let childUpdates = ["/\("team1_scores")/": match.team1_scores, "/\("active")/": 1, "/\("time")/": timeOfChallenge] as [String : Any]
             matchActiveRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -1241,7 +1359,7 @@ class MatchView: UIViewController {
                 self.updateTeamWins()
             } else {
                 self.tourneyId != "none" ? self.updateTourneyStandings() : print("nope")
-                self.removeCantChallenge()
+                self.tourneyId != "none" ? self.removeCantChallenge() : print("nope")
             }
             
             

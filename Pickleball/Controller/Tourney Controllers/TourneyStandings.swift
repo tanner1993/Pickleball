@@ -42,6 +42,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     let blackView = UIView()
     var tourneyNameAll = "none"
     var tourneyListIndex = -1
+    var currentSelection = 0
     
     
     override func viewDidLoad() {
@@ -342,6 +343,27 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         if tourneyOpenInvites.contains(uid) != true {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .plain, target: self, action: #selector(handleEnterTourney))
         }
+        if active > 0 {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(handleRefreshList))
+        }
+    }
+    
+    @objc func handleRefreshList() {
+        let currentItem = collectionView.indexPathsForVisibleItems[0].item
+        if currentItem == 0 {
+            teams.removeAll()
+            observeTourneyTeams()
+        } else if currentItem == 1 {
+            teams.removeAll()
+            matches.removeAll()
+            observeTourneyTeams()
+            observeAllTourneyMatches()
+        } else if currentItem == 2 {
+            teams.removeAll()
+            matches.removeAll()
+            observeTourneyTeams()
+            observeAllTourneyMatches()
+        }
     }
     
     @objc func handleReturn() {
@@ -506,7 +528,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     override func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
         let index = targetContentOffset.pointee.x / view.frame.width
-        
         let indexPath = NSIndexPath(item: Int(index), section: 0)
         menusBar.collectionView.selectItem(at: indexPath as IndexPath, animated: true, scrollPosition:[])
         
@@ -523,14 +544,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == self.collectionView {
-            if indexPath.item == 2 {
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath) as! MatchCell
-                cell.tourneyIdentifier = tourneyIdentifier
-                cell.matches = allMatches
-                cell.teams = teams
-                cell.active = active
-                return cell
-            } else if indexPath.item == 1 {
+            if indexPath.item == 1 {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath) as! MyMatchesCell
                 cell.tourneyIdentifier = tourneyIdentifier
                 cell.matches = matches
@@ -541,6 +555,13 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 cell.finals2 = finals2
                 cell.delegate = self
                 destroyBubble()
+                return cell
+            } else if indexPath.item == 2 {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath) as! MatchCell
+                cell.tourneyIdentifier = tourneyIdentifier
+                cell.matches = allMatches
+                cell.teams = teams
+                cell.active = active
                 return cell
             }
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell

@@ -599,7 +599,7 @@ class TeamInfoDisplay: UIViewController {
         let timeOfChallenge = Date().timeIntervalSince1970
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches")
         let createMatchRef = ref.childByAutoId()
-        let values = ["active": 1, "team_1_player_1": team_1_player_1, "team_1_player_2": team_1_player_2, "team_2_player_1": team_2_player_1, "team_2_player_2": team_2_player_2, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
+        let values = ["active": 0, "team_1_player_1": team_1_player_1, "team_1_player_2": team_1_player_2, "team_2_player_1": team_2_player_1, "team_2_player_2": team_2_player_2, "team1_scores": [1, 1, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
         createMatchRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             

@@ -27,6 +27,7 @@ class Match2: NSObject {
     var submitter: Int?
     var time: Double?
     var active: Int?
+    var forfeit: Int?
     var team_1_player_1: String?
     var team_1_player_2: String?
     var team_2_player_1: String?
