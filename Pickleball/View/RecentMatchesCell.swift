@@ -99,6 +99,7 @@ class RecentMatchesCell: BaseCell {
                 teamRank1.isHidden = false
                 teamRank2.isHidden = false
                 tourneySymbol.isHidden = true
+                tourneySymbol2.isHidden = true
                 grayBox.isHidden = true
             }
             if match?.active != 0 {
@@ -112,6 +113,17 @@ class RecentMatchesCell: BaseCell {
                 match3Label2.text = "\(match?.team2_scores?[2] ?? -1)"
                 match4Label2.text = "\(match?.team2_scores?[3] ?? -1)"
                 match5Label2.text = "\(match?.team2_scores?[4] ?? -1)"
+            } else {
+                match1Label.text = ""
+                match2Label.text = ""
+                match3Label.text = ""
+                match4Label.text = ""
+                match5Label.text = ""
+                match1Label2.text = ""
+                match2Label2.text = ""
+                match3Label2.text = ""
+                match4Label2.text = ""
+                match5Label2.text = ""
             }
             guard let startTime = match?.time else {
                 return

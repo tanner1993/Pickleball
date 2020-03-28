@@ -222,6 +222,30 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 self.setupNavbarButtons()
             } else if friendCheckNum == -1 {
                 self.isFriend = 0
+                self.secondaryFriendCheck()
+                //self.setupNavbarButtons()
+            }
+        })
+    }
+    
+    func secondaryFriendCheck() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let friendsRef = Database.database().reference().child("friends").child(playerId).child(uid)
+        friendsRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            guard let friendCheck = snapshot.value else {
+                return
+            }
+            let friendCheckNum = friendCheck as? Int ?? -1
+            if friendCheckNum == 1 {
+                self.isFriend = 2
+                self.setupNavbarButtons()
+            } else if friendCheckNum == 0 {
+                self.isFriend = 3
+                self.setupNavbarButtons()
+            } else if friendCheckNum == -1 {
+                self.isFriend = 0
                 self.setupNavbarButtons()
             }
         })

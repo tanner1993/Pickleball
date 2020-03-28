@@ -572,12 +572,12 @@ class TeamInfoDisplay: UIViewController {
     
     @objc func handleChallengeConfirmed() {
         if active == 5 {
-            let newalert = UIAlertController(title: "No can do", message: "The ladder is over, now it's semifinals!", preferredStyle: UIAlertController.Style.alert)
+            let newalert = UIAlertController(title: "No can do", message: "The ladder is over, now it's finals!", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
             return
-        } else if active >= 3 {
-            let newalert = UIAlertController(title: "No can do", message: "The ladder is over, now it's finals!", preferredStyle: UIAlertController.Style.alert)
+        } else if active >= 2 {
+            let newalert = UIAlertController(title: "No can do", message: "The ladder is over, now it's semifinals!", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
             return

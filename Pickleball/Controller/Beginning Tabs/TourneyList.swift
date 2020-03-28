@@ -13,8 +13,8 @@ import Firebase
 class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
     var myTourneys = [Tourney]()
-    var officialTourneys = [Tourney]()
     let cellId = "cellId"
+    var sender = 0
     
     let inputsContainerView: UIView = {
         let view = UIView()
@@ -42,12 +42,14 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        fetchTourneys()
-        fetchOfficialTourneys()
+        if sender == 0 {
+            fetchTourneys()
+            setupNavbarButtons()
+        } else {
+            fetchOfficialTourneys()
+        }
         setupCollectionView()
         setupViews()
-        setupNavbarButtons()
-        setupMyTourneysCollectionView()
 
     }
     
@@ -57,12 +59,21 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
         let searchButton = UIBarButtonItem(image: searchImage, style: .plain, target: self, action: #selector(handleSearchTourneys))
         let createNewButton = UIBarButtonItem(image: plusImage, style: .plain, target: self, action: #selector(handleCreateNewTourney))
         self.navigationItem.rightBarButtonItems = [searchButton, createNewButton]
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Official", style: .plain, target: self, action: #selector(handleOfficalTourneys))
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
         titleLabel.text = "My Tourneys"
         titleLabel.textColor = .white
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
+    }
+    
+    @objc func handleOfficalTourneys() {
+        let layout = UICollectionViewFlowLayout()
+        let tourneyOfficial = TourneyList(collectionViewLayout: layout)
+        tourneyOfficial.hidesBottomBarWhenPushed = true
+        tourneyOfficial.sender = 1
+        navigationController?.pushViewController(tourneyOfficial, animated: true)
     }
     
     @objc func handleSearchTourneys() {
@@ -80,29 +91,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     }
     
     func setupViews() {
-        view.addSubview(myTourneysCollectionView)
-        myTourneysCollectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        myTourneysCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        myTourneysCollectionView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        myTourneysCollectionView.heightAnchor.constraint(equalToConstant: 240).isActive = true
         
-        view.addSubview(separatorView)
-        separatorView.bottomAnchor.constraint(equalTo: myTourneysCollectionView.bottomAnchor).isActive = true
-        separatorView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        separatorView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        separatorView.heightAnchor.constraint(equalToConstant: 2).isActive = true
-        
-        view.addSubview(inputsContainerView)
-        inputsContainerView.topAnchor.constraint(equalTo: myTourneysCollectionView.bottomAnchor).isActive = true
-        inputsContainerView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        inputsContainerView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        inputsContainerView.heightAnchor.constraint(equalToConstant: 60).isActive = true
-        
-        inputsContainerView.addSubview(localOfficialTourneys)
-        localOfficialTourneys.topAnchor.constraint(equalTo: myTourneysCollectionView.bottomAnchor).isActive = true
-        localOfficialTourneys.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        localOfficialTourneys.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        localOfficialTourneys.heightAnchor.constraint(equalToConstant: 60).isActive = true
     }
 
     func fetchTourneys() {
@@ -167,7 +156,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     tourney.winner = winner
                     self.myTourneys.append(tourney)
                     DispatchQueue.main.async {
-                        self.myTourneysCollectionView.reloadData()
+                        self.collectionView.reloadData()
                     }
                 }
             })
@@ -204,10 +193,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                 } else {
                     tourney.regTeams = 0
                 }
-                if let tourneyYetToView = value["yet_to_view"] as? [String] {
-                    tourney.yetToView = tourneyYetToView
-                }
-                
+
                 tourney.name = name
                 tourney.type = type
                 tourney.skill_level = skillLevel
@@ -225,9 +211,9 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                 tourney.finals2 = finals2
                 tourney.winner = winner
                 if official == 1 {
-                    self.officialTourneys.append(tourney)
+                    self.myTourneys.append(tourney)
                 }
-                
+
                 DispatchQueue.main.async { self.collectionView.reloadData() }
             }
         })
@@ -236,30 +222,14 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     func setupCollectionView() {
         collectionView?.register(TourneyCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.backgroundColor = UIColor.white
-        collectionView?.contentInset = UIEdgeInsets(top: 300, left: 0, bottom: 0, right: 0)
-        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 300, left: 0, bottom: 0, right: 0)
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == self.collectionView {
-            return officialTourneys.count
-        } else {
             return myTourneys.count
-        }
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        if collectionView == self.collectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TourneyCell
-            cell.tourney = officialTourneys[indexPath.item]
-            if indexPath.item % 2 == 0 {
-                cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
-            } else {
-                cell.backgroundColor = .white
-            }
-            return cell
-        } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: myCellId, for: indexPath) as! TourneyCell
             cell.tourney = myTourneys[indexPath.item]
             if indexPath.item % 2 == 0 {
                 cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
@@ -268,48 +238,20 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
             }
             
             return cell
-        }
     }
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: view.frame.width, height: 175)
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if collectionView == self.collectionView {
             let layout = UICollectionViewFlowLayout()
             let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
             tourneyStandingsPage.hidesBottomBarWhenPushed = true
-            tourneyStandingsPage.tourneyIdentifier = officialTourneys[indexPath.item].id
-            tourneyStandingsPage.active = officialTourneys[indexPath.item].active ?? -1
-            tourneyStandingsPage.finals1 = officialTourneys[indexPath.item].finals1 ?? -1
-            tourneyStandingsPage.finals2 = officialTourneys[indexPath.item].finals2 ?? -1
-            tourneyStandingsPage.winner = officialTourneys[indexPath.item].winner ?? -1
-            tourneyStandingsPage.yetToView = officialTourneys[indexPath.item].yetToView ?? [String]()
-            var correctIndex = 0
-            for (index, element) in myTourneys.enumerated() {
-                if element.id == officialTourneys[indexPath.item].id {
-                    correctIndex = index
-                }
-            }
-            tourneyStandingsPage.tourneyListIndex = correctIndex
-            tourneyStandingsPage.thisTourney = officialTourneys[indexPath.item]
-            tourneyStandingsPage.tourneyListPage = self
-            navigationController?.pushViewController(tourneyStandingsPage, animated: true)
-        } else {
-            let layout = UICollectionViewFlowLayout()
-            let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
-            tourneyStandingsPage.hidesBottomBarWhenPushed = true
-            tourneyStandingsPage.tourneyIdentifier = myTourneys[indexPath.item].id
-            tourneyStandingsPage.active = myTourneys[indexPath.item].active ?? -1
-            tourneyStandingsPage.finals1 = myTourneys[indexPath.item].finals1 ?? -1
-            tourneyStandingsPage.finals2 = myTourneys[indexPath.item].finals2 ?? -1
-            tourneyStandingsPage.winner = myTourneys[indexPath.item].winner ?? -1
-            tourneyStandingsPage.yetToView = myTourneys[indexPath.item].yetToView ?? [String]()
             tourneyStandingsPage.tourneyListIndex = indexPath.item
             tourneyStandingsPage.thisTourney = myTourneys[indexPath.item]
             tourneyStandingsPage.tourneyListPage = self
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
-        }
     }
     
     func removeBadge(whichOne: Int) {
@@ -319,14 +261,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
         myTourneys[whichOne].notifBubble = 0
         let yettooooview = myTourneys[whichOne].yetToView!
         myTourneys[whichOne].yetToView?.remove(at: yettooooview.firstIndex(of: uid)!)
-        let tourneyNotifId = myTourneys[whichOne].id
-        for (index, element) in officialTourneys.enumerated() {
-            if element.id == tourneyNotifId {
-                let yettooooview2 = officialTourneys[index].yetToView!
-                officialTourneys[index].yetToView?.remove(at: yettooooview2.firstIndex(of: uid)!)
-            }
-        }
-        myTourneysCollectionView.reloadData()
+        collectionView.reloadData()
         var checker = 0
         for index in myTourneys {
             if index.notifBubble == 1 {
@@ -344,24 +279,6 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 0
     }
-    
-    let myTourneysCollectionView: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
-        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.backgroundColor = .white
-        cv.translatesAutoresizingMaskIntoConstraints = false
-        return cv
-    }()
-    
-    let menuItems = ["Logout", "Edit Profile", "Poop"]
-    
-    func setupMyTourneysCollectionView() {
-        myTourneysCollectionView.dataSource = self
-        myTourneysCollectionView.delegate = self
-        myTourneysCollectionView.register(TourneyCell.self, forCellWithReuseIdentifier: myCellId)
-    }
-    
-    let myCellId = "myCellId"
 
 }
 

@@ -37,7 +37,6 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         collectionView?.contentInset = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
         collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
         setupFilterCollectionView()
-        observeUsernamesEmails()
         
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
@@ -48,7 +47,16 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        searchBar.resignFirstResponder()
+        for index in textFields {
+            index.resignFirstResponder()
+        }
+        self.view.endEditing(true)
+    }
+    
     @objc func handleSearchFilter() {
+        searchBar.resignFirstResponder()
         searchResults = players
         
         if textFields[0].text! != "Any" {
@@ -83,23 +91,6 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         }
         
         collectionView.reloadData()
-    }
-    
-    func observeUsernamesEmails() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-
-        let ref = Database.database().reference().child("users").child(uid)
-        ref.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                self.textFields[1].text = value["state"] as? String ?? ""
-                self.textFields[0].text = "\(value["skill_level"] as? Float ?? 0)"
-            }
-        })
-        self.textFields[2].text = "Any"
-        self.textFields[3].text = "Any"
-        self.textFields[4].text = "Any"
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -268,6 +259,12 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         filtersLabel.heightAnchor.constraint(equalToConstant: 30).isActive = true
         
         let inputBox = createInputContainer(topAnchor: whiteContainerView, anchorConstant: 0, numberInputs: 5, vertSepDistance: 150, inputs: inputsArray, inputTypes: [1, 1, 1, 1, 1])
+        
+        self.textFields[0].text = "Any"
+        self.textFields[1].text = "Any"
+        self.textFields[2].text = "Any"
+        self.textFields[3].text = "Any"
+        self.textFields[4].text = "Any"
         
         view.addSubview(searchButton)
         searchButton.topAnchor.constraint(equalTo: inputBox.bottomAnchor, constant: 10).isActive = true

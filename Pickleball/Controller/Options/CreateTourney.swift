@@ -30,6 +30,13 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         }
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        for index in textFields {
+            index.resignFirstResponder()
+        }
+        self.view.endEditing(true)
+    }
+    
     let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)

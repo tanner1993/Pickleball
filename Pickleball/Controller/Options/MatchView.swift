@@ -40,13 +40,96 @@ class MatchView: UIViewController {
     var rejectIndex = -1
     var finals1 = 0
     var finals2 = 0
+    let numberToolbar: UIToolbar = UIToolbar()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupViews()
         fetchMatch()
+        setupKeyboardObservers()
+        numberToolbar.items=[
+            UIBarButtonItem(title: "Cancel", style: UIBarButtonItem.Style.plain, target: self, action: #selector(MatchView.hoopla)),
+            UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.flexibleSpace, target: self, action: nil),
+            UIBarButtonItem(title: "Apply", style: UIBarButtonItem.Style.plain, target: self, action: #selector(MatchView.boopla))
+        ]
+        //numberToolbar.barStyle = .black
+        numberToolbar.sizeToFit()
+        game1UserScore.inputAccessoryView = numberToolbar
+        game2UserScore.inputAccessoryView = numberToolbar
+        game3UserScore.inputAccessoryView = numberToolbar
+        game4UserScore.inputAccessoryView = numberToolbar
+        game5UserScore.inputAccessoryView = numberToolbar
+        game1OppScore.inputAccessoryView = numberToolbar
+        game2OppScore.inputAccessoryView = numberToolbar
+        game3OppScore.inputAccessoryView = numberToolbar
+        game4OppScore.inputAccessoryView = numberToolbar
+        game5OppScore.inputAccessoryView = numberToolbar
         
+    }
+    
+    @objc func boopla () {
+        resigningFirstResponders()
+    }
+    
+    @objc func hoopla () {
+        game1UserScore.text = ""
+        game2UserScore.text = ""
+        game3UserScore.text = ""
+        game4UserScore.text = ""
+        game5UserScore.text = ""
+        game1OppScore.text = ""
+        game2OppScore.text = ""
+        game3OppScore.text = ""
+        game4OppScore.text = ""
+        game5OppScore.text = ""
+        resigningFirstResponders()
+    }
+    
+    func resigningFirstResponders() {
+        game1UserScore.resignFirstResponder()
+        game2UserScore.resignFirstResponder()
+        game3UserScore.resignFirstResponder()
+        game4UserScore.resignFirstResponder()
+        game5UserScore.resignFirstResponder()
+        game1OppScore.resignFirstResponder()
+        game2OppScore.resignFirstResponder()
+        game3OppScore.resignFirstResponder()
+        game4OppScore.resignFirstResponder()
+        game5OppScore.resignFirstResponder()
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        resigningFirstResponders()
+        self.view.endEditing(true)
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+    }
+    
+    @objc func handleKeyboardWillShow(notification: NSNotification) {
+        let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+        let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+        let height =  (keyboardFrame?.height)! - 30
+        backgroundImageCenterYAnchor?.constant = -height
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc func handleKeyboardWillHide(notification: NSNotification) {
+        backgroundImageCenterYAnchor?.constant = 0
+        let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
+        UIView.animate(withDuration: keyboardDuration!) {
+            self.view.layoutIfNeeded()
+        }
     }
     
     func setupNavbarTitle(status: Int) {
@@ -113,6 +196,7 @@ class MatchView: UIViewController {
     }
     
     @objc func handleConfirm(sender: UIButton) {
+        resigningFirstResponders()
         if match.active == 0 {
             performConfirmActive0(whichOne: sender.tag)
         } else if match.active == 1 {
@@ -142,6 +226,7 @@ class MatchView: UIViewController {
     }
     
     @objc func handleReject(sender: UIButton) {
+        resigningFirstResponders()
         if match.active == 0 {
             rejectIndex = sender.tag
             if tourneyId == "none" {
@@ -644,6 +729,7 @@ class MatchView: UIViewController {
     
     let game1UserScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -653,6 +739,7 @@ class MatchView: UIViewController {
     
     let game2UserScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -662,6 +749,7 @@ class MatchView: UIViewController {
     
     let game3UserScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -671,6 +759,7 @@ class MatchView: UIViewController {
     
     let game4UserScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -680,6 +769,7 @@ class MatchView: UIViewController {
     
     let game5UserScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -689,6 +779,7 @@ class MatchView: UIViewController {
     
     let game1OppScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -698,6 +789,7 @@ class MatchView: UIViewController {
     
     let game2OppScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -707,6 +799,7 @@ class MatchView: UIViewController {
     
     let game3OppScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -717,6 +810,7 @@ class MatchView: UIViewController {
     let game4OppScore: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.keyboardType = .numberPad
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
         textField.textAlignment = .center
@@ -725,6 +819,7 @@ class MatchView: UIViewController {
     
     let game5OppScore: UITextField = {
         let textField = UITextField()
+        textField.keyboardType = .numberPad
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.placeholder = "#"
         textField.font = UIFont(name: "HelveticaNeue-Light", size: 15)
@@ -1753,6 +1848,24 @@ class MatchView: UIViewController {
             let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
             let valuesEffected2 = ["rank": teams[effectedIndices[1]].rank as Any, "wins": teams[effectedIndices[1]].wins as Any, "losses": teams[effectedIndices[1]].losses as Any, "player1": teams[effectedIndices[1]].player1 as Any, "player2": teams[effectedIndices[1]].player2 as Any] as [String : Any]
             childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2, "/\(teams[effectedIndices[0]].teamId ?? "none")/": valuesEffected1, "/\(teams[effectedIndices[1]].teamId ?? "none")/": valuesEffected2]
+        } else if effectedIndices.count == 3 {
+            let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
+            let valuesEffected2 = ["rank": teams[effectedIndices[1]].rank as Any, "wins": teams[effectedIndices[1]].wins as Any, "losses": teams[effectedIndices[1]].losses as Any, "player1": teams[effectedIndices[1]].player1 as Any, "player2": teams[effectedIndices[1]].player2 as Any] as [String : Any]
+            let valuesEffected3 = ["rank": teams[effectedIndices[2]].rank as Any, "wins": teams[effectedIndices[2]].wins as Any, "losses": teams[effectedIndices[2]].losses as Any, "player1": teams[effectedIndices[2]].player1 as Any, "player2": teams[effectedIndices[2]].player2 as Any] as [String : Any]
+            childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2, "/\(teams[effectedIndices[0]].teamId ?? "none")/": valuesEffected1, "/\(teams[effectedIndices[1]].teamId ?? "none")/": valuesEffected2, "/\(teams[effectedIndices[2]].teamId ?? "none")/": valuesEffected3]
+        } else if effectedIndices.count == 4 {
+            let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
+            let valuesEffected2 = ["rank": teams[effectedIndices[1]].rank as Any, "wins": teams[effectedIndices[1]].wins as Any, "losses": teams[effectedIndices[1]].losses as Any, "player1": teams[effectedIndices[1]].player1 as Any, "player2": teams[effectedIndices[1]].player2 as Any] as [String : Any]
+            let valuesEffected3 = ["rank": teams[effectedIndices[2]].rank as Any, "wins": teams[effectedIndices[2]].wins as Any, "losses": teams[effectedIndices[2]].losses as Any, "player1": teams[effectedIndices[2]].player1 as Any, "player2": teams[effectedIndices[2]].player2 as Any] as [String : Any]
+            let valuesEffected4 = ["rank": teams[effectedIndices[3]].rank as Any, "wins": teams[effectedIndices[3]].wins as Any, "losses": teams[effectedIndices[3]].losses as Any, "player1": teams[effectedIndices[3]].player1 as Any, "player2": teams[effectedIndices[3]].player2 as Any] as [String : Any]
+            childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2, "/\(teams[effectedIndices[0]].teamId ?? "none")/": valuesEffected1, "/\(teams[effectedIndices[1]].teamId ?? "none")/": valuesEffected2, "/\(teams[effectedIndices[2]].teamId ?? "none")/": valuesEffected3, "/\(teams[effectedIndices[3]].teamId ?? "none")/": valuesEffected4]
+        } else if effectedIndices.count == 5 {
+            let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
+            let valuesEffected2 = ["rank": teams[effectedIndices[1]].rank as Any, "wins": teams[effectedIndices[1]].wins as Any, "losses": teams[effectedIndices[1]].losses as Any, "player1": teams[effectedIndices[1]].player1 as Any, "player2": teams[effectedIndices[1]].player2 as Any] as [String : Any]
+            let valuesEffected3 = ["rank": teams[effectedIndices[2]].rank as Any, "wins": teams[effectedIndices[2]].wins as Any, "losses": teams[effectedIndices[2]].losses as Any, "player1": teams[effectedIndices[2]].player1 as Any, "player2": teams[effectedIndices[2]].player2 as Any] as [String : Any]
+            let valuesEffected4 = ["rank": teams[effectedIndices[3]].rank as Any, "wins": teams[effectedIndices[3]].wins as Any, "losses": teams[effectedIndices[3]].losses as Any, "player1": teams[effectedIndices[3]].player1 as Any, "player2": teams[effectedIndices[3]].player2 as Any] as [String : Any]
+            let valuesEffected5 = ["rank": teams[effectedIndices[4]].rank as Any, "wins": teams[effectedIndices[4]].wins as Any, "losses": teams[effectedIndices[4]].losses as Any, "player1": teams[effectedIndices[4]].player1 as Any, "player2": teams[effectedIndices[4]].player2 as Any] as [String : Any]
+            childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2, "/\(teams[effectedIndices[0]].teamId ?? "none")/": valuesEffected1, "/\(teams[effectedIndices[1]].teamId ?? "none")/": valuesEffected2, "/\(teams[effectedIndices[2]].teamId ?? "none")/": valuesEffected3, "/\(teams[effectedIndices[3]].teamId ?? "none")/": valuesEffected4, "/\(teams[effectedIndices[4]].teamId ?? "none")/": valuesEffected5]
         }
         ref.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in

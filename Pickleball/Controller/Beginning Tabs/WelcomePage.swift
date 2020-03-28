@@ -88,6 +88,7 @@ class WelcomePage: UIViewController {
         let profilePage = MainMenu()
         //profilePage.tabBar.unselectedItemTintColor = .white
         profilePage.welcomePage = self
+        profilePage.tabBar.isTranslucent = false
         present(profilePage, animated: true, completion: nil)
     }
     

@@ -31,23 +31,24 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     let rmCellId = "rmCellId"
     let mmCellId = "mmCellId"
     let threeSectionTitles = ["Overall", "My Matches", "Recent Matches"]
-    var tourneyIdentifier: String?
     var notificationSentYou = 0
-    var active = -1
-    var finals1 = -1
-    var finals2 = -1
-    var winner = -1
     var tourneyOpenInvites = [String]()
-    var yetToView = [String]()
     let blackView = UIView()
     var tourneyNameAll = "none"
     var tourneyListIndex = -1
     var currentSelection = 0
     var thisTourney = Tourney()
+    var yetToView = [String]()
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        yetToView = thisTourney.yetToView ?? [String]()
+        if let active = thisTourney.active {
+            if active >= 2 {
+                setupSemisView()
+            }
+        }
         observeTourneyInfo()
         observeTourneyTeams()
         //observeMyTourneyMatches()
@@ -56,6 +57,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         
         setupTourneyMenuBar()
         setupCollectionView()
+        setupTitle()
     }
     
     func makeBubble() {
@@ -73,34 +75,26 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         }
         if yetToView.contains(uid) {
             notifBadge.isHidden = true
-            Database.database().reference().child("tourney_notifications").child(uid).child(tourneyIdentifier!).removeValue()
+            Database.database().reference().child("tourney_notifications").child(uid).child(thisTourney.id ?? "none").removeValue()
             yetToView.remove(at: yetToView.firstIndex(of: uid)!)
-            Database.database().reference().child("tourneys").child(tourneyIdentifier!).child("yet_to_view").setValue(yetToView)
+            Database.database().reference().child("tourneys").child(thisTourney.id ?? "none").child("yet_to_view").setValue(yetToView)
             tourneyListPage?.removeBadge(whichOne: tourneyListIndex)
         }
     }
     
     func observeTourneyInfo() {
-        guard let tourneyId = tourneyIdentifier else {
+        guard let tourneyId = thisTourney.id else {
             return
         }
         let ref = Database.database().reference().child("tourneys").child(tourneyId)
         ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
-                let tourneyName = value["name"] as? String ?? "none"
-                self.tourneyNameAll = tourneyName
-                let tourneyActive = value["active"] as? Int ?? -1
-                if tourneyActive >= 2 {
-                    self.setupSemisView()
-                }
-                let tourneyCreator = value["creator"] as? String ?? "none"
                 if let invites = value["invites"] as? [String] {
                     self.tourneyOpenInvites = invites
                     self.setupNavBarButtons()
                 } else {
                     self.setupNavBarButtons()
                 }
-                self.setupTitle(active1: tourneyActive, tournName: tourneyName, tournCreator: tourneyCreator)
             }
         }, withCancel: nil)
     }
@@ -112,6 +106,22 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         sv.isScrollEnabled = true
         sv.contentSize = CGSize(width: 1125, height: 300)
         return sv
+    }()
+    
+    let viewTourneyStats: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("View Tourney Stats", for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.titleLabel?.textAlignment = .center
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 10
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 28)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        button.isHidden = true
+        button.addTarget(self, action: #selector(handleViewTourneyStats), for: .touchUpInside)
+        return button
     }()
     
     let finalsBackground: UIImageView = {
@@ -129,6 +139,10 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+    
+    @objc func handleViewTourneyStats() {
+        print("stats")
+    }
     
     func setupSemisView() {
         
@@ -150,12 +164,18 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         separatorView.widthAnchor.constraint(equalToConstant: 1125).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 2).isActive = true
         
+        finalsBackground.addSubview(viewTourneyStats)
+        viewTourneyStats.centerXAnchor.constraint(equalTo: finalsBackground.rightAnchor, constant: -(view.frame.width / 2)).isActive = true
+        viewTourneyStats.bottomAnchor.constraint(equalTo: finalsBackground.centerYAnchor, constant: 125).isActive = true
+        viewTourneyStats.widthAnchor.constraint(equalToConstant: 220).isActive = true
+        viewTourneyStats.heightAnchor.constraint(equalToConstant: 75).isActive = true
+        
         setupSemiTeams()
     }
     
     func observeTourneyTeams() {
         
-        guard let tourneyId = tourneyIdentifier else {
+        guard let tourneyId = thisTourney.id , let active = thisTourney.active else {
             return
         }
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams").queryOrdered(byChild: "rank")
@@ -172,7 +192,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 team.rank = rank
                 team.wins = wins
                 team.losses = losses
-                if self.active >= 2 {
+                if active >= 2 {
                     switch rank {
                     case 1:
                         self.getNamesAndWins(which: 1, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
@@ -199,17 +219,17 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 self.player1s[which - 1].text = value["username"] as? String
-                if self.active == 3 {
-                    self.player1s[4].text = self.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
-                } else if self.active == 4 {
-                    self.player1s[5].text = self.finals2 == 2 ? self.player1s[2].text : self.player1s[3].text
-                } else if self.active >= 5 {
-                    self.player1s[4].text = self.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
-                    self.player1s[5].text = self.finals2 == 2 ? self.player1s[2].text : self.player1s[3].text
+                if self.thisTourney.active == 3 {
+                    self.player1s[4].text = self.thisTourney.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
+                } else if self.thisTourney.active == 4 {
+                    self.player1s[5].text = self.thisTourney.finals2 == 2 ? self.player1s[2].text : self.player1s[3].text
+                } else if self.thisTourney.active == 5 || self.thisTourney.active == 6 {
+                    self.player1s[4].text = self.thisTourney.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
+                    self.player1s[5].text = self.thisTourney.finals2 == 2 ? self.player1s[2].text : self.player1s[3].text
                 }
-                if self.active == 6 {
+                if self.thisTourney.active == 6 {
                     var correctTeam = 0
-                    switch self.winner {
+                    switch self.thisTourney.winner {
                     case 1:
                         correctTeam = 1
                     case 2:
@@ -230,17 +250,17 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 self.player2s[which - 1].text = value["username"] as? String
-                if self.active == 3 {
-                    self.player2s[4].text = self.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
-                } else if self.active == 4 {
-                    self.player2s[5].text = self.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
-                } else if self.active >= 5 {
-                    self.player2s[4].text = self.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
-                    self.player2s[5].text = self.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
+                if self.thisTourney.active == 3 {
+                    self.player2s[4].text = self.thisTourney.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
+                } else if self.thisTourney.active == 4 {
+                    self.player2s[5].text = self.thisTourney.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
+                } else if self.thisTourney.active == 5 || self.thisTourney.active == 6 {
+                    self.player2s[4].text = self.thisTourney.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
+                    self.player2s[5].text = self.thisTourney.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
                 }
-                if self.active == 6 {
+                if self.thisTourney.active == 6 {
                     var correctTeam = 0
-                    switch self.winner {
+                    switch self.thisTourney.winner {
                     case 1:
                         correctTeam = 1
                     case 2:
@@ -259,21 +279,21 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         
         wins[which - 1].text = "Wins: \(winsf)"
         losses[which - 1].text = "Losses: \(lossesf)"
-        if self.active == 3 {
-            self.wins[4].text = self.finals1 == 1 ? self.wins[0].text : self.wins[1].text
-            self.losses[4].text = self.finals1 == 1 ? self.losses[0].text : self.losses[1].text
-        } else if self.active == 4 {
-            self.wins[5].text = self.finals2 == 2 ? self.wins[2].text : self.wins[3].text
-            self.losses[5].text = self.finals2 == 2 ? self.losses[2].text : self.losses[3].text
-        } else if self.active >= 5 {
-            self.wins[4].text = self.finals1 == 1 ? self.wins[0].text : self.wins[1].text
-            self.losses[4].text = self.finals1 == 1 ? self.losses[0].text : self.losses[1].text
-            self.wins[5].text = self.finals2 == 2 ? self.wins[2].text : self.wins[3].text
-            self.losses[5].text = self.finals2 == 2 ? self.losses[2].text : self.losses[3].text
+        if self.thisTourney.active == 3 {
+            self.wins[4].text = self.thisTourney.finals1 == 1 ? self.wins[0].text : self.wins[1].text
+            self.losses[4].text = self.thisTourney.finals1 == 1 ? self.losses[0].text : self.losses[1].text
+        } else if self.thisTourney.active == 4 {
+            self.wins[5].text = self.thisTourney.finals2 == 2 ? self.wins[2].text : self.wins[3].text
+            self.losses[5].text = self.thisTourney.finals2 == 2 ? self.losses[2].text : self.losses[3].text
+        } else if self.thisTourney.active == 5 || self.thisTourney.active == 6 {
+            self.wins[4].text = self.thisTourney.finals1 == 1 ? self.wins[0].text : self.wins[1].text
+            self.losses[4].text = self.thisTourney.finals1 == 1 ? self.losses[0].text : self.losses[1].text
+            self.wins[5].text = self.thisTourney.finals2 == 2 ? self.wins[2].text : self.wins[3].text
+            self.losses[5].text = self.thisTourney.finals2 == 2 ? self.losses[2].text : self.losses[3].text
         }
-        if self.active == 6 {
+        if self.thisTourney.active == 6 {
             var correctTeam = 0
-            switch self.winner {
+            switch self.thisTourney.winner {
             case 1:
                 correctTeam = 1
             case 2:
@@ -291,7 +311,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     func observeAllTourneyMatches() {
-        guard let tourneyId = tourneyIdentifier, let uid = Auth.auth().currentUser?.uid else {
+        guard let tourneyId = thisTourney.id, let uid = Auth.auth().currentUser?.uid else {
             return
         }
 
@@ -344,7 +364,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         if tourneyOpenInvites.contains(uid) != true {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .plain, target: self, action: #selector(handleEnterTourney))
         }
-        if active > 0 {
+        if thisTourney.active ?? 1 > 0 {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(handleRefreshList))
         }
     }
@@ -357,14 +377,44 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         } else if currentItem == 1 {
             teams.removeAll()
             matches.removeAll()
+            allMatches.removeAll()
             observeTourneyTeams()
             observeAllTourneyMatches()
         } else if currentItem == 2 {
             teams.removeAll()
             matches.removeAll()
+            allMatches.removeAll()
             observeTourneyTeams()
             observeAllTourneyMatches()
         }
+        
+        if thisTourney.active ?? 0 >= 2 {
+            observeTourneyInfo2()
+        }
+    }
+    
+    func observeTourneyInfo2() {
+        guard let tourneyId = thisTourney.id else {
+            return
+        }
+        let ref = Database.database().reference().child("tourneys").child(tourneyId)
+        ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                let finals1 = value["finals1"] as? Int ?? -1
+                let finals2 = value["finals2"] as? Int ?? -1
+                let winner = value["winner"] as? Int ?? -1
+                let active = value["active"] as? Int ?? -1
+                self.resetThisTourneyValues(finals1: finals1, finals2: finals2, winner: winner, active: active)
+            }
+        }, withCancel: nil)
+    }
+    
+    func resetThisTourneyValues(finals1: Int, finals2: Int, winner: Int, active: Int) {
+        thisTourney.active = active
+        thisTourney.finals1 = finals1
+        thisTourney.finals2 = finals2
+        thisTourney.winner = winner
+        changeViews()
     }
     
     @objc func handleReturn() {
@@ -374,7 +424,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     @objc func handleEnterTourney() {
         let layout = UICollectionViewFlowLayout()
         let friendList = FriendList(collectionViewLayout: layout)
-        friendList.tourneyId = tourneyIdentifier!
+        friendList.tourneyId = thisTourney.id ?? "none"
         friendList.tourneyOpenInvites = tourneyOpenInvites
         friendList.tourneyStandings = self
         friendList.startTime = thisTourney.start_date ?? 0
@@ -384,13 +434,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     
-    private func setupTitle(active1: Int, tournName: String, tournCreator: String) {
+    private func setupTitle() {
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        active = active1
         
-        if active == 0 {
-            let normalTime = "\(tournName)\nReg. ends: "
+        if thisTourney.active == 0 {
+            let normalTime = "\(thisTourney.name ?? "none")\nReg. ends: "
             let attributedTime = NSMutableAttributedString(string: normalTime)
             let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 14), NSAttributedString.Key.foregroundColor : UIColor.white]
             let calendar = Calendar.current
@@ -402,8 +451,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb as [NSAttributedString.Key : Any])
             attributedTime.append(boldTimeString)
             titleLabel.attributedText = attributedTime
-        } else if active == 1 {
-            let normalTime = "\(tournName)\nLadder ends: "
+        } else if thisTourney.active == 1 {
+            let normalTime = "\(thisTourney.name ?? "none")\nLadder ends: "
             let attributedTime = NSMutableAttributedString(string: normalTime)
             let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 14), NSAttributedString.Key.foregroundColor : UIColor.white]
             let calendar = Calendar.current
@@ -418,12 +467,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb as [NSAttributedString.Key : Any])
             attributedTime.append(boldTimeString)
             titleLabel.attributedText = attributedTime
-        } else if active > 1 && active < 5 {
-            titleLabel.text = "\(tournName)\n(semifinal)"
-        } else if active == 5 {
-            titleLabel.text = "\(tournName)\n(final)"
-        } else if active == 6 {
-            titleLabel.text = "\(tournName)\n(completed)"
+        } else if thisTourney.active ?? 1 > 1 && thisTourney.active ?? 1 < 5 {
+            titleLabel.text = "\(thisTourney.name ?? "none")\n(semifinal)"
+        } else if thisTourney.active == 5 {
+            titleLabel.text = "\(thisTourney.name ?? "none")\n(final)"
+        } else if thisTourney.active == 6 {
+            titleLabel.text = "\(thisTourney.name ?? "none")\n(completed)"
         }
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
@@ -431,7 +480,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        if tournCreator == uid && active < 2 {
+        if thisTourney.creator == uid && thisTourney.active ?? 3 < 2 {
             setupFilterCollectionView()
             let labelTap = UITapGestureRecognizer(target: self, action: #selector(handleDropDownFinish))
             titleLabel.addGestureRecognizer(labelTap)
@@ -578,29 +627,29 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         if collectionView == self.collectionView {
             if indexPath.item == 1 {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: mmCellId, for: indexPath) as! MyMatchesCell
-                cell.tourneyIdentifier = tourneyIdentifier
+                cell.tourneyIdentifier = thisTourney.id
                 cell.matches = matches
                 cell.teams = teams
-                cell.active = active
+                cell.active = thisTourney.active ?? 0
                 cell.yetToView = yetToView
-                cell.finals1 = finals1
-                cell.finals2 = finals2
+                cell.finals1 = thisTourney.finals1 ?? -1
+                cell.finals2 = thisTourney.finals2 ?? -1
                 cell.delegate = self
                 destroyBubble()
                 return cell
             } else if indexPath.item == 2 {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath) as! MatchCell
-                cell.tourneyIdentifier = tourneyIdentifier
+                cell.tourneyIdentifier = thisTourney.id
                 cell.matches = allMatches
                 cell.teams = teams
-                cell.active = active
+                cell.active = thisTourney.active ?? 0
                 return cell
             }
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
             cell.teams = teams
             cell.delegate = self
-            cell.active = active
-            cell.tourneyIdentifier = tourneyIdentifier
+            cell.active = thisTourney.active ?? 0
+            cell.tourneyIdentifier = thisTourney.id
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! ProfileMenuCell
@@ -625,41 +674,44 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     func handleChangeTourneyActive(newActive: Int) {
+        guard let tourneyId = thisTourney.id else {
+            return
+        }
         if newActive == 2 {
             let createMatchFailed = UIAlertController(title: "Are you sure?", message: "Once semi-finals start you can't go back", preferredStyle: .alert)
             createMatchFailed.addAction(UIAlertAction(title: "Nevermind", style: .default, handler: nil))
             createMatchFailed.addAction(UIAlertAction(title: "I'm sure", style: .default, handler: handleImSure))
             self.present(createMatchFailed, animated: true, completion: nil)
         } else if newActive == 1 {
-            Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("active").setValue(newActive)
-            Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("time").setValue(Date().timeIntervalSince1970)
-            active = newActive
+            Database.database().reference().child("tourneys").child(tourneyId).child("active").setValue(newActive)
+            Database.database().reference().child("tourneys").child(tourneyId).child("time").setValue(Date().timeIntervalSince1970)
+            thisTourney.active = newActive
             resetupTitle()
         } else {
-            Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("active").setValue(newActive)
-            active = newActive
+            Database.database().reference().child("tourneys").child(tourneyId).child("active").setValue(newActive)
+            thisTourney.active = newActive
             resetupTitle()
         }
     }
     
     func handleImSure(action: UIAlertAction) {
-        Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("active").setValue(2)
-        active = 2
+        Database.database().reference().child("tourneys").child(thisTourney.id ?? "none").child("active").setValue(2)
+        thisTourney.active = 2
         resetupTitle()
     }
     
     func resetupTitle() {
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        if active == 0 {
+        if thisTourney.active == 0 {
             titleLabel.text = "\(tourneyNameAll)\n(registration period)"
-        } else if active == 1 {
+        } else if thisTourney.active == 1 {
             titleLabel.text = "\(tourneyNameAll)\n(ongoing)"
-        } else if active == 5 {
+        } else if thisTourney.active == 5 {
             titleLabel.text = "\(tourneyNameAll)\n(final)"
-        } else if active == 6 {
+        } else if thisTourney.active == 6 {
             titleLabel.text = "\(tourneyNameAll)\n(completed)"
-        } else if active >= 2 {
+        } else if thisTourney.active ?? 0 >= 2 {
             titleLabel.text = "\(tourneyNameAll)\n(semifinal)"
             handleSetupSemifinal1()
         }
@@ -692,12 +744,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     func handleSetupSemifinal2(team_1_player_1: String, team_1_player_2: String, team_2_player_1: String, team_2_player_2: String) {
-        guard let uid = Auth.auth().currentUser?.uid else {
+        guard let uid = Auth.auth().currentUser?.uid, let tourneyId = thisTourney.id else {
             return
         }
         
         let timeOfChallenge = Date().timeIntervalSince1970
-        let ref = Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("matches")
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches")
         let createMatchRef = ref.childByAutoId()
         let values = ["active": 1, "team_1_player_1": team_1_player_1, "team_1_player_2": team_1_player_2, "team_2_player_1": team_2_player_1, "team_2_player_2": team_2_player_2, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
         createMatchRef.updateChildValues(values, withCompletionBlock: {
@@ -715,7 +767,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             
             let notificationId = matchId
             let notificationsRef = Database.database().reference()
-            let childUpdates = ["/\("tourney_notifications")/\(team_1_player_1)/\(self.tourneyIdentifier)/": team_1_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_1_player_2)/\(self.tourneyIdentifier)/": team_1_player_2 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_1)/\(self.tourneyIdentifier)/": team_2_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_2)/\(self.tourneyIdentifier)/": team_2_player_2 == uid ? 0 : 1] as [String : Any]
+            let childUpdates = ["/\("tourney_notifications")/\(team_1_player_1)/\(tourneyId)/": team_1_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_1_player_2)/\(tourneyId)/": team_1_player_2 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_1)/\(tourneyId)/": team_2_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_2)/\(tourneyId)/": team_2_player_2 == uid ? 0 : 1] as [String : Any]
             notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -885,12 +937,15 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     func changeViews() {
-        if self.active == 3 {
+        guard let active = thisTourney.active else {
+            return
+        }
+        if active == 3 {
             tourneySymbols[0].isHidden = false
             tourneySymbols[1].isHidden = false
             whiteViews[0].isHidden = false
             whiteViews[1].isHidden = false
-            if finals1 == 1 {
+            if thisTourney.finals1 == 1 {
                 player1s[1].alpha = 0.2
                 player2s[1].alpha = 0.2
                 wins[1].alpha = 0.2
@@ -905,12 +960,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 tourneySymbols[0].image = UIImage(named: "tourney_symbol_br")
                 tourneySymbols[0].alpha = 0.4
             }
-        } else if self.active == 4 {
+        } else if active == 4 {
             tourneySymbols[2].isHidden = false
             tourneySymbols[3].isHidden = false
             whiteViews[2].isHidden = false
             whiteViews[3].isHidden = false
-            if finals2 == 2 {
+            if thisTourney.finals2 == 2 {
                 player1s[3].alpha = 0.2
                 player2s[3].alpha = 0.2
                 wins[3].alpha = 0.2
@@ -925,7 +980,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 tourneySymbols[2].image = UIImage(named: "tourney_symbol_br")
                 tourneySymbols[2].alpha = 0.4
             }
-        } else if self.active >= 5 {
+        } else if active >= 5 {
             tourneySymbols[0].isHidden = false
             tourneySymbols[1].isHidden = false
             tourneySymbols[2].isHidden = false
@@ -934,7 +989,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             whiteViews[1].isHidden = false
             whiteViews[2].isHidden = false
             whiteViews[3].isHidden = false
-            if finals1 == 1 {
+            if thisTourney.finals1 == 1 {
                 player1s[1].alpha = 0.2
                 player2s[1].alpha = 0.2
                 wins[1].alpha = 0.2
@@ -949,7 +1004,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 tourneySymbols[0].image = UIImage(named: "tourney_symbol_br")
                 tourneySymbols[0].alpha = 0.4
             }
-            if finals2 == 2 {
+            if thisTourney.finals2 == 2 {
                 player1s[3].alpha = 0.2
                 player2s[3].alpha = 0.2
                 wins[3].alpha = 0.2
@@ -965,13 +1020,14 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 tourneySymbols[2].alpha = 0.4
             }
         }
-        if self.active == 6 {
+        if active == 6 {
+            viewTourneyStats.isHidden = false
             tourneySymbols[4].isHidden = false
             tourneySymbols[5].isHidden = false
             tourneySymbols[6].isHidden = false
             tourneySymbols[6].image = UIImage(named: "tourney_symbol_go")
             var correctTeam = 0
-            switch self.winner {
+            switch thisTourney.winner {
             case 1:
                 correctTeam = 1
             case 2:

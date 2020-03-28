@@ -219,7 +219,7 @@ class FriendInviteCell: UITableViewCell {
         
         addSubview(timeStamp)
         timeStamp.topAnchor.constraint(equalTo: topAnchor, constant: 1).isActive = true
-        timeStamp.leftAnchor.constraint(equalTo: rightAnchor, constant: -275).isActive = true
+        timeStamp.leftAnchor.constraint(equalTo: rightAnchor, constant: -300).isActive = true
         timeStamp.heightAnchor.constraint(equalToConstant: 25).isActive = true
         timeStamp.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
         

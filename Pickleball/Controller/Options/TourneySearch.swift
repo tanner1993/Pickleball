@@ -43,6 +43,14 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
 
     }
     
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        searchBar.resignFirstResponder()
+        for index in textFields {
+            index.resignFirstResponder()
+        }
+        self.view.endEditing(true)
+    }
+    
     func fetchTourney() {
         let rootRef = Database.database().reference()
         let query = rootRef.child("tourneys").child(inviteTourneyId)
@@ -99,6 +107,7 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
     }
     
     @objc func handleSearchFilter() {
+        searchBar.resignFirstResponder()
         searchResults = tourneys
         
         if textFields[0].text! != "Any" {
@@ -195,11 +204,6 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
         if collectionView == self.collectionView {
             let layout = UICollectionViewFlowLayout()
             let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
-            tourneyStandingsPage.tourneyIdentifier = searchResults[indexPath.item].id
-            tourneyStandingsPage.active = searchResults[indexPath.item].active ?? -1
-            tourneyStandingsPage.finals1 = searchResults[indexPath.item].finals1 ?? -1
-            tourneyStandingsPage.finals2 = searchResults[indexPath.item].finals2 ?? -1
-            tourneyStandingsPage.winner = searchResults[indexPath.item].winner ?? -1
             tourneyStandingsPage.thisTourney = searchResults[indexPath.item]
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
         } else {
