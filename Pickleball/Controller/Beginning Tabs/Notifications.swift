@@ -112,12 +112,15 @@ class Notifications: UITableViewController {
                     notification.fromId = fromId
                     notification.id = notificationId
                     self.notifications.append(notification)
+                    self.notifications = self.notifications.sorted { p1, p2 in
+                        return (p1.timeStamp!) > (p2.timeStamp!)
+                    }
                     DispatchQueue.main.async { self.tableView.reloadData()}
                 }
             }, withCancel: nil)
         }, withCancel: nil)
         if let tabItems = self.tabBarController?.tabBar.items {
-            let tabItem = tabItems[3]
+            let tabItem = tabItems[4]
             tabItem.badgeValue = .none
         }
     }
@@ -153,6 +156,7 @@ class Notifications: UITableViewController {
             activityIndicatorView.stopAnimating()
             if notifications[indexPath.row].message == "friend" {
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
+                cell.appLevel.isHidden = false
                 cell.friendInvite = notifications[indexPath.row]
                 cell.confirmButton.tag = indexPath.row
                 cell.confirmButton.addTarget(self, action: #selector(confirmFriend), for: .touchUpInside)
@@ -173,6 +177,7 @@ class Notifications: UITableViewController {
             } else if notifications[indexPath.row].message == "tourney_invite" {
                 observeTourneyTeams(tourneyId: notifications[indexPath.row].tourneyId ?? "none")
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
+                cell.appLevel.isHidden = true
                 cell.friendInvite = notifications[indexPath.row]
                 if let uid = Auth.auth().currentUser?.uid {
                     if uid != notifications[indexPath.row].fromId {
@@ -248,12 +253,17 @@ class Notifications: UITableViewController {
             } else if notifications[indexPath.row].message == "reject_match" {
                 
             } else if notifications[indexPath.row].message == "tourney_invite" {
+//                let layout = UICollectionViewFlowLayout()
+//                let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
+//                tourneyStandingsPage.hidesBottomBarWhenPushed = true
+//                tourneyStandingsPage.notificationSentYou = 1
+//                tourneyStandingsPage.tourneyIdentifier = notifications[indexPath.item].tourneyId
+//                navigationController?.pushViewController(tourneyStandingsPage, animated: true)
                 let layout = UICollectionViewFlowLayout()
-                let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
-                tourneyStandingsPage.hidesBottomBarWhenPushed = true
-                tourneyStandingsPage.notificationSentYou = 1
-                tourneyStandingsPage.tourneyIdentifier = notifications[indexPath.item].tourneyId
-                navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+                let tourneySearch = TourneySearch(collectionViewLayout: layout)
+                tourneySearch.inviteTourneyId = notifications[indexPath.item].tourneyId ?? "none"
+                tourneySearch.hidesBottomBarWhenPushed = true
+                navigationController?.pushViewController(tourneySearch, animated: true)
             }
         }
         tableView.deselectRow(at: indexPath, animated: true)
@@ -355,12 +365,8 @@ class Notifications: UITableViewController {
                 return
             }
         
-            let userNotificationsRef = Database.database().reference().child("user_tourneys").child(uid).child(tourneyId)
-            if let teamId = createTeamInTourneyRef.key {
-                userNotificationsRef.updateChildValues([teamId: 1])
-                let inviteeNotificationsRef = Database.database().reference().child("user_tourneys").child(fromId).child(tourneyId)
-                inviteeNotificationsRef.updateChildValues([teamId: 1])
-            }
+            Database.database().reference().child("user_tourneys").child(uid).child(tourneyId).setValue(1)
+            Database.database().reference().child("user_tourneys").child(fromId).child(tourneyId).setValue(1)
             
             Database.database().reference().child("notifications").child(notificationId).removeValue()
             Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()

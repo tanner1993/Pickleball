@@ -17,9 +17,18 @@ class LoginPage: UIViewController {
     var usernames = [String]()
     var emails = [String]()
     
+    let brandImageView: UIImageView = {
+        let image = UIImageView()
+        image.image = UIImage(named: "brandName")
+        image.contentMode = .scaleAspectFit
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
+    
     let loginImageView: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(named: "loginimage")
+        image.image = UIImage(named: "crossed_paddles")
+        image.contentMode = .scaleAspectFit
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
@@ -48,9 +57,9 @@ class LoginPage: UIViewController {
     
     lazy var registerButton: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+        button.backgroundColor = .white
         button.setTitle("Register", for: .normal)
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
         button.layer.cornerRadius = 5
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         button.layer.masksToBounds = true
@@ -61,7 +70,15 @@ class LoginPage: UIViewController {
     
     let nameTextField: UITextField = {
         let tf = UITextField()
-        tf.placeholder = "Name"
+        tf.placeholder = "First Name"
+        tf.translatesAutoresizingMaskIntoConstraints = false
+        tf.font = UIFont.boldSystemFont(ofSize: 16)
+        return tf
+    }()
+    
+    let lastNameTextField: UITextField = {
+        let tf = UITextField()
+        tf.placeholder = "Last Name"
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.font = UIFont.boldSystemFont(ofSize: 16)
         return tf
@@ -158,6 +175,8 @@ class LoginPage: UIViewController {
         nameTextField.resignFirstResponder()
         emailTextField.resignFirstResponder()
         passwordTextField.resignFirstResponder()
+        lastNameTextField.resignFirstResponder()
+        userNameTextField.resignFirstResponder()
         self.view.endEditing(true)
     }
     
@@ -170,6 +189,14 @@ class LoginPage: UIViewController {
         nameTextFieldHeightAnchor?.isActive = false
         nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
         nameTextFieldHeightAnchor?.isActive = true
+        
+        lastNameTextFieldHeightAnchor?.isActive = false
+        lastNameTextFieldHeightAnchor = lastNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
+        lastNameTextFieldHeightAnchor?.isActive = true
+        
+        verticalSeparatorViewHeightAnchor?.isActive = false
+        verticalSeparatorViewHeightAnchor = verticalSeparatorView.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
+        verticalSeparatorViewHeightAnchor?.isActive = true
         
         userNameTextFieldHeightAnchor?.isActive = false
         userNameTextFieldHeightAnchor = userNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
@@ -278,12 +305,24 @@ class LoginPage: UIViewController {
     }
     
     @objc func handleRegister() {
-        guard let email = emailTextField.text?.lowercased(), let password = passwordTextField.text, let name = nameTextField.text, let username = userNameTextField.text?.lowercased() else {
+        guard let email = emailTextField.text?.lowercased(), let password = passwordTextField.text, let name = nameTextField.text, let lastName = lastNameTextField.text, let username = userNameTextField.text?.lowercased() else {
             print("Form is not valid")
             return
         }
         if username.isValidName != true {
-            let newalert = UIAlertController(title: "Sorry", message: "Invalid Username. Must be between 3 and 15 characters, only letters, numbers, and underscores allowed", preferredStyle: UIAlertController.Style.alert)
+            let newalert = UIAlertController(title: "Sorry", message: "Invalid Username. Must be between 3 and 13 characters, only letters, numbers, and underscores allowed", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        }
+        if name.isValidFirstName != true {
+            let newalert = UIAlertController(title: "Sorry", message: "Invalid First Name. Must be between 2 and 16 characters, only letters allowed", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        }
+        if lastName.isValidFirstName != true {
+            let newalert = UIAlertController(title: "Sorry", message: "Invalid Last Name. Must be between 2 and 16 characters, only letters allowed", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
             return
@@ -306,6 +345,12 @@ class LoginPage: UIViewController {
             self.present(newalert, animated: true, completion: nil)
             return
         }
+        if password.count < 6 {
+            let newalert = UIAlertController(title: "Sorry", message: "The password must be at least 6 characters long", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        }
         print(username)
         Auth.auth().createUser(withEmail: email, password: password, completion: {(authDataResult: AuthDataResult?, error) in
             if error != nil {
@@ -319,7 +364,8 @@ class LoginPage: UIViewController {
             
             let ref = Database.database().reference()
             let usersref = ref.child("users").child(uid)
-            let values = ["name": name, "email": email, "username": username, "exp": 0, "state": "none", "county": "none", "skill_level": Float(0), "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": Double(0), "sex": "none"] as [String : Any]
+            let fullName = name + " " + lastName
+            let values = ["name": fullName, "email": email, "username": username, "exp": 0, "state": "none", "county": "none", "skill_level": Float(0), "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": Double(0), "sex": "none"] as [String : Any]
             usersref.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -362,15 +408,30 @@ class LoginPage: UIViewController {
         loginImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         loginImageView.bottomAnchor.constraint(equalTo: loginRegSegControl.topAnchor, constant: -15).isActive = true
         loginImageView.widthAnchor.constraint(equalToConstant: 200).isActive = true
-        loginImageView.heightAnchor.constraint(equalToConstant: 200).isActive = true
+        loginImageView.heightAnchor.constraint(equalToConstant: 150).isActive = true
+        
+        view.addSubview(brandImageView)
+        brandImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        brandImageView.bottomAnchor.constraint(equalTo: loginImageView.topAnchor, constant: -5).isActive = true
+        brandImageView.widthAnchor.constraint(equalToConstant: 250).isActive = true
+        brandImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
     }
     
     var inputsContainerViewHeightAnchor: NSLayoutConstraint?
     var nameTextFieldHeightAnchor: NSLayoutConstraint?
+    var lastNameTextFieldHeightAnchor: NSLayoutConstraint?
     var userNameTextFieldHeightAnchor: NSLayoutConstraint?
     var emailTextFieldHeightAnchor: NSLayoutConstraint?
     var passwordTextFieldHeightAnchor: NSLayoutConstraint?
     var inputsContainerViewCenterYAnchor: NSLayoutConstraint?
+    var verticalSeparatorViewHeightAnchor: NSLayoutConstraint?
+    
+    let verticalSeparatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
     
     func setupContainerView() {
         view.addSubview(inputsContainerView)
@@ -384,9 +445,23 @@ class LoginPage: UIViewController {
         inputsContainerView.addSubview(nameTextField)
         nameTextField.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
         nameTextField.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
-        nameTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
+        nameTextField.rightAnchor.constraint(equalTo: inputsContainerView.centerXAnchor, constant: -2).isActive = true
         nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
         nameTextFieldHeightAnchor?.isActive = true
+        
+        inputsContainerView.addSubview(lastNameTextField)
+        lastNameTextField.leftAnchor.constraint(equalTo: inputsContainerView.centerXAnchor, constant: 12).isActive = true
+        lastNameTextField.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
+        lastNameTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: -2).isActive = true
+        lastNameTextFieldHeightAnchor = lastNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
+        lastNameTextFieldHeightAnchor?.isActive = true
+        
+        inputsContainerView.addSubview(verticalSeparatorView)
+        verticalSeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.centerXAnchor).isActive = true
+        verticalSeparatorView.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
+        verticalSeparatorView.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        verticalSeparatorViewHeightAnchor = verticalSeparatorView.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
+        verticalSeparatorViewHeightAnchor?.isActive = true
         
         inputsContainerView.addSubview(nameSeparatorView)
         nameSeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor).isActive = true

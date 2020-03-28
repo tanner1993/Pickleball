@@ -27,6 +27,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     var opp2Id = "none"
     var tourneyOpenInvites = [String]()
     var tourneyStandings = TourneyStandings()
+    var startTime: Double = 0
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -119,11 +120,30 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         return view
     }()
     
+    let separatorView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.init(r: 220, g: 220, b: 220)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     func setupForPlayerSelection() {
-        collectionView?.contentInset = UIEdgeInsets(top: 90, left: 0, bottom: 0, right: 0)
-        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 90, left: 0, bottom: 0, right: 0)
+        collectionView?.contentInset = UIEdgeInsets(top: 100, left: 0, bottom: 0, right: 0)
+        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 100, left: 0, bottom: 0, right: 0)
         if tourneyId != "none" {
-            selectPlayerLabel.text = "Invite a friend to join you in this tournament"
+            let normalTime = "Invite a friend to join you in this tournament\nRegistration ends on: "
+            let attributedTime = NSMutableAttributedString(string: normalTime)
+            let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 14), NSAttributedString.Key.foregroundColor : UIColor.init(r: 88, g: 148, b: 200)]
+            let calendar = Calendar.current
+            let startDater = Date(timeIntervalSince1970: startTime)
+            let components = calendar.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater)
+            let monthInt = components.month!
+            let monthAbb = months[monthInt - 1].prefix(3)
+            let boldTime = "\(monthAbb). \(components.day!)"
+            let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedTime.append(boldTimeString)
+            selectPlayerLabel.attributedText = attributedTime
             selectPlayerLabel.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         }
         
@@ -135,9 +155,15 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         
         view.addSubview(selectPlayerLabel)
         selectPlayerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        selectPlayerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 40).isActive = true
+        selectPlayerLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 60).isActive = true
         selectPlayerLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         selectPlayerLabel.heightAnchor.constraint(equalToConstant: tourneyId != "none" ? 60 : 40).isActive = true
+        
+        view.addSubview(separatorView)
+        separatorView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        separatorView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 100).isActive = true
+        separatorView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        separatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
         
         view.addSubview(backButton)
         backButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true

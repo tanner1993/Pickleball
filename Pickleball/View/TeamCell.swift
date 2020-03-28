@@ -33,7 +33,7 @@ class TeamCell: FeedCell {
             let player1ref = Database.database().reference().child("users").child(team?.player1 ?? "nope")
             player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    self.player1.text = value["name"] as? String
+                    self.player1.text = value["username"] as? String
                 }
             })
             //player1.text = team?.player1Name ?? "nono"
@@ -41,7 +41,7 @@ class TeamCell: FeedCell {
             let player2ref = Database.database().reference().child("users").child(team?.player2 ?? "nope")
             player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    self.player2.text = value["name"] as? String
+                    self.player2.text = value["username"] as? String
                 }
             })
             //player1.text = team?.player1
@@ -59,8 +59,8 @@ class TeamCell: FeedCell {
         //label.layer.cornerRadius = 24
         //label.layer.masksToBounds = true
         label.text = "Teammate 1"
-        label.font = UIFont(name: "Futura-Bold", size: 22)
-        label.textAlignment = .center
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .left
         return label
     }()
     
@@ -71,8 +71,8 @@ class TeamCell: FeedCell {
         //label.layer.cornerRadius = 24
         //label.layer.masksToBounds = true
         label.text = "Teammate 2"
-        label.font = UIFont(name: "Futura-Bold", size: 22)
-        label.textAlignment = .center
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .left
         return label
     }()
     
@@ -83,7 +83,7 @@ class TeamCell: FeedCell {
         //label.layer.cornerRadius = 35
         //label.layer.masksToBounds = true
         label.text = "1"
-        label.font = UIFont(name: "Futura-Bold", size: 65)
+        label.font = UIFont(name: "HelveticaNeue", size: 65)
         label.textAlignment = .center
         return label
     }()
@@ -94,7 +94,7 @@ class TeamCell: FeedCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         //label.layer.cornerRadius = 10
         //label.layer.masksToBounds = true
-        label.font = UIFont(name: "Futura", size: 22)
+        label.font = UIFont(name: "HelveticaNeue", size: 22)
         label.text = "Wins: 1"
         label.textAlignment = .center
         return label
@@ -106,7 +106,7 @@ class TeamCell: FeedCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         //label.layer.cornerRadius = 10
         //label.layer.masksToBounds = true
-        label.font = UIFont(name: "Futura", size: 22)
+        label.font = UIFont(name: "HelveticaNeue", size: 22)
         label.text = "Losses: 1"
         label.textAlignment = .center
         return label

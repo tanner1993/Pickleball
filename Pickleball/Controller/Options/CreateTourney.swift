@@ -163,6 +163,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
     }
     
     @objc func handleSaveChanges() {
+        
         guard let name = textFields[0].text, let type = textFields[1].text, let skillLevel = textFields[2].text, let sex = textFields[3].text, let ageGroup = textFields[4].text, let startTime = textFields[7].text, let duration = textFields[8].text, let state = textFields[5].text, let county = textFields[6].text else {
             let newalert = UIAlertController(title: "Sorry", message: "One or more fields are incorrect", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
@@ -197,7 +198,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         }
         let ref = Database.database().reference().child("tourneys")
         let tourneyref = ref.childByAutoId()
-        let values = ["active": 0, "name": name, "skill_level": skillLevel, "type": type, "sex": sex, "age_group": ageGroup, "start_date": startSpecific, "duration": duration, "creator": uid, "state": state, "county": county] as [String : Any]
+        let values = ["official": officialTourneyCheck.isOn ? 1 : 0, "active": 0, "name": name, "skill_level": skillLevel, "type": type, "sex": sex, "age_group": ageGroup, "start_date": startSpecific, "duration": duration, "creator": uid, "state": state, "county": county] as [String : Any]
         tourneyref.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -227,6 +228,13 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         lb.textAlignment = .center
         lb.textColor = .white
         return lb
+    }()
+    
+    let officialTourneyCheck: UISwitch = {
+        let uiSwitch = UISwitch()
+        uiSwitch.translatesAutoresizingMaskIntoConstraints = false
+        uiSwitch.isOn = false
+        return uiSwitch
     }()
     
     let backButton: UIButton = {
@@ -259,8 +267,22 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         view.addSubview(createTourneyLabel)
         createTourneyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         createTourneyLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
-        createTourneyLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
+        createTourneyLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -120).isActive = true
         createTourneyLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if uid == "ehEtZLizUaT9bahIaHQ1v5pLwK23" {
+            officialTourneyCheck.isHidden = false
+        } else {
+            officialTourneyCheck.isHidden = true
+        }
+        view.addSubview(officialTourneyCheck)
+        officialTourneyCheck.leftAnchor.constraint(equalTo: createTourneyLabel.rightAnchor).isActive = true
+        officialTourneyCheck.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+        officialTourneyCheck.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -2).isActive = true
+        officialTourneyCheck.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         view.addSubview(backButton)
         backButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true

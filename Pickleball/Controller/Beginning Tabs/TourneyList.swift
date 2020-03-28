@@ -12,7 +12,8 @@ import Firebase
 
 class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayout {
 
-    var tourneys = [Tourney]()
+    var myTourneys = [Tourney]()
+    var officialTourneys = [Tourney]()
     let cellId = "cellId"
     
     let inputsContainerView: UIView = {
@@ -42,6 +43,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     override func viewDidLoad() {
         super.viewDidLoad()
         fetchTourneys()
+        fetchOfficialTourneys()
         setupCollectionView()
         setupViews()
         setupNavbarButtons()
@@ -104,10 +106,16 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     }
 
     func fetchTourneys() {
-        let rootRef = Database.database().reference()
-        let query = rootRef.child("tourneys")
-        query.observe(.childAdded, with: { (snapshot) in
-            print(snapshot)
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_tourneys").child(uid)
+        ref.observe(.childAdded, with: { (snapshot) in
+            let tourneyId = snapshot.key
+            let rootRef = Database.database().reference()
+            let query = rootRef.child("tourneys").child(tourneyId)
+            query.observeSingleEvent(of: .value, with: { (snapshot) in
+                print(snapshot)
                 if let value = snapshot.value as? [String: AnyObject] {
                     let tourney = Tourney()
                     let name = value["name"] as? String ?? "No Name"
@@ -116,6 +124,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     let sex = value["sex"] as? String ?? "None"
                     let ageGroup = value["age_group"] as? String ?? "No Age Group"
                     let startDate = value["start_date"] as? Double ?? 0
+                    let time = value["time"] as? Double ?? Date().timeIntervalSince1970
                     let duration = value["duration"] as? Int ?? 0
                     let creator = value["creator"] as? String ?? "No Creator"
                     let state = value["state"] as? String ?? "No State"
@@ -147,6 +156,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     tourney.sex = sex
                     tourney.age_group = ageGroup
                     tourney.start_date = startDate
+                    tourney.time = time
                     tourney.duration = duration
                     tourney.creator = creator
                     tourney.state = state
@@ -155,10 +165,71 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     tourney.finals1 = finals1
                     tourney.finals2 = finals2
                     tourney.winner = winner
-                    self.tourneys.append(tourney)
-                    
-                    DispatchQueue.main.async { self.collectionView.reloadData() }
+                    self.myTourneys.append(tourney)
+                    DispatchQueue.main.async {
+                        self.myTourneysCollectionView.reloadData()
+                    }
                 }
+            })
+        }, withCancel: nil)
+        
+    }
+    
+    func fetchOfficialTourneys() {
+        let rootRef = Database.database().reference()
+        let query = rootRef.child("tourneys")
+        query.observe(.childAdded, with: { (snapshot) in
+            print(snapshot)
+            if let value = snapshot.value as? [String: AnyObject] {
+                let tourney = Tourney()
+                let name = value["name"] as? String ?? "No Name"
+                let type = value["type"] as? String ?? "No Type"
+                let skillLevel = value["skill_level"] as? Float ?? 0
+                let sex = value["sex"] as? String ?? "None"
+                let ageGroup = value["age_group"] as? String ?? "No Age Group"
+                let startDate = value["start_date"] as? Double ?? 0
+                let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+                let duration = value["duration"] as? Int ?? 0
+                let creator = value["creator"] as? String ?? "No Creator"
+                let state = value["state"] as? String ?? "No State"
+                let county = value["county"] as? String ?? "No State"
+                let active = value["active"] as? Int ?? -1
+                let finals1 = value["finals1"] as? Int ?? -1
+                let finals2 = value["finals2"] as? Int ?? -1
+                let winner = value["winner"] as? Int ?? -1
+                let official = value["official"] as? Int ?? -1
+                let teams = value["teams"]
+                if let turd = teams {
+                    tourney.regTeams = turd.count
+                } else {
+                    tourney.regTeams = 0
+                }
+                if let tourneyYetToView = value["yet_to_view"] as? [String] {
+                    tourney.yetToView = tourneyYetToView
+                }
+                
+                tourney.name = name
+                tourney.type = type
+                tourney.skill_level = skillLevel
+                tourney.id = snapshot.key
+                tourney.sex = sex
+                tourney.age_group = ageGroup
+                tourney.start_date = startDate
+                tourney.time = time
+                tourney.duration = duration
+                tourney.creator = creator
+                tourney.state = state
+                tourney.county = county
+                tourney.active = active
+                tourney.finals1 = finals1
+                tourney.finals2 = finals2
+                tourney.winner = winner
+                if official == 1 {
+                    self.officialTourneys.append(tourney)
+                }
+                
+                DispatchQueue.main.async { self.collectionView.reloadData() }
+            }
         })
     }
     
@@ -171,16 +242,16 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == self.collectionView {
-            return tourneys.count
+            return officialTourneys.count
         } else {
-            return 3
+            return myTourneys.count
         }
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if collectionView == self.collectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TourneyCell
-            cell.tourney = tourneys[indexPath.item]
+            cell.tourney = officialTourneys[indexPath.item]
             if indexPath.item % 2 == 0 {
                 cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
             } else {
@@ -189,12 +260,12 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: myCellId, for: indexPath) as! TourneyCell
+            cell.tourney = myTourneys[indexPath.item]
             if indexPath.item % 2 == 0 {
                 cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
             } else {
                 cell.backgroundColor = .white
             }
-            //cell.playerName.text = menuItems[indexPath.item]
             
             return cell
         }
@@ -208,25 +279,56 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
             let layout = UICollectionViewFlowLayout()
             let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
             tourneyStandingsPage.hidesBottomBarWhenPushed = true
-            tourneyStandingsPage.tourneyIdentifier = tourneys[indexPath.item].id
-            tourneyStandingsPage.active = tourneys[indexPath.item].active ?? -1
-            tourneyStandingsPage.finals1 = tourneys[indexPath.item].finals1 ?? -1
-            tourneyStandingsPage.finals2 = tourneys[indexPath.item].finals2 ?? -1
-            tourneyStandingsPage.winner = tourneys[indexPath.item].winner ?? -1
-            tourneyStandingsPage.yetToView = tourneys[indexPath.item].yetToView ?? [String]()
-            tourneyStandingsPage.tourneyListIndex = indexPath.item
+            tourneyStandingsPage.tourneyIdentifier = officialTourneys[indexPath.item].id
+            tourneyStandingsPage.active = officialTourneys[indexPath.item].active ?? -1
+            tourneyStandingsPage.finals1 = officialTourneys[indexPath.item].finals1 ?? -1
+            tourneyStandingsPage.finals2 = officialTourneys[indexPath.item].finals2 ?? -1
+            tourneyStandingsPage.winner = officialTourneys[indexPath.item].winner ?? -1
+            tourneyStandingsPage.yetToView = officialTourneys[indexPath.item].yetToView ?? [String]()
+            var correctIndex = 0
+            for (index, element) in myTourneys.enumerated() {
+                if element.id == officialTourneys[indexPath.item].id {
+                    correctIndex = index
+                }
+            }
+            tourneyStandingsPage.tourneyListIndex = correctIndex
+            tourneyStandingsPage.thisTourney = officialTourneys[indexPath.item]
             tourneyStandingsPage.tourneyListPage = self
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
         } else {
-            
+            let layout = UICollectionViewFlowLayout()
+            let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
+            tourneyStandingsPage.hidesBottomBarWhenPushed = true
+            tourneyStandingsPage.tourneyIdentifier = myTourneys[indexPath.item].id
+            tourneyStandingsPage.active = myTourneys[indexPath.item].active ?? -1
+            tourneyStandingsPage.finals1 = myTourneys[indexPath.item].finals1 ?? -1
+            tourneyStandingsPage.finals2 = myTourneys[indexPath.item].finals2 ?? -1
+            tourneyStandingsPage.winner = myTourneys[indexPath.item].winner ?? -1
+            tourneyStandingsPage.yetToView = myTourneys[indexPath.item].yetToView ?? [String]()
+            tourneyStandingsPage.tourneyListIndex = indexPath.item
+            tourneyStandingsPage.thisTourney = myTourneys[indexPath.item]
+            tourneyStandingsPage.tourneyListPage = self
+            navigationController?.pushViewController(tourneyStandingsPage, animated: true)
         }
     }
     
     func removeBadge(whichOne: Int) {
-        tourneys[whichOne].notifBubble = 0
-        collectionView.reloadData()
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        myTourneys[whichOne].notifBubble = 0
+        let yettooooview = myTourneys[whichOne].yetToView!
+        myTourneys[whichOne].yetToView?.remove(at: yettooooview.firstIndex(of: uid)!)
+        let tourneyNotifId = myTourneys[whichOne].id
+        for (index, element) in officialTourneys.enumerated() {
+            if element.id == tourneyNotifId {
+                let yettooooview2 = officialTourneys[index].yetToView!
+                officialTourneys[index].yetToView?.remove(at: yettooooview2.firstIndex(of: uid)!)
+            }
+        }
+        myTourneysCollectionView.reloadData()
         var checker = 0
-        for index in tourneys {
+        for index in myTourneys {
             if index.notifBubble == 1 {
                 checker += 1
             }

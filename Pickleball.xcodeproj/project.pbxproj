@@ -27,6 +27,8 @@
 		7727354423CCE7A3004BEC33 /* ChatLogs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7727354323CCE7A3004BEC33 /* ChatLogs.swift */; };
 		7727354623CCEF6D004BEC33 /* FriendList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7727354523CCEF6D004BEC33 /* FriendList.swift */; };
 		7727354823CD4996004BEC33 /* FindFriends.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7727354723CD4996004BEC33 /* FindFriends.swift */; };
+		7731F55C242D6EF500903245 /* MatchFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F55B242D6EF500903245 /* MatchFeed.swift */; };
+		7731F55E242D70F300903245 /* FeedMatchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F55D242D70F300903245 /* FeedMatchCell.swift */; };
 		7739865B23BBEC4700195253 /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865A23BBEC4700195253 /* MainMenu.swift */; };
 		7739865D23BBEF6D00195253 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865C23BBEF6D00195253 /* Connect.swift */; };
 		773CA5CD23C2692700DED169 /* ProfileMenuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */; };
@@ -77,6 +79,8 @@
 		7727354323CCE7A3004BEC33 /* ChatLogs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatLogs.swift; sourceTree = "<group>"; };
 		7727354523CCEF6D004BEC33 /* FriendList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendList.swift; sourceTree = "<group>"; };
 		7727354723CD4996004BEC33 /* FindFriends.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindFriends.swift; sourceTree = "<group>"; };
+		7731F55B242D6EF500903245 /* MatchFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchFeed.swift; sourceTree = "<group>"; };
+		7731F55D242D70F300903245 /* FeedMatchCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMatchCell.swift; sourceTree = "<group>"; };
 		7739865A23BBEC4700195253 /* MainMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
 		7739865C23BBEF6D00195253 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuCell.swift; sourceTree = "<group>"; };
@@ -128,6 +132,7 @@
 				7739865C23BBEF6D00195253 /* Connect.swift */,
 				7718BD83232C13C00004777C /* Notifications.swift */,
 				7757C4752427F372006E059A /* WelcomePage.swift */,
+				7731F55B242D6EF500903245 /* MatchFeed.swift */,
 			);
 			path = "Beginning Tabs";
 			sourceTree = "<group>";
@@ -209,6 +214,7 @@
 				7745AC71240CA413008C8900 /* FriendInviteCell.swift */,
 				7760977C241000C400AD30F5 /* MatchNotificationCell.swift */,
 				7757C4732419AAF5006E059A /* EmptyCell.swift */,
+				7731F55D242D70F300903245 /* FeedMatchCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -389,10 +395,12 @@
 				7718BD722323019E0004777C /* RecentMatchesCell.swift in Sources */,
 				7757C4742419AAF5006E059A /* EmptyCell.swift in Sources */,
 				7727354623CCEF6D004BEC33 /* FriendList.swift in Sources */,
+				7731F55C242D6EF500903245 /* MatchFeed.swift in Sources */,
 				7760977F2410534D00AD30F5 /* MatchView.swift in Sources */,
 				7760977D241000C400AD30F5 /* MatchNotificationCell.swift in Sources */,
 				77931F8423C65C8A00724247 /* CreateTourney.swift in Sources */,
 				7718BD7623256F890004777C /* LoginPage.swift in Sources */,
+				7731F55E242D70F300903245 /* FeedMatchCell.swift in Sources */,
 				77940C4223C7AE6A000061D4 /* TourneySearch.swift in Sources */,
 				7718BDC7233ADE700004777C /* Tourney.swift in Sources */,
 				7760977B240EF21100AD30F5 /* CreateMatch.swift in Sources */,
@@ -563,6 +571,7 @@
 			baseConfigurationReference = 6C244CDC5FF815B094A81B61 /* Pods-Pickleball.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UGU2X2N7R3;
 				INFOPLIST_FILE = Pickleball/Info.plist;
@@ -582,6 +591,7 @@
 			baseConfigurationReference = 51B4A506C24EFF9E64DE1F52 /* Pods-Pickleball.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UGU2X2N7R3;
 				INFOPLIST_FILE = Pickleball/Info.plist;

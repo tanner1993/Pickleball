@@ -138,9 +138,6 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             cell.player = searchResults[indexPath.item]
             cell.messageButton.isHidden = true
             cell.playerLocation.isHidden = false
-            if searchResults[indexPath.item].friend == 2 {
-                cell.backgroundColor = .green
-            }
             
             return cell
         } else {

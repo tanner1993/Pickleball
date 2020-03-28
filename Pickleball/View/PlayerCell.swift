@@ -69,7 +69,12 @@ class FriendListCell: BaseCell {
             playerName.text = "\(player?.username ?? "none")"
             skillLevel.text = "\(player?.skill_level ?? 0.0)"
             appLevel.text = "\(player?.halo_level ?? 0)"
-            playerLocation.text = "\(player?.state ?? "none")\n\(player?.county ?? "none")"
+            playerLocation.text = "\(player?.state ?? "none"), \(player?.county ?? "none")"
+            if player?.friend == 2 {
+                friendImage.isHidden = false
+            } else {
+                friendImage.isHidden = true
+            }
             let friendName = player?.name ?? "none"
             var initials = ""
             var finalChar = 0
@@ -90,6 +95,15 @@ class FriendListCell: BaseCell {
         }
     }
     
+    let friendImage: UIImageView = {
+        let image = UIImageView()
+        image.image = UIImage(named: "friend_signal")
+        image.contentMode = .scaleAspectFit
+        image.isHidden = true
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
+    
     let playerName: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -104,7 +118,6 @@ class FriendListCell: BaseCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.isHidden = true
         label.text = ""
-        label.numberOfLines = 2
         label.font = UIFont(name: "HelveticaNeue", size: 19)
         label.textAlignment = .center
         return label
@@ -135,7 +148,6 @@ class FriendListCell: BaseCell {
     let appLevel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "playerName"
         label.textColor = UIColor.init(r: 120, g: 207, b: 138)
         label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .left
@@ -192,10 +204,16 @@ class FriendListCell: BaseCell {
         messageButton.heightAnchor.constraint(equalToConstant: frame.height - 8).isActive = true
         messageButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
         
+        addSubview(friendImage)
+        friendImage.topAnchor.constraint(equalTo: playerName.topAnchor, constant: 10).isActive = true
+        friendImage.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 2).isActive = true
+        friendImage.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        friendImage.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        
         addSubview(playerLocation)
-        playerLocation.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
-        playerLocation.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 4).isActive = true
-        playerLocation.heightAnchor.constraint(equalToConstant: frame.height - 8).isActive = true
+        playerLocation.topAnchor.constraint(equalTo: appLevel.topAnchor).isActive = true
+        playerLocation.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 2).isActive = true
+        playerLocation.heightAnchor.constraint(equalToConstant: 30).isActive = true
         playerLocation.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
         
         addSubview(separatorView)

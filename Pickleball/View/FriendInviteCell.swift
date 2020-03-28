@@ -32,6 +32,17 @@ class FriendInviteCell: UITableViewCell {
             }
             let fromId = friendInvite?.fromId ?? "none"
             let toId = friendInvite?.toId ?? "none"
+            if friendInvite?.message == "tourney_invite" {
+                let tourneyId = friendInvite?.tourneyId ?? "none"
+                    let ref = Database.database().reference().child("tourneys").child(tourneyId)
+                    ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                        if let value = snapshot.value as? NSDictionary {
+                            let tourneyName = value["name"] as? String ?? "none"
+                            self.skillLevel.text = tourneyName
+                            self.skillLevelWidth?.constant = 150
+                        }
+                    }, withCancel: nil)
+            }
             let recipientNameRef = Database.database().reference().child("users").child(fromId == uid ? toId : fromId)
             recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
@@ -43,14 +54,17 @@ class FriendInviteCell: UITableViewCell {
                     let exp = value["exp"] as? Int ?? 0
                     let haloLevel = self.playerObject.haloLevel(exp: exp)
                     if self.friendInvite?.message == "tourney_invite" {
-                        self.playerName.text = fromId == uid ? "You invited \(username) to a tourney" : "\(username) invited you to a tourney"
+                        self.playerName.font = UIFont(name: "HelveticaNeue", size: 13)
+                        self.playerName.text = fromId == uid ? "You invited \(username) to a tourney:" : "\(username) invited you to a tourney:"
                         self.friendSymbol.image = UIImage(named: "tourney_symbol")
                     } else {
+                        self.playerName.font = UIFont(name: "HelveticaNeue", size: 15)
                         self.playerName.text = "\(username) wants to be your friend"
                         self.friendSymbol.image = UIImage(named: "friend_request")
+                        self.appLevel.text = "\(haloLevel)"
+                        self.skillLevel.text = "\(skillsLevel)"
+                        self.skillLevelWidth?.constant = 40
                     }
-                    self.skillLevel.text = "\(skillsLevel)"
-                    self.appLevel.text = "\(haloLevel)"
                     if let seconds = self.friendInvite?.timeStamp {
                         
                         let dateTime = Date(timeIntervalSince1970: seconds)
@@ -199,6 +213,7 @@ class FriendInviteCell: UITableViewCell {
         return view
     }()
     
+    var skillLevelWidth: NSLayoutConstraint?
     
     func setupViews() {
         
@@ -224,7 +239,8 @@ class FriendInviteCell: UITableViewCell {
         skillLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
         skillLevel.leftAnchor.constraint(equalTo: playerName.leftAnchor).isActive = true
         skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        skillLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        skillLevelWidth = skillLevel.widthAnchor.constraint(equalToConstant: 40)
+        skillLevelWidth?.isActive = true
         
         addSubview(appLevel)
         appLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true

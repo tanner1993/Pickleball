@@ -16,6 +16,7 @@ class Tourney: NSObject {
     var sex: String?
     var age_group: String?
     var start_date: Double?
+    var time: Double?
     var duration: Int?
     var creator: String?
     var state: String?

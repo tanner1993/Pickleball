@@ -43,6 +43,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     var tourneyNameAll = "none"
     var tourneyListIndex = -1
     var currentSelection = 0
+    var thisTourney = Tourney()
     
     
     override func viewDidLoad() {
@@ -376,22 +377,53 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         friendList.tourneyId = tourneyIdentifier!
         friendList.tourneyOpenInvites = tourneyOpenInvites
         friendList.tourneyStandings = self
+        friendList.startTime = thisTourney.start_date ?? 0
         navigationController?.present(friendList, animated: true, completion: nil)
         
     }
+    
+    let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     
     private func setupTitle(active1: Int, tournName: String, tournCreator: String) {
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
         active = active1
+        
         if active == 0 {
-            titleLabel.text = "\(tournName)\n(registration period)"
+            let normalTime = "\(tournName)\nReg. ends: "
+            let attributedTime = NSMutableAttributedString(string: normalTime)
+            let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 14), NSAttributedString.Key.foregroundColor : UIColor.white]
+            let calendar = Calendar.current
+            let startDater = Date(timeIntervalSince1970: thisTourney.start_date ?? 0)
+            let components = calendar.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater)
+            let monthInt = components.month!
+            let monthAbb = months[monthInt - 1].prefix(3)
+            let boldTime = "\(monthAbb). \(components.day!)"
+            let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedTime.append(boldTimeString)
+            titleLabel.attributedText = attributedTime
         } else if active == 1 {
-            titleLabel.text = "\(tournName)\n(ongoing)"
+            let normalTime = "\(tournName)\nLadder ends: "
+            let attributedTime = NSMutableAttributedString(string: normalTime)
+            let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 14), NSAttributedString.Key.foregroundColor : UIColor.white]
+            let calendar = Calendar.current
+            let weeksLong: Double = Double(thisTourney.duration ?? 2)
+            let secondsLong: Double = weeksLong * 7 * 86400
+            print(secondsLong)
+            let startDater = Date(timeIntervalSince1970: ((thisTourney.time ?? Date().timeIntervalSince1970) + secondsLong))
+            let components = calendar.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater)
+            let monthInt = components.month!
+            let monthAbb = months[monthInt - 1].prefix(3)
+            let boldTime = "\(monthAbb). \(components.day!)"
+            let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedTime.append(boldTimeString)
+            titleLabel.attributedText = attributedTime
         } else if active > 1 && active < 5 {
             titleLabel.text = "\(tournName)\n(semifinal)"
         } else if active == 5 {
             titleLabel.text = "\(tournName)\n(final)"
+        } else if active == 6 {
+            titleLabel.text = "\(tournName)\n(completed)"
         }
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
@@ -399,7 +431,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        if tournCreator == uid {
+        if tournCreator == uid && active < 2 {
             setupFilterCollectionView()
             let labelTap = UITapGestureRecognizer(target: self, action: #selector(handleDropDownFinish))
             titleLabel.addGestureRecognizer(labelTap)
@@ -426,7 +458,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         filterCollectionView.register(ProfileMenuCell.self, forCellWithReuseIdentifier: cellId2)
     }
     
-    let dropDownOption = ["Registration", "Ongoing Ladder", "Semifinal", "Final"]
+    let dropDownOption = ["Registration", "Ongoing Ladder", "Semifinal"]
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 0
@@ -593,8 +625,26 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     func handleChangeTourneyActive(newActive: Int) {
-        Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("active").setValue(newActive)
-        active = newActive
+        if newActive == 2 {
+            let createMatchFailed = UIAlertController(title: "Are you sure?", message: "Once semi-finals start you can't go back", preferredStyle: .alert)
+            createMatchFailed.addAction(UIAlertAction(title: "Nevermind", style: .default, handler: nil))
+            createMatchFailed.addAction(UIAlertAction(title: "I'm sure", style: .default, handler: handleImSure))
+            self.present(createMatchFailed, animated: true, completion: nil)
+        } else if newActive == 1 {
+            Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("active").setValue(newActive)
+            Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("time").setValue(Date().timeIntervalSince1970)
+            active = newActive
+            resetupTitle()
+        } else {
+            Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("active").setValue(newActive)
+            active = newActive
+            resetupTitle()
+        }
+    }
+    
+    func handleImSure(action: UIAlertAction) {
+        Database.database().reference().child("tourneys").child(tourneyIdentifier ?? "none").child("active").setValue(2)
+        active = 2
         resetupTitle()
     }
     
@@ -605,15 +655,18 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             titleLabel.text = "\(tourneyNameAll)\n(registration period)"
         } else if active == 1 {
             titleLabel.text = "\(tourneyNameAll)\n(ongoing)"
+        } else if active == 5 {
+            titleLabel.text = "\(tourneyNameAll)\n(final)"
+        } else if active == 6 {
+            titleLabel.text = "\(tourneyNameAll)\n(completed)"
         } else if active >= 2 {
             titleLabel.text = "\(tourneyNameAll)\n(semifinal)"
             handleSetupSemifinal1()
-        } else if active == 5 {
-            titleLabel.text = "\(tourneyNameAll)\n(final)"
         }
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 2
+        titleLabel.isUserInteractionEnabled = false
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 14)
         navigationItem.titleView = titleLabel
     }

@@ -1049,7 +1049,7 @@ class MatchView: UIViewController {
         //let values = ["active": 3] as [String : Any]
         match.team1_scores = [0, 0, 0, 0, 0]
         match.forfeit = 1
-        let childUpdates = ["/\("team1_scores")/": match.team1_scores, "/\("active")/": 3, "/\("forfeit")/": 1] as [String : Any]
+        let childUpdates = ["/\("team1_scores")/": match.team1_scores, "/\("active")/": 3, "/\("forfeit")/": 1, "/\("winner")/": 1] as [String : Any]
         let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
         ref.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
@@ -1332,7 +1332,8 @@ class MatchView: UIViewController {
     
     func performConfirmActive2() {
         let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: 375, hia: 582)
-        let values = ["active": 3] as [String : Any]
+        let time = Date().timeIntervalSince1970
+        let values = ["active": 3, "time": time] as [String : Any]
         let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
         ref.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
@@ -1343,6 +1344,16 @@ class MatchView: UIViewController {
             }
             
             print("Data saved successfully!")
+            let ref2 = Database.database().reference().child("completed_matches").child(self.matchId)
+            let values2 = ["active": 3, "winner": self.match.winner, "forfeit": self.match.forfeit, "team_1_player_1": self.match.team_1_player_1, "team_1_player_2": self.match.team_1_player_2, "team_2_player_1": self.match.team_2_player_1, "team_2_player_2": self.match.team_2_player_2, "team1_scores": self.match.team1_scores, "team2_scores": self.match.team2_scores, "time": time] as [String : Any]
+            ref2.updateChildValues(values2, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if let error = error {
+                    print("Data could not be saved: \(error).")
+                    return
+                }
+                })
             self.match.active = 3
             self.setupNavbarTitle(status: 3)
             self.confirmCheck1.isHidden = false

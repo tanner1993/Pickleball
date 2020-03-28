@@ -60,7 +60,13 @@ extension Double {
 extension String {
     
     var isValidName: Bool {
-        let RegEx = "^\\w{3,15}$"
+        let RegEx = "^\\w{3,13}$"
+        let Test = NSPredicate(format:"SELF MATCHES %@", RegEx)
+        return Test.evaluate(with: self)
+    }
+    
+    var isValidFirstName: Bool {
+        let RegEx = "^\\w{2,16}$"
         let Test = NSPredicate(format:"SELF MATCHES %@", RegEx)
         return Test.evaluate(with: self)
     }

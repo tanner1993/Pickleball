@@ -20,6 +20,14 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     var whichFriend = -1
     var mainMenu: MainMenu?
     
+//    var activityIndicatorView: UIActivityIndicatorView!
+//
+//    override func loadView() {
+//        super.loadView()
+//
+//        activityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
+//    }
+    
     let backgroundImage: UIImageView = {
         let bi = UIImageView()
         bi.translatesAutoresizingMaskIntoConstraints = false
@@ -49,16 +57,17 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     let skillLevelLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Skill Level"
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.textAlignment = .center
+        label.text = "USAPA Self Rating: "
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .right
         return label
     }()
     
     let haloLevel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Bold", size: 75)
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
         label.textAlignment = .center
         return label
     }()
@@ -75,7 +84,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
-        label.textAlignment = .center
+        label.textAlignment = .left
         return label
     }()
     
@@ -91,7 +100,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.textAlignment = .right
+        label.textAlignment = .left
         return label
     }()
     
@@ -195,6 +204,29 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         return 0
     }
     
+    func fetchFriends() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let friendsRef = Database.database().reference().child("friends").child(uid).child(playerId)
+        friendsRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            guard let friendCheck = snapshot.value else {
+                return
+            }
+            let friendCheckNum = friendCheck as? Int ?? -1
+            if friendCheckNum == 1 {
+                self.isFriend = 2
+                self.setupNavbarButtons()
+            } else if friendCheckNum == 0 {
+                self.isFriend = 1
+                self.setupNavbarButtons()
+            } else if friendCheckNum == -1 {
+                self.isFriend = 0
+                self.setupNavbarButtons()
+            }
+        })
+    }
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         switch indexPath.item {
         case 0:
@@ -240,7 +272,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         })
     }
     
-    func setupNavbarTitle() {
+    func setupNavbarButtons() {
         if playerId == "none" {
             let image = UIImage(named: "menu")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(openMenu))
@@ -251,9 +283,12 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         } else if isFriend == 2 {
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Friends", style: .plain, target: self, action: #selector(sendFriendInvitation))
         }
+    }
+    
+    func setupNavbarTitle(username: String) {
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        titleLabel.text = playerId == "none" ? "My Profile" : "Player Profile"
+        titleLabel.text = username
         titleLabel.textColor = .white
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
@@ -309,7 +344,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             })
             findFriends?.searchResults[whichFriend].friend = 1
             isFriend = 1
-            setupNavbarTitle()
+            setupNavbarButtons()
         }
         
         
@@ -317,15 +352,26 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        activityView.startAnimating()
         setupViews()
-        setupNavbarTitle()
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
         if playerId == "none" {
+            setupNavbarButtons()
             setupCollectionView()
             fetchNotifications()
             fetchMessages()
             fetchTourneyNotifications()
             observePlayerProfile()
+        } else if playerId == uid {
+            observePlayerProfile()
+            setupNavbarButtons()
+        } else if isFriend == 3 {
+            fetchFriends()
+            observePlayerProfile()
         } else {
+            setupNavbarButtons()
             observePlayerProfile()
         }
     }
@@ -339,7 +385,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             guard let notificationSeen = snapshot.value else {
                 return
             }
-                let notifNumber = notificationSeen as! Int
+                let notifNumber = notificationSeen as? Int ?? -1
                 if notifNumber == 1 {
                     if let tabItems = self.tabBarController?.tabBar.items {
                         let tabItem = tabItems[1]
@@ -359,10 +405,10 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             guard let notificationSeen = snapshot.value else {
                 return
             }
-            let notifNumber = notificationSeen as! Int
+            let notifNumber = notificationSeen as? Int ?? -1
             if notifNumber == 1 {
                 if let tabItems = self.tabBarController?.tabBar.items {
-                    let tabItem = tabItems[3]
+                    let tabItem = tabItems[4]
                     tabItem.badgeValue = "1"
                 }
             }
@@ -378,10 +424,13 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             let recipientId = snapshot.key
             let ref2 = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 1)
             ref2.observeSingleEvent(of: .childAdded, with: {(snapshot) in
-                let messageSeen = snapshot.value! as! Int
-                if messageSeen == 1 {
+                guard let messageSeen = snapshot.value else {
+                    return
+                }
+                let messageSeenNum = messageSeen as? Int ?? -1
+                if messageSeenNum == 1 {
                     if let tabItems = self.tabBarController?.tabBar.items {
-                        let tabItem = tabItems[2]
+                        let tabItem = tabItems[3]
                         tabItem.badgeValue = "1"
                     }
                 }
@@ -397,23 +446,44 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let ref = Database.database().reference().child("users").child(playerId == "none" ? uid : playerId)
         ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
-                self.skillLevel.text = "\(value["skill_level"] as? Float ?? 0)"
+                
+                let normalSkill = "USAPA Self Rating: "
+                let boldSkill = "\(value["skill_level"] as? Float ?? 0)"
+                let attributedSkill = NSMutableAttributedString(string: normalSkill)
+                let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 23), NSAttributedString.Key.foregroundColor : UIColor.init(r: 88, g: 148, b: 200)]
+                let boldSkillString = NSAttributedString(string: boldSkill, attributes: attrb as [NSAttributedString.Key : Any])
+                attributedSkill.append(boldSkillString)
+                self.skillLevelLabel.attributedText = attributedSkill
+                
                 let exp = value["exp"] as? Int ?? 0
                 self.haloLevel.text = "\(self.player.haloLevel(exp: exp))"
                 self.haloLevelTitle.text = "App Level"
                 self.playerName.text = value["name"] as? String ?? "no name"
                 let state = value["state"] as? String ?? "no state"
+                let username = value["username"] as? String ?? "no name"
+                self.setupNavbarTitle(username: username)
+                self.stopAnimatingActivity(state: state)
                 let county = value["county"] as? String ?? "no state"
                 self.location.text = "\(state), \(county)"
                 let birthdate = value["birthdate"] as? Double ?? 0
                 self.ageGroup.text = self.getAgeGroup(birthdate: birthdate)
                 self.tourneysEntered.text = "\(value["tourneys_played"] as? Int ?? 0)"
                 self.tourneysWon.text = "\(value["tourneys_won"] as? Int ?? 0)"
-                self.matchesWon.text = "\(value["match_wins"] as? Int ?? 0)"
-                self.matchesLost.text = "\(value["match_losses"] as? Int ?? 0)"
-                self.winRatio.text = ".5"
+                let matchesWon1 = value["match_wins"] as? Int ?? 0
+                let matchesLost1 = value["match_losses"] as? Int ?? 0
+                self.matchesWon.text = "\(matchesWon1)"
+                self.matchesLost.text = "\(matchesLost1)"
+                let winRatio = Double(matchesWon1) / (Double(matchesWon1) + Double(matchesLost1))
+                let winRatioRounded = winRatio.round(nearest: 0.01)
+                self.winRatio.text = (matchesWon1 + matchesLost1) == 0 ? "\(0)" : "\(winRatioRounded)"
             }
         }, withCancel: nil)
+    }
+    
+    func stopAnimatingActivity(state: String) {
+        activityView.isHidden = true
+        activityView.stopAnimating()
+        whiteBox.isHidden = true
     }
     
     func getAgeGroup(birthdate: Double) -> String {
@@ -450,16 +520,16 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         backgroundImage.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         backgroundImage.heightAnchor.constraint(equalToConstant: 550).isActive = true
         
-        view.addSubview(skillLevel)
-        let skillLevelLoc = calculateButtonPosition(x: 200, y: 140, w: 250, h: 160, wib: 750, hib: 1100, wia: 375, hia: 550)
-        
-        skillLevel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(skillLevelLoc.Y)).isActive = true
-        skillLevel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(skillLevelLoc.X)).isActive = true
-        skillLevel.heightAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.H)).isActive = true
-        skillLevel.widthAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.W)).isActive = true
+//        view.addSubview(skillLevel)
+//        let skillLevelLoc = calculateButtonPosition(x: 200, y: 140, w: 250, h: 160, wib: 750, hib: 1100, wia: 375, hia: 550)
+//
+//        skillLevel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(skillLevelLoc.Y)).isActive = true
+//        skillLevel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(skillLevelLoc.X)).isActive = true
+//        skillLevel.heightAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.H)).isActive = true
+//        skillLevel.widthAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.W)).isActive = true
         
         view.addSubview(skillLevelLabel)
-        let skillLevelLabelLoc = calculateButtonPosition(x: 200, y: 255, w: 200, h: 35, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let skillLevelLabelLoc = calculateButtonPosition(x: 540, y: 485, w: 400, h: 55, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         skillLevelLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(skillLevelLabelLoc.Y)).isActive = true
         skillLevelLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(skillLevelLabelLoc.X)).isActive = true
@@ -467,23 +537,23 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         skillLevelLabel.widthAnchor.constraint(equalToConstant: CGFloat(skillLevelLabelLoc.W)).isActive = true
         
         view.addSubview(haloLevel)
-        let haloLevelLoc = calculateButtonPosition(x: 550, y: 140, w: 250, h: 160, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let haloLevelLoc = calculateButtonPosition(x: 375, y: 236.5, w: 250, h: 200, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         haloLevel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelLoc.Y)).isActive = true
         haloLevel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelLoc.X)).isActive = true
         haloLevel.heightAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.H)).isActive = true
         haloLevel.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.W)).isActive = true
         
-        view.addSubview(haloLevelTitle)
-        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
-        
-        haloLevelTitle.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelTitleLoc.Y)).isActive = true
-        haloLevelTitle.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelTitleLoc.X)).isActive = true
-        haloLevelTitle.heightAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.H)).isActive = true
-        haloLevelTitle.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.W)).isActive = true
+//        view.addSubview(haloLevelTitle)
+//        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
+//
+//        haloLevelTitle.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelTitleLoc.Y)).isActive = true
+//        haloLevelTitle.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelTitleLoc.X)).isActive = true
+//        haloLevelTitle.heightAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.H)).isActive = true
+//        haloLevelTitle.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.W)).isActive = true
         
         view.addSubview(playerName)
-        let playerNameLoc = calculateButtonPosition(x: 375, y: 380, w: 700, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let playerNameLoc = calculateButtonPosition(x: 375, y: 40, w: 705, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         playerName.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(playerNameLoc.Y)).isActive = true
         playerName.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(playerNameLoc.X)).isActive = true
@@ -491,7 +561,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         playerName.widthAnchor.constraint(equalToConstant: CGFloat(playerNameLoc.W)).isActive = true
         
         view.addSubview(location)
-        let locationLoc = calculateButtonPosition(x: 216.75, y: 450, w: 383.5, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let locationLoc = calculateButtonPosition(x: 216.75, y: 485, w: 383.5, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         location.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(locationLoc.Y)).isActive = true
         location.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(locationLoc.X)).isActive = true
@@ -499,7 +569,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         location.widthAnchor.constraint(equalToConstant: CGFloat(locationLoc.W)).isActive = true
         
         view.addSubview(ageGroup)
-        let ageGroupLoc = calculateButtonPosition(x: 566.5, y: 450, w: 316, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
+        let ageGroupLoc = calculateButtonPosition(x: 216.75, y: 440, w: 383.5, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
         
         ageGroup.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(ageGroupLoc.Y)).isActive = true
         ageGroup.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(ageGroupLoc.X)).isActive = true
@@ -545,7 +615,34 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         winRatio.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(winRatioLoc.X)).isActive = true
         winRatio.heightAnchor.constraint(equalToConstant: CGFloat(winRatioLoc.H)).isActive = true
         winRatio.widthAnchor.constraint(equalToConstant: CGFloat(winRatioLoc.W)).isActive = true
+        
+        view.addSubview(whiteBox)
+        whiteBox.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        whiteBox.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        whiteBox.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        whiteBox.heightAnchor.constraint(equalToConstant: 550).isActive = true
+        
+        whiteBox.addSubview(activityView)
+        activityView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        activityView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        activityView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        activityView.heightAnchor.constraint(equalToConstant: 550).isActive = true
+        
+        
     }
     
+    let activityView: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView()
+        view.style = .gray
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let whiteBox: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
 
 }

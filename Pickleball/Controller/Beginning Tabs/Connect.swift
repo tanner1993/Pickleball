@@ -212,7 +212,7 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             }, withCancel: nil)
         }, withCancel: nil)
         if let tabItems = self.tabBarController?.tabBar.items {
-            let tabItem = tabItems[2]
+            let tabItem = tabItems[3]
             tabItem.badgeValue = .none
         }
     }

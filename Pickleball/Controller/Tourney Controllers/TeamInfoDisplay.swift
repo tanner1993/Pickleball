@@ -96,8 +96,8 @@ class TeamInfoDisplay: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "4.0"
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textColor = .black
+        label.font = UIFont(name: "HelveticaNeue", size: 22)
         label.textAlignment = .left
         return label
     }()
@@ -106,8 +106,8 @@ class TeamInfoDisplay: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "12"
-        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textColor = .black
+        label.font = UIFont(name: "HelveticaNeue", size: 22)
         label.textAlignment = .left
         return label
     }()
@@ -156,8 +156,8 @@ class TeamInfoDisplay: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "4.0"
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textColor = .black
+        label.font = UIFont(name: "HelveticaNeue", size: 22)
         label.textAlignment = .left
         return label
     }()
@@ -166,8 +166,8 @@ class TeamInfoDisplay: UIViewController {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "12"
-        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textColor = .black
+        label.font = UIFont(name: "HelveticaNeue", size: 22)
         label.textAlignment = .left
         return label
     }()
@@ -184,10 +184,10 @@ class TeamInfoDisplay: UIViewController {
     let matchesWon: UILabel = {
         let label = UILabel()
         label.text = "W: 5"
-        label.textColor = .green
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .center
+        label.textAlignment = .right
         return label
     }()
     
@@ -197,17 +197,17 @@ class TeamInfoDisplay: UIViewController {
         label.textColor = .red
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .center
+        label.textAlignment = .right
         return label
     }()
     
     let matchesWon2: UILabel = {
         let label = UILabel()
         label.text = "W: 5"
-        label.textColor = .green
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .center
+        label.textAlignment = .right
         return label
     }()
     
@@ -217,7 +217,7 @@ class TeamInfoDisplay: UIViewController {
         label.textColor = .red
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .center
+        label.textAlignment = .right
         return label
     }()
     
@@ -253,7 +253,7 @@ class TeamInfoDisplay: UIViewController {
     
     let teamWinsAct: UILabel = {
         let label = UILabel()
-        label.textColor = .green
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue", size: 45)
         label.textAlignment = .right
@@ -332,10 +332,24 @@ class TeamInfoDisplay: UIViewController {
         let ref = Database.database().reference().child("users").child(player1Id)
         ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
-                self.skillLevel.text = "\(value["skill_level"] as? Float ?? 0)"
+                
+                let normalSkill = "Rating: "
+                let boldSkill = "\(value["skill_level"] as? Float ?? 0)"
+                let attributedSkill = NSMutableAttributedString(string: normalSkill)
+                let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 23), NSAttributedString.Key.foregroundColor : UIColor.init(r: 88, g: 148, b: 200)]
+                let boldSkillString = NSAttributedString(string: boldSkill, attributes: attrb as [NSAttributedString.Key : Any])
+                attributedSkill.append(boldSkillString)
+                self.skillLevel.attributedText = attributedSkill
                 let exp = value["exp"] as? Int ?? 0
-                self.appLevel.text = "\(self.player.haloLevel(exp: exp))"
-                self.playerName.text = value["name"] as? String ?? "no name"
+                
+                let normalApp = "PR: "
+                let boldApp = "\(self.player.haloLevel(exp: exp))"
+                let attributedApp = NSMutableAttributedString(string: normalApp)
+                let attrb2 = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 23), NSAttributedString.Key.foregroundColor : UIColor.init(r: 120, g: 207, b: 138)]
+                let boldAppString = NSAttributedString(string: boldApp, attributes: attrb2 as [NSAttributedString.Key : Any])
+                attributedApp.append(boldAppString)
+                self.appLevel.attributedText = attributedApp
+                self.playerName.text = value["username"] as? String ?? "no name"
                 self.matchesWon.text = "W: \(value["match_wins"] as? Int ?? 0)"
                 self.matchesLost.text = "L: \(value["match_losses"] as? Int ?? 0)"
                 self.playerInitials.text = self.getInitials(name: self.playerName.text ?? "none")
@@ -367,10 +381,23 @@ class TeamInfoDisplay: UIViewController {
         let ref = Database.database().reference().child("users").child(player2Id)
         ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
-                self.skillLevel2.text = "\(value["skill_level"] as? Float ?? 0)"
+                let normalSkill = "Rating: "
+                let boldSkill = "\(value["skill_level"] as? Float ?? 0)"
+                let attributedSkill = NSMutableAttributedString(string: normalSkill)
+                let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 23), NSAttributedString.Key.foregroundColor : UIColor.init(r: 88, g: 148, b: 200)]
+                let boldSkillString = NSAttributedString(string: boldSkill, attributes: attrb as [NSAttributedString.Key : Any])
+                attributedSkill.append(boldSkillString)
+                self.skillLevel2.attributedText = attributedSkill
                 let exp = value["exp"] as? Int ?? 0
-                self.appLevel2.text = "\(self.player.haloLevel(exp: exp))"
-                self.playerName2.text = value["name"] as? String ?? "no name"
+                
+                let normalApp = "PR: "
+                let boldApp = "\(self.player.haloLevel(exp: exp))"
+                let attributedApp = NSMutableAttributedString(string: normalApp)
+                let attrb2 = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 23), NSAttributedString.Key.foregroundColor : UIColor.init(r: 120, g: 207, b: 138)]
+                let boldAppString = NSAttributedString(string: boldApp, attributes: attrb2 as [NSAttributedString.Key : Any])
+                attributedApp.append(boldAppString)
+                self.appLevel2.attributedText = attributedApp
+                self.playerName2.text = value["username"] as? String ?? "no name"
                 self.matchesWon2.text = "W: \(value["match_wins"] as? Int ?? 0)"
                 self.matchesLost2.text = "L: \(value["match_losses"] as? Int ?? 0)"
                 self.playerInitials2.text = self.getInitials(name: self.playerName2.text ?? "none")
@@ -421,25 +448,26 @@ class TeamInfoDisplay: UIViewController {
         skillLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
         skillLevel.leftAnchor.constraint(equalTo: playerName.leftAnchor).isActive = true
         skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        skillLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        skillLevel.widthAnchor.constraint(equalToConstant: 110).isActive = true
         
-        whiteBox.addSubview(appLevel)
-        appLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
-        appLevel.leftAnchor.constraint(equalTo: skillLevel.rightAnchor, constant: 15).isActive = true
-        appLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        appLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
         
         whiteBox.addSubview(matchesWon)
         matchesWon.topAnchor.constraint(equalTo: whiteBox.topAnchor).isActive = true
-        matchesWon.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 2).isActive = true
+        matchesWon.widthAnchor.constraint(equalToConstant: 68).isActive = true
         matchesWon.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        matchesWon.rightAnchor.constraint(equalTo: whiteBox.rightAnchor).isActive = true
+        matchesWon.rightAnchor.constraint(equalTo: whiteBox.rightAnchor, constant: -8).isActive = true
         
         whiteBox.addSubview(matchesLost)
         matchesLost.topAnchor.constraint(equalTo: matchesWon.bottomAnchor).isActive = true
-        matchesLost.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 2).isActive = true
+        matchesLost.widthAnchor.constraint(equalToConstant: 68).isActive = true
         matchesLost.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        matchesLost.rightAnchor.constraint(equalTo: whiteBox.rightAnchor).isActive = true
+        matchesLost.rightAnchor.constraint(equalTo: whiteBox.rightAnchor, constant: -8).isActive = true
+        
+        whiteBox.addSubview(appLevel)
+        appLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
+        appLevel.leftAnchor.constraint(equalTo: skillLevel.rightAnchor, constant: 10).isActive = true
+        appLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        appLevel.rightAnchor.constraint(equalTo: matchesLost.leftAnchor).isActive = true
         
         view.addSubview(player2Label)
         player2Label.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -469,25 +497,25 @@ class TeamInfoDisplay: UIViewController {
         skillLevel2.topAnchor.constraint(equalTo: playerName2.bottomAnchor).isActive = true
         skillLevel2.leftAnchor.constraint(equalTo: playerName2.leftAnchor).isActive = true
         skillLevel2.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        skillLevel2.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        skillLevel2.widthAnchor.constraint(equalToConstant: 110).isActive = true
         
         whiteBox2.addSubview(appLevel2)
         appLevel2.topAnchor.constraint(equalTo: playerName2.bottomAnchor).isActive = true
-        appLevel2.leftAnchor.constraint(equalTo: skillLevel2.rightAnchor, constant: 15).isActive = true
+        appLevel2.leftAnchor.constraint(equalTo: skillLevel2.rightAnchor, constant: 10).isActive = true
         appLevel2.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        appLevel2.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        appLevel2.rightAnchor.constraint(equalTo: matchesLost.leftAnchor).isActive = true
         
         whiteBox2.addSubview(matchesWon2)
         matchesWon2.topAnchor.constraint(equalTo: whiteBox2.topAnchor).isActive = true
-        matchesWon2.leftAnchor.constraint(equalTo: playerName2.rightAnchor, constant: 2).isActive = true
+        matchesWon2.widthAnchor.constraint(equalToConstant: 68).isActive = true
         matchesWon2.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        matchesWon2.rightAnchor.constraint(equalTo: whiteBox2.rightAnchor).isActive = true
+        matchesWon2.rightAnchor.constraint(equalTo: whiteBox2.rightAnchor, constant: -8).isActive = true
         
         whiteBox2.addSubview(matchesLost2)
         matchesLost2.topAnchor.constraint(equalTo: matchesWon2.bottomAnchor).isActive = true
-        matchesLost2.leftAnchor.constraint(equalTo: playerName2.rightAnchor, constant: 2).isActive = true
+        matchesLost2.widthAnchor.constraint(equalToConstant: 68).isActive = true
         matchesLost2.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        matchesLost2.rightAnchor.constraint(equalTo: whiteBox2.rightAnchor).isActive = true
+        matchesLost2.rightAnchor.constraint(equalTo: whiteBox2.rightAnchor, constant: -8).isActive = true
         
         view.addSubview(teamWins)
         teamWins.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8).isActive = true
@@ -570,6 +598,13 @@ class TeamInfoDisplay: UIViewController {
         }
         if tourneyCantChallenge.contains(teamIdSelected.player1 ?? "none") == true {
             let newalert = UIAlertController(title: "Impossible", message: "This team still has an open match, once they finish that, then you can challenge them", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        }
+        
+        if abs(teamIdSelected.rank! - usersTeamId.rank!) > 3 {
+            let newalert = UIAlertController(title: "Not gonna happen", message: "You can only challenge teams that are within a rank of 3 from you", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
             return
