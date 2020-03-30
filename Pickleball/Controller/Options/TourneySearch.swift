@@ -10,7 +10,7 @@ import UIKit
 import Firebase
 import FirebaseAuth
 
-class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     let cellId = "cellId"
     let cellId2 = "cellId2"
@@ -32,14 +32,15 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
             setupFilterCollectionView()
             fetchTourneys()
             setupViews()
-            collectionView?.contentInset = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
-            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+            tableView?.contentInset = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+            tableView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
         } else {
             fetchTourney()
         }
 
-        self.collectionView!.register(TourneyCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView?.backgroundColor = .white
+        tableView?.register(TourneyCell.self, forCellReuseIdentifier: cellId)
+        tableView?.backgroundColor = .white
+        self.tableView.separatorStyle = .none
 
     }
     
@@ -101,7 +102,7 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
                 tourney.winner = winner
                 self.searchResults.append(tourney)
                 
-                DispatchQueue.main.async { self.collectionView.reloadData() }
+                DispatchQueue.main.async { self.tableView.reloadData() }
             }
         })
     }
@@ -141,21 +142,41 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
         })
         }
         
-        collectionView.reloadData()
+        tableView.reloadData()
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return searchResults.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! TourneyCell
+        cell.tourney = searchResults[indexPath.item]
+        if indexPath.item % 2 == 0 {
+            cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
+        } else {
+            cell.backgroundColor = .white
+        }
+        
+        return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 175
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        if collectionView == self.collectionView {
-            return CGSize(width: view.frame.width, height: 175)
-        } else {
+//        if collectionView == self.collectionView {
+//            return CGSize(width: view.frame.width, height: 175)
+//        } else {
             return CGSize(width: view.frame.width, height: 50)
-        }
+        //}
     }
 
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if collectionView == self.collectionView {
-            return searchResults.count
-        } else {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+//        if collectionView == self.collectionView {
+//            return searchResults.count
+//        } else {
             switch selectedDropDown {
             case 0:
                 return skillLevels.count
@@ -170,17 +191,17 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
             default:
                 return 0
             }
-        }
+        //}
     }
 
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        if collectionView == self.collectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TourneyCell
-            cell.tourney = searchResults[indexPath.item]
-            
-            return cell
-        } else {
+//        if collectionView == self.collectionView {
+//            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TourneyCell
+//            cell.tourney = searchResults[indexPath.item]
+//
+//            return cell
+//        } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! ProfileMenuCell
             switch selectedDropDown {
             case 0:
@@ -197,16 +218,24 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
                 return cell
             }
             return cell
-        }
+       // }
     }
     
-    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if collectionView == self.collectionView {
-            let layout = UICollectionViewFlowLayout()
-            let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
-            tourneyStandingsPage.thisTourney = searchResults[indexPath.item]
-            navigationController?.pushViewController(tourneyStandingsPage, animated: true)
-        } else {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let layout = UICollectionViewFlowLayout()
+        let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
+        tourneyStandingsPage.hidesBottomBarWhenPushed = true
+        tourneyStandingsPage.thisTourney = searchResults[indexPath.row]
+        navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+//        if collectionView == self.collectionView {
+//            let layout = UICollectionViewFlowLayout()
+//            let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
+//            tourneyStandingsPage.thisTourney = searchResults[indexPath.item]
+//            navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+//        } else {
             switch selectedDropDown {
             case 0:
                 textFields[0].text = "\(skillLevels[indexPath.item])"
@@ -222,7 +251,7 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
                 print("failed")
             }
             dismissMenu()
-        }
+       // }
     }
     
     let whiteContainerView: UIView = {
@@ -329,6 +358,7 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
         return sb
     }()
     
+    
     func fetchTourneys() {
         let rootRef = Database.database().reference()
         let query = rootRef.child("tourneys")
@@ -379,7 +409,7 @@ class TourneySearch: UICollectionViewController, UICollectionViewDelegateFlowLay
                 tourney.winner = winner
                 self.tourneys.append(tourney)
                 
-                DispatchQueue.main.async { self.collectionView.reloadData() }
+                DispatchQueue.main.async { self.tableView.reloadData() }
             }
         })
     }
@@ -457,7 +487,7 @@ extension TourneySearch: UISearchBarDelegate {
             return tourney.name!.localizedCaseInsensitiveContains(text)
         })
         //handleFilter()
-        collectionView.reloadData()
+        tableView.reloadData()
         
     }
     

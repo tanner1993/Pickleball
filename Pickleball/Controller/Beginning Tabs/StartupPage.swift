@@ -60,6 +60,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         label.text = "USAPA Self Rating: "
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         label.textAlignment = .right
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
@@ -165,7 +166,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     @objc func handleViewTourneys() {
         let layout = UICollectionViewFlowLayout()
-        let tourneyListPage = TourneyList(collectionViewLayout: layout)
+        let tourneyListPage = TourneyList()
         navigationController?.pushViewController(tourneyListPage, animated: true)
     }
     
@@ -535,14 +536,32 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         return (X, Y, W, H)
     }
     
+    let scrollView: UIScrollView = {
+        let sv = UIScrollView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.isScrollEnabled = true
+        sv.backgroundColor = .white
+        sv.minimumZoomScale = 1.0
+        //sv.maximumZoomScale = 2.5
+        return sv
+    }()
+    
     func setupViews() {
-        view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        scrollView.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        let Width = Float(view.frame.width)
+        let ratio: Float = 375.0 / 550.0
+        scrollView.contentSize = CGSize(width: Double(Width), height: Double(Width / ratio))
+        view.addSubview(scrollView)
+        scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        scrollView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        scrollView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
         
-        view.addSubview(backgroundImage)
-        backgroundImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        scrollView.addSubview(backgroundImage)
+        backgroundImage.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
         backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         backgroundImage.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        backgroundImage.heightAnchor.constraint(equalToConstant: 550).isActive = true
+        backgroundImage.heightAnchor.constraint(equalToConstant: CGFloat(Width / ratio)).isActive = true
         
 //        view.addSubview(skillLevel)
 //        let skillLevelLoc = calculateButtonPosition(x: 200, y: 140, w: 250, h: 160, wib: 750, hib: 1100, wia: 375, hia: 550)
@@ -552,16 +571,16 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
 //        skillLevel.heightAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.H)).isActive = true
 //        skillLevel.widthAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.W)).isActive = true
         
-        view.addSubview(skillLevelLabel)
-        let skillLevelLabelLoc = calculateButtonPosition(x: 540, y: 485, w: 400, h: 55, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(skillLevelLabel)
+        let skillLevelLabelLoc = calculateButtonPosition(x: 540, y: 485, w: 400, h: 55, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         skillLevelLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(skillLevelLabelLoc.Y)).isActive = true
         skillLevelLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(skillLevelLabelLoc.X)).isActive = true
         skillLevelLabel.heightAnchor.constraint(equalToConstant: CGFloat(skillLevelLabelLoc.H)).isActive = true
         skillLevelLabel.widthAnchor.constraint(equalToConstant: CGFloat(skillLevelLabelLoc.W)).isActive = true
         
-        view.addSubview(haloLevel)
-        let haloLevelLoc = calculateButtonPosition(x: 375, y: 236.5, w: 250, h: 200, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(haloLevel)
+        let haloLevelLoc = calculateButtonPosition(x: 375, y: 236.5, w: 250, h: 200, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         haloLevel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelLoc.Y)).isActive = true
         haloLevel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelLoc.X)).isActive = true
@@ -576,64 +595,64 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
 //        haloLevelTitle.heightAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.H)).isActive = true
 //        haloLevelTitle.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.W)).isActive = true
         
-        view.addSubview(playerName)
-        let playerNameLoc = calculateButtonPosition(x: 375, y: 40, w: 705, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(playerName)
+        let playerNameLoc = calculateButtonPosition(x: 375, y: 40, w: 705, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         playerName.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(playerNameLoc.Y)).isActive = true
         playerName.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(playerNameLoc.X)).isActive = true
         playerName.heightAnchor.constraint(equalToConstant: CGFloat(playerNameLoc.H)).isActive = true
         playerName.widthAnchor.constraint(equalToConstant: CGFloat(playerNameLoc.W)).isActive = true
         
-        view.addSubview(location)
-        let locationLoc = calculateButtonPosition(x: 216.75, y: 485, w: 383.5, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(location)
+        let locationLoc = calculateButtonPosition(x: 216.75, y: 485, w: 383.5, h: 50, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         location.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(locationLoc.Y)).isActive = true
         location.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(locationLoc.X)).isActive = true
         location.heightAnchor.constraint(equalToConstant: CGFloat(locationLoc.H)).isActive = true
         location.widthAnchor.constraint(equalToConstant: CGFloat(locationLoc.W)).isActive = true
         
-        view.addSubview(ageGroup)
-        let ageGroupLoc = calculateButtonPosition(x: 216.75, y: 440, w: 383.5, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(ageGroup)
+        let ageGroupLoc = calculateButtonPosition(x: 216.75, y: 440, w: 383.5, h: 50, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         ageGroup.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(ageGroupLoc.Y)).isActive = true
         ageGroup.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(ageGroupLoc.X)).isActive = true
         ageGroup.heightAnchor.constraint(equalToConstant: CGFloat(ageGroupLoc.H)).isActive = true
         ageGroup.widthAnchor.constraint(equalToConstant: CGFloat(ageGroupLoc.W)).isActive = true
         
-        view.addSubview(tourneysEntered)
-        let tourneysEnteredLoc = calculateButtonPosition(x: 645, y: 630, w: 160, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(tourneysEntered)
+        let tourneysEnteredLoc = calculateButtonPosition(x: 645, y: 630, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         tourneysEntered.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(tourneysEnteredLoc.Y)).isActive = true
         tourneysEntered.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(tourneysEnteredLoc.X)).isActive = true
         tourneysEntered.heightAnchor.constraint(equalToConstant: CGFloat(tourneysEnteredLoc.H)).isActive = true
         tourneysEntered.widthAnchor.constraint(equalToConstant: CGFloat(tourneysEnteredLoc.W)).isActive = true
         
-        view.addSubview(tourneysWon)
-        let tourneysWonLoc = calculateButtonPosition(x: 645, y: 730, w: 160, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(tourneysWon)
+        let tourneysWonLoc = calculateButtonPosition(x: 645, y: 730, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         tourneysWon.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(tourneysWonLoc.Y)).isActive = true
         tourneysWon.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(tourneysWonLoc.X)).isActive = true
         tourneysWon.heightAnchor.constraint(equalToConstant: CGFloat(tourneysWonLoc.H)).isActive = true
         tourneysWon.widthAnchor.constraint(equalToConstant: CGFloat(tourneysWonLoc.W)).isActive = true
         
-        view.addSubview(matchesWon)
-        let matchesWonLoc = calculateButtonPosition(x: 645, y: 830, w: 160, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(matchesWon)
+        let matchesWonLoc = calculateButtonPosition(x: 645, y: 830, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         matchesWon.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(matchesWonLoc.Y)).isActive = true
         matchesWon.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(matchesWonLoc.X)).isActive = true
         matchesWon.heightAnchor.constraint(equalToConstant: CGFloat(matchesWonLoc.H)).isActive = true
         matchesWon.widthAnchor.constraint(equalToConstant: CGFloat(matchesWonLoc.W)).isActive = true
         
-        view.addSubview(matchesLost)
-        let matchesLostLoc = calculateButtonPosition(x: 645, y: 930, w: 160, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(matchesLost)
+        let matchesLostLoc = calculateButtonPosition(x: 645, y: 930, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         matchesLost.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(matchesLostLoc.Y)).isActive = true
         matchesLost.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(matchesLostLoc.X)).isActive = true
         matchesLost.heightAnchor.constraint(equalToConstant: CGFloat(matchesLostLoc.H)).isActive = true
         matchesLost.widthAnchor.constraint(equalToConstant: CGFloat(matchesLostLoc.W)).isActive = true
         
-        view.addSubview(winRatio)
-        let winRatioLoc = calculateButtonPosition(x: 645, y: 1030, w: 160, h: 60, wib: 750, hib: 1100, wia: 375, hia: 550)
+        backgroundImage.addSubview(winRatio)
+        let winRatioLoc = calculateButtonPosition(x: 645, y: 1030, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
         winRatio.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(winRatioLoc.Y)).isActive = true
         winRatio.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(winRatioLoc.X)).isActive = true
@@ -644,13 +663,13 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         whiteBox.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         whiteBox.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         whiteBox.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        whiteBox.heightAnchor.constraint(equalToConstant: 550).isActive = true
+        whiteBox.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
         
         whiteBox.addSubview(activityView)
         activityView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         activityView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         activityView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        activityView.heightAnchor.constraint(equalToConstant: 550).isActive = true
+        activityView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
         
         
     }

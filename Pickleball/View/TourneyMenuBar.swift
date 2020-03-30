@@ -47,7 +47,7 @@ class TourneyMenuBar: UIView, UICollectionViewDataSource, UICollectionViewDelega
     lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.backgroundColor = UIColor.blue
+        cv.backgroundColor = .white
         cv.translatesAutoresizingMaskIntoConstraints = false
         cv.dataSource = self
         cv.delegate = self
@@ -103,6 +103,7 @@ class MenuCell: BaseCell {
         let lb = UILabel()
         lb.text = "Nothin"
         lb.font = UIFont(name: "ArialRoundedMTBold", size: 15)
+        lb.adjustsFontSizeToFitWidth = true
         lb.textAlignment = .center
         lb.textColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         lb.translatesAutoresizingMaskIntoConstraints = false
@@ -132,6 +133,9 @@ class MenuCell: BaseCell {
     
     override func setupViews() {
         super.setupViews()
+        if frame.width < 375 {
+            CellLabels.font = UIFont(name: "ArialRoundedMTBold", size: 13)
+        }
         addSubview(CellLabels)
         //addSubview(CellBar)
         addConstraintsWithFormat(format: "H:[v0(120)]", views: CellLabels)

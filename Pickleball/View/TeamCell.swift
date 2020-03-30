@@ -153,7 +153,7 @@ class TeamCell: FeedCell {
         backgroundImage.widthAnchor.constraint(equalToConstant: frame.width).isActive = true
         backgroundImage.heightAnchor.constraint(equalToConstant: frame.height).isActive = true
         
-        let teamRankLoc = calculateButtonPosition(x: 150, y: 165.5, w: 167, h: 270, wib: 1242, hib: 332, wia: 375, hia: 100)
+        let teamRankLoc = calculateButtonPosition(x: 150, y: 165.5, w: 167, h: 270, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
         
         addSubview(teamRank)
         teamRank.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(teamRankLoc.Y)).isActive = true
@@ -161,7 +161,7 @@ class TeamCell: FeedCell {
         teamRank.heightAnchor.constraint(equalToConstant: CGFloat(teamRankLoc.H)).isActive = true
         teamRank.widthAnchor.constraint(equalToConstant: CGFloat(teamRankLoc.W)).isActive = true
         
-        let player1Loc = calculateButtonPosition(x: 540, y: 95.5, w: 625, h: 130, wib: 1242, hib: 332, wia: 375, hia: 100)
+        let player1Loc = calculateButtonPosition(x: 540, y: 95.5, w: 625, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
         
         addSubview(player1)
         player1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(player1Loc.Y)).isActive = true
@@ -169,7 +169,7 @@ class TeamCell: FeedCell {
         player1.heightAnchor.constraint(equalToConstant: CGFloat(player1Loc.H)).isActive = true
         player1.widthAnchor.constraint(equalToConstant: CGFloat(player1Loc.W)).isActive = true
         
-        let player2Loc = calculateButtonPosition(x: 540, y: 235.5, w: 625, h: 130, wib: 1242, hib: 332, wia: 375, hia: 100)
+        let player2Loc = calculateButtonPosition(x: 540, y: 235.5, w: 625, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
         
         addSubview(player2)
         player2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(player2Loc.Y)).isActive = true
@@ -177,7 +177,7 @@ class TeamCell: FeedCell {
         player2.heightAnchor.constraint(equalToConstant: CGFloat(player2Loc.H)).isActive = true
         player2.widthAnchor.constraint(equalToConstant: CGFloat(player2Loc.W)).isActive = true
         
-        let winsLoc = calculateButtonPosition(x: 1000, y: 95.5, w: 266, h: 130, wib: 1242, hib: 332, wia: 375, hia: 100)
+        let winsLoc = calculateButtonPosition(x: 1000, y: 95.5, w: 266, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
         
         addSubview(wins)
         wins.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(winsLoc.Y)).isActive = true
@@ -185,7 +185,7 @@ class TeamCell: FeedCell {
         wins.heightAnchor.constraint(equalToConstant: CGFloat(winsLoc.H)).isActive = true
         wins.widthAnchor.constraint(equalToConstant: CGFloat(winsLoc.W)).isActive = true
         
-        let lossesLoc = calculateButtonPosition(x: 1000, y: 235.5, w: 266, h: 130, wib: 1242, hib: 332, wia: 375, hia: 100)
+        let lossesLoc = calculateButtonPosition(x: 1000, y: 235.5, w: 266, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
         
         addSubview(losses)
         losses.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(lossesLoc.Y)).isActive = true

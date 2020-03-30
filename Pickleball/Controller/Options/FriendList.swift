@@ -62,7 +62,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
             self.fillInRow()
         }
         fetchFriends()
@@ -303,6 +303,9 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
             self.present(alreadyInvited, animated: true, completion: nil)
             return
         }
+        let joinInviteConfirmed = UIAlertController(title: "Successfully sent tourney invite", message: "Have your friend check their notifications to accept!", preferredStyle: .alert)
+        joinInviteConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
+        self.present(joinInviteConfirmed, animated: true, completion: nil)
         let uid = Auth.auth().currentUser!.uid
         let timeStamp = Int(Date().timeIntervalSince1970)
         let ref = Database.database().reference().child("notifications")
@@ -333,9 +336,6 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
                 }
                 
                 print("Crazy data 2 saved!")
-                let joinInviteConfirmed = UIAlertController(title: "Successfully sent tourney invite", message: "Have your friend check their notifications to accept!", preferredStyle: .alert)
-                joinInviteConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
-                self.present(joinInviteConfirmed, animated: true, completion: nil)
                 
             })
             

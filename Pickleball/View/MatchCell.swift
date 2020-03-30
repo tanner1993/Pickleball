@@ -135,7 +135,7 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: frame.width, height: 226)
+        return CGSize(width: frame.width, height: frame.width / 1.659)
     }
 
 }

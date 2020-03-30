@@ -119,6 +119,7 @@ class FriendListCell: BaseCell {
         label.isHidden = true
         label.text = ""
         label.font = UIFont(name: "HelveticaNeue", size: 19)
+        label.adjustsFontSizeToFitWidth = true
         label.textAlignment = .center
         return label
     }()

@@ -34,6 +34,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         for index in textFields {
             index.resignFirstResponder()
         }
+        
         self.view.endEditing(true)
     }
     
@@ -260,6 +261,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         //button.backgroundColor = .white
         button.setTitle("Create Tourney", for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 35)
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 5
         button.layer.masksToBounds = true
@@ -268,14 +270,22 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         return button
     }()
     
+    let scrollView: UIScrollView = {
+        let sv = UIScrollView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.isScrollEnabled = true
+        sv.backgroundColor = .white
+        sv.minimumZoomScale = 1.0
+        //sv.maximumZoomScale = 2.5
+        return sv
+    }()
+    
     func setupViews() {
+        scrollView.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        let Width = Float(view.frame.width)
+        scrollView.contentSize = CGSize(width: Double(Width), height: Double(700))
         view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         
-        view.addSubview(createTourneyLabel)
-        createTourneyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        createTourneyLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
-        createTourneyLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -120).isActive = true
-        createTourneyLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         guard let uid = Auth.auth().currentUser?.uid else {
             return
@@ -286,9 +296,9 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
             officialTourneyCheck.isHidden = true
         }
         view.addSubview(officialTourneyCheck)
-        officialTourneyCheck.leftAnchor.constraint(equalTo: createTourneyLabel.rightAnchor).isActive = true
+        officialTourneyCheck.rightAnchor.constraint(equalTo: view.rightAnchor, constant: 4).isActive = true
         officialTourneyCheck.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
-        officialTourneyCheck.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -2).isActive = true
+        officialTourneyCheck.widthAnchor.constraint(equalToConstant: 40).isActive = true
         officialTourneyCheck.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         view.addSubview(backButton)
@@ -297,13 +307,25 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         backButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
         backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
+        view.addSubview(scrollView)
+        scrollView.topAnchor.constraint(equalTo: backButton.bottomAnchor).isActive = true
+        scrollView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        scrollView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        
+        scrollView.addSubview(createTourneyLabel)
+        createTourneyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        createTourneyLabel.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 2).isActive = true
+        createTourneyLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -120).isActive = true
+        createTourneyLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
         
         let inputsArray = ["Name", "Type", "Skill Level", "Sex", "Age Group"]
         let inputsArray2 = ["State", "County","Days to Begin", "Length (weeks)"]
         let inputContainer1 = createInputContainer(topAnchor: createTourneyLabel, anchorConstant: 20, numberInputs: 5, vertSepDistance: 120, inputs: inputsArray, inputTypes: [0, 1, 1, 1, 1])
         let inputContainer2 = createInputContainer(topAnchor: inputContainer1, anchorConstant: 20, numberInputs: 4, vertSepDistance: 160, inputs: inputsArray2, inputTypes: [1, 1, 1, 1])
         
-        view.addSubview(saveTourney)
+        scrollView.addSubview(saveTourney)
         saveTourney.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         saveTourney.topAnchor.constraint(equalTo: inputContainer2.bottomAnchor, constant: 40).isActive = true
         saveTourney.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -100).isActive = true
@@ -322,7 +344,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
             return view
         }()
         
-        view.addSubview(inputContainer)
+        scrollView.addSubview(inputContainer)
         inputContainer.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         inputContainer.topAnchor.constraint(equalTo: topAnchor.bottomAnchor, constant: CGFloat(anchorConstant)).isActive = true
         inputContainer.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true

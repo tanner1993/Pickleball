@@ -67,7 +67,7 @@ class Notifications: UITableViewController {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
             self.fillInRow()
         }
         currentUser2 = uid
@@ -260,7 +260,7 @@ class Notifications: UITableViewController {
 //                tourneyStandingsPage.tourneyIdentifier = notifications[indexPath.item].tourneyId
 //                navigationController?.pushViewController(tourneyStandingsPage, animated: true)
                 let layout = UICollectionViewFlowLayout()
-                let tourneySearch = TourneySearch(collectionViewLayout: layout)
+                let tourneySearch = TourneySearch()
                 tourneySearch.inviteTourneyId = notifications[indexPath.item].tourneyId ?? "none"
                 tourneySearch.hidesBottomBarWhenPushed = true
                 navigationController?.pushViewController(tourneySearch, animated: true)

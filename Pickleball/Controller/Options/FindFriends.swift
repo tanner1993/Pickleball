@@ -157,11 +157,12 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             playerProfile.findFriends = self
             playerProfile.playerId = searchResults[indexPath.item].id ?? "none"
             playerProfile.whichFriend = indexPath.item
-            if searchResults[indexPath.item].friend == 2 {
-                playerProfile.isFriend = 2
-            } else if searchResults[indexPath.item].friend == 1 {
-                playerProfile.isFriend = 1
-            }
+//            if searchResults[indexPath.item].friend == 2 {
+//                playerProfile.isFriend = 2
+//            } else if searchResults[indexPath.item].friend == 1 {
+//                playerProfile.isFriend = 1
+//            }
+            playerProfile.isFriend = 3
             navigationController?.pushViewController(playerProfile, animated: true)
         } else {
             switch selectedDropDown {

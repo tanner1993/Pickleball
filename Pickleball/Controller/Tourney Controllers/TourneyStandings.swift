@@ -17,6 +17,7 @@ protocol FeedCellProtocol {
 extension TourneyStandings: FeedCellProtocol {
     func pushNavigation(_ vc: UIViewController) {
         self.navigationController?.pushViewController(vc, animated: true)
+        destroyBubble()
     }
 }
 
@@ -73,11 +74,14 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
+        guard let tourneyId = thisTourney.id else {
+            return
+        }
         if yetToView.contains(uid) {
             notifBadge.isHidden = true
-            Database.database().reference().child("tourney_notifications").child(uid).child(thisTourney.id ?? "none").removeValue()
+            Database.database().reference().child("tourney_notifications").child(uid).child(tourneyId).removeValue()
             yetToView.remove(at: yetToView.firstIndex(of: uid)!)
-            Database.database().reference().child("tourneys").child(thisTourney.id ?? "none").child("yet_to_view").setValue(yetToView)
+            Database.database().reference().child("tourneys").child(tourneyId).child("yet_to_view").setValue(yetToView)
             tourneyListPage?.removeBadge(whichOne: tourneyListIndex)
         }
     }
@@ -141,7 +145,11 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }()
     
     @objc func handleViewTourneyStats() {
-        print("stats")
+        let tourneyStats = TourneyStats()
+        tourneyStats.teams = teams
+        tourneyStats.allMatches = allMatches
+        tourneyStats.thisTourney = thisTourney
+        navigationController?.pushViewController(tourneyStats, animated: true)
     }
     
     func setupSemisView() {
@@ -550,8 +558,20 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         collectionView?.register(MyMatchesCell.self, forCellWithReuseIdentifier: mmCellId)
         
         collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
-        collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
-        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+//        if view.frame.width > 375 {
+//            collectionView?.contentInset = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
+//            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
+//        } else {
+//            collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+//            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+//        }
+        if UIDevice.current.hasNotch {
+            collectionView?.contentInset = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
+            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
+        } else {
+            collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
+        }
         collectionView?.isPagingEnabled = true
     }
     
@@ -635,7 +655,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 cell.finals1 = thisTourney.finals1 ?? -1
                 cell.finals2 = thisTourney.finals2 ?? -1
                 cell.delegate = self
-                destroyBubble()
                 return cell
             } else if indexPath.item == 2 {
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: rmCellId, for: indexPath) as! MatchCell

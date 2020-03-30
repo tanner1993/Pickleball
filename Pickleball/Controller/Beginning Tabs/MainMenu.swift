@@ -21,7 +21,7 @@ class MainMenu: UITabBarController {
     
     private func setupTabBarController() {
         let layout = UICollectionViewFlowLayout()
-        let tourneyList = TourneyList(collectionViewLayout: layout)
+        let tourneyList = TourneyList()
         let tourneyList2 = UINavigationController(rootViewController: tourneyList)
         tourneyList2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
         tourneyList2.navigationBar.tintColor = .white

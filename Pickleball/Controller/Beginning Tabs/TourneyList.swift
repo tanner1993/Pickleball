@@ -10,11 +10,23 @@ import UIKit
 import FirebaseAuth
 import Firebase
 
-class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayout {
+class TourneyList: UITableViewController {
 
     var myTourneys = [Tourney]()
     let cellId = "cellId"
     var sender = 0
+    let cellIdNone = "loading"
+    
+    var activityIndicatorView: UIActivityIndicatorView!
+    
+    override func loadView() {
+        super.loadView()
+        
+        activityIndicatorView = UIActivityIndicatorView(style: .gray)
+        
+    }
+    
+    var noNotifications = 0
     
     let inputsContainerView: UIView = {
         let view = UIView()
@@ -50,7 +62,16 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
         }
         setupCollectionView()
         setupViews()
-
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
+            self.fillInRow()
+        }
+    }
+    
+    func fillInRow() {
+        if myTourneys.count == 0 {
+            noNotifications = 1
+            tableView.reloadData()
+        }
     }
     
     func setupNavbarButtons() {
@@ -69,8 +90,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     }
     
     @objc func handleOfficalTourneys() {
-        let layout = UICollectionViewFlowLayout()
-        let tourneyOfficial = TourneyList(collectionViewLayout: layout)
+        let tourneyOfficial = TourneyList()
         tourneyOfficial.hidesBottomBarWhenPushed = true
         tourneyOfficial.sender = 1
         navigationController?.pushViewController(tourneyOfficial, animated: true)
@@ -78,7 +98,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     @objc func handleSearchTourneys() {
         let layout = UICollectionViewFlowLayout()
-        let tourneySearch = TourneySearch(collectionViewLayout: layout)
+        let tourneySearch = TourneySearch()
         tourneySearch.tourneyList = self
         tourneySearch.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(tourneySearch, animated: true)
@@ -156,7 +176,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     tourney.winner = winner
                     self.myTourneys.append(tourney)
                     DispatchQueue.main.async {
-                        self.collectionView.reloadData()
+                        self.tableView.reloadData()
                     }
                 }
             })
@@ -214,22 +234,39 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     self.myTourneys.append(tourney)
                 }
 
-                DispatchQueue.main.async { self.collectionView.reloadData() }
+                DispatchQueue.main.async { self.tableView.reloadData() }
             }
         })
     }
     
     func setupCollectionView() {
-        collectionView?.register(TourneyCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView?.backgroundColor = UIColor.white
-    }
-
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            return myTourneys.count
+        tableView?.register(TourneyCell.self, forCellReuseIdentifier: cellId)
+        tableView?.register(UITableViewCell.self, forCellReuseIdentifier: cellIdNone)
+        tableView?.backgroundColor = .white
+        self.tableView.separatorStyle = .none
     }
     
-    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TourneyCell
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return myTourneys.count == 0 ? 1 : myTourneys.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if myTourneys.count == 0 {
+            if noNotifications == 0 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
+                cell.backgroundView = activityIndicatorView
+                activityIndicatorView.startAnimating()
+                return cell
+            } else {
+                activityIndicatorView.stopAnimating()
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
+                cell.textLabel?.text = "No Tourneys"
+                cell.textLabel?.textAlignment = .center
+                return cell
+            }
+        } else {
+            activityIndicatorView.stopAnimating()
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! TourneyCell
             cell.tourney = myTourneys[indexPath.item]
             if indexPath.item % 2 == 0 {
                 cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
@@ -238,20 +275,25 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
             }
             
             return cell
+        }
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 175)
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 175
     }
     
-    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        if myTourneys.count == 0 {
+            
+        } else {
             let layout = UICollectionViewFlowLayout()
             let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
             tourneyStandingsPage.hidesBottomBarWhenPushed = true
-            tourneyStandingsPage.tourneyListIndex = indexPath.item
-            tourneyStandingsPage.thisTourney = myTourneys[indexPath.item]
+            tourneyStandingsPage.tourneyListIndex = indexPath.row
+            tourneyStandingsPage.thisTourney = myTourneys[indexPath.row]
             tourneyStandingsPage.tourneyListPage = self
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+        }
     }
     
     func removeBadge(whichOne: Int) {
@@ -261,7 +303,7 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
         myTourneys[whichOne].notifBubble = 0
         let yettooooview = myTourneys[whichOne].yetToView!
         myTourneys[whichOne].yetToView?.remove(at: yettooooview.firstIndex(of: uid)!)
-        collectionView.reloadData()
+        tableView.reloadData()
         var checker = 0
         for index in myTourneys {
             if index.notifBubble == 1 {
@@ -282,7 +324,22 @@ class TourneyList: UICollectionViewController, UICollectionViewDelegateFlowLayou
 
 }
 
-class TourneyCell: BaseCell {
+class TourneyCell: UITableViewCell {
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+    }
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupViews()
+        
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     var tourney: Tourney? {
         didSet {
             
@@ -472,7 +529,7 @@ class TourneyCell: BaseCell {
         return view
     }()
     
-    override func setupViews() {
+    func setupViews() {
         addSubview(tournamentName)
         tournamentName.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         tournamentName.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true

@@ -15,17 +15,39 @@ class MatchFeed: UITableViewController {
     
     var matches = [Match2]()
     var player = Player()
+    var noNotifications = 0
+    let cellIdNone = "loading"
+    
+    var activityIndicatorView: UIActivityIndicatorView!
+    
+    override func loadView() {
+        super.loadView()
+        
+        activityIndicatorView = UIActivityIndicatorView(style: .gray)
+        
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.fillInRow()
+        }
         view.backgroundColor = .white
         fetchMatches()
         setupNavbarTitle()
         tableView?.register(FeedMatchCell.self, forCellReuseIdentifier: cellId)
+        tableView?.register(UITableViewCell.self, forCellReuseIdentifier: cellIdNone)
         tableView?.backgroundColor = .white
         self.tableView.separatorStyle = .none
 //        self.collectionView!.register(FeedMatchCell.self, forCellWithReuseIdentifier: cellId)
 //        self.collectionView.backgroundColor = .white
+    }
+    
+    func fillInRow() {
+        if matches.count == 0 {
+            noNotifications = 1
+            tableView.reloadData()
+        }
     }
 
     func setupNavbarTitle() {
@@ -38,7 +60,7 @@ class MatchFeed: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return matches.count
+        return matches.count == 0 ? 1 : matches.count
     }
 
 //    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -46,75 +68,91 @@ class MatchFeed: UITableViewController {
 //    }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FeedMatchCell
-        let uid = Auth.auth().currentUser?.uid
-        let match = matches[indexPath.item]
-        if match.active == 3 {
-            if match.winner == 1 {
-                cell.challengerPlaceholder.image = UIImage(named: "winning_team_placeholder2")
-                cell.challengedPlaceholder.image = UIImage(named: "challenger_team_placeholder")
-            } else if match.winner == 2 {
-                cell.challengerPlaceholder.image = UIImage(named: "challenger_team_placeholder")
-                cell.challengedPlaceholder.image = UIImage(named: "winning_team_placeholder2")
+        if matches.count == 0 {
+            if noNotifications == 0 {
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
+                cell.backgroundView = activityIndicatorView
+                activityIndicatorView.startAnimating()
+                return cell
+            } else {
+                activityIndicatorView.stopAnimating()
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
+                cell.textLabel?.text = "No News"
+                cell.textLabel?.textAlignment = .center
+                return cell
             }
         } else {
-            if uid == match.team_1_player_1 || uid == match.team_1_player_2 {
-                cell.challengerPlaceholder.image = UIImage(named: "user_team_placeholder")
-                cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
-            } else if uid == match.team_2_player_1 || uid == match.team_2_player_2 {
-                cell.challengerPlaceholder.image = UIImage(named: "plain_team_placeholder")
-                cell.challengedPlaceholder.image = UIImage(named: "user_team_placeholder")
+            activityIndicatorView.stopAnimating()
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FeedMatchCell
+            let uid = Auth.auth().currentUser?.uid
+            let match = matches[indexPath.item]
+            if match.active == 3 {
+                if match.winner == 1 {
+                    cell.challengerPlaceholder.image = UIImage(named: "winning_team_placeholder2")
+                    cell.challengedPlaceholder.image = UIImage(named: "challenger_team_placeholder")
+                } else if match.winner == 2 {
+                    cell.challengerPlaceholder.image = UIImage(named: "challenger_team_placeholder")
+                    cell.challengedPlaceholder.image = UIImage(named: "winning_team_placeholder2")
+                }
             } else {
-                cell.challengerPlaceholder.image = UIImage(named: "plain_team_placeholder")
-                cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                if uid == match.team_1_player_1 || uid == match.team_1_player_2 {
+                    cell.challengerPlaceholder.image = UIImage(named: "user_team_placeholder")
+                    cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                } else if uid == match.team_2_player_1 || uid == match.team_2_player_2 {
+                    cell.challengerPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                    cell.challengedPlaceholder.image = UIImage(named: "user_team_placeholder")
+                } else {
+                    cell.challengerPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                    cell.challengedPlaceholder.image = UIImage(named: "plain_team_placeholder")
+                }
             }
+            let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
+            player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? [String: AnyObject] {
+                    cell.challengerTeam1.setTitle(value["username"] as? String, for: .normal)
+                    cell.challengerTeam1.tag = indexPath.item
+                    cell.challengerTeam1.addTarget(self, action: #selector(self.handleViewPlayer), for: .touchUpInside)
+                    let exp = value["exp"] as? Int ?? 0
+                    cell.appLevel.text = "\(self.player.haloLevel(exp: exp))"
+                }
+            })
+            
+            let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
+            player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? [String: AnyObject] {
+                    cell.challengerTeam2.setTitle(value["username"] as? String, for: .normal)
+                    cell.challengerTeam2.tag = indexPath.item
+                    cell.challengerTeam2.addTarget(self, action: #selector(self.handleViewPlayer2), for: .touchUpInside)
+                    let exp = value["exp"] as? Int ?? 0
+                    cell.appLevel2.text = "\(self.player.haloLevel(exp: exp))"
+                }
+            })
+            
+            let player1ref2 = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope")
+            player1ref2.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? [String: AnyObject] {
+                    cell.challengedTeam1.setTitle(value["username"] as? String, for: .normal)
+                    cell.challengedTeam1.tag = indexPath.item
+                    cell.challengedTeam1.addTarget(self, action: #selector(self.handleViewPlayer3), for: .touchUpInside)
+                    let exp = value["exp"] as? Int ?? 0
+                    cell.appLevel3.text = "\(self.player.haloLevel(exp: exp))"
+                }
+            })
+            
+            let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
+            player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? [String: AnyObject] {
+                    cell.challengedTeam2.setTitle(value["username"] as? String, for: .normal)
+                    cell.challengedTeam2.tag = indexPath.item
+                    cell.challengedTeam2.addTarget(self, action: #selector(self.handleViewPlayer4), for: .touchUpInside)
+                    let exp = value["exp"] as? Int ?? 0
+                    cell.appLevel4.text = "\(self.player.haloLevel(exp: exp))"
+                }
+            })
+            cell.match = match
+            cell.backgroundColor = UIColor.white
+            return cell
         }
-        let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
-        player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengerTeam1.setTitle(value["username"] as? String, for: .normal)
-                cell.challengerTeam1.tag = indexPath.item
-                cell.challengerTeam1.addTarget(self, action: #selector(self.handleViewPlayer), for: .touchUpInside)
-                let exp = value["exp"] as? Int ?? 0
-                cell.appLevel.text = "\(self.player.haloLevel(exp: exp))"
-            }
-        })
-        
-        let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
-        player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengerTeam2.setTitle(value["username"] as? String, for: .normal)
-                cell.challengerTeam2.tag = indexPath.item
-                cell.challengerTeam2.addTarget(self, action: #selector(self.handleViewPlayer2), for: .touchUpInside)
-                let exp = value["exp"] as? Int ?? 0
-                cell.appLevel2.text = "\(self.player.haloLevel(exp: exp))"
-            }
-        })
-        
-        let player1ref2 = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope")
-        player1ref2.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengedTeam1.setTitle(value["username"] as? String, for: .normal)
-                cell.challengedTeam1.tag = indexPath.item
-                cell.challengedTeam1.addTarget(self, action: #selector(self.handleViewPlayer3), for: .touchUpInside)
-                let exp = value["exp"] as? Int ?? 0
-                cell.appLevel3.text = "\(self.player.haloLevel(exp: exp))"
-            }
-        })
-        
-        let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
-        player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengedTeam2.setTitle(value["username"] as? String, for: .normal)
-                cell.challengedTeam2.tag = indexPath.item
-                cell.challengedTeam2.addTarget(self, action: #selector(self.handleViewPlayer4), for: .touchUpInside)
-                let exp = value["exp"] as? Int ?? 0
-                cell.appLevel4.text = "\(self.player.haloLevel(exp: exp))"
-            }
-        })
-        cell.match = match
-        cell.backgroundColor = UIColor.white
-        return cell
     }
 
 //    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -189,10 +227,6 @@ class MatchFeed: UITableViewController {
         return CGFloat(226)
     }
     
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 0
-    }
-    
     @objc func handleViewPlayer(sender: UIButton) {
         let whichOne = sender.tag
         let playerProfile = StartupPage()
@@ -227,6 +261,14 @@ class MatchFeed: UITableViewController {
         playerProfile.playerId = matches[whichOne].team_2_player_2!
         playerProfile.isFriend = 3
         navigationController?.pushViewController(playerProfile, animated: true)
+    }
+    
+    override func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        return nil
+    }
+    
+    override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
+        return false
     }
     
     func fetchMatches() {

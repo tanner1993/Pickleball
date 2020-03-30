@@ -12,6 +12,13 @@ import FirebaseAuth
 
 private let reuseIdentifier = "Cell"
 
+extension UIDevice {
+    var hasNotch: Bool {
+        let bottom = UIApplication.shared.keyWindow?.safeAreaInsets.bottom ?? 0
+        return bottom > 0
+    }
+}
+
 class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     var recipientName = "nobody"
@@ -49,19 +56,23 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     lazy var inputContainerView: UIView = {
         let containerView = UIView()
-        containerView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50)
+        if UIDevice.current.hasNotch {
+            containerView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 65)
+        } else {
+            containerView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50)
+        }
         containerView.backgroundColor = .white
         containerView.addSubview(sendButton)
         sendButton.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 0).isActive = true
         sendButton.rightAnchor.constraint(equalTo: containerView.rightAnchor).isActive = true
         sendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
-        sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
+        sendButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         containerView.addSubview(messageField)
         messageField.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 0).isActive = true
         messageField.rightAnchor.constraint(equalTo: sendButton.leftAnchor).isActive = true
         messageField.leftAnchor.constraint(equalTo: containerView.leftAnchor, constant: 8).isActive = true
-        messageField.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
+        messageField.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         containerView.addSubview(separatorView)
         separatorView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 0).isActive = true
@@ -262,7 +273,7 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     func setupViews() {
         view.addSubview(whiteContainerView)
-        containerBottomAnchor = whiteContainerView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0)
+        containerBottomAnchor = whiteContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 0)
         containerBottomAnchor?.isActive = true
         whiteContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         whiteContainerView.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true

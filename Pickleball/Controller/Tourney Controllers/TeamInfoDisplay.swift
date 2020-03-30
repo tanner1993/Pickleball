@@ -224,6 +224,7 @@ class TeamInfoDisplay: UIViewController {
     let teamWins: UILabel = {
         let label = UILabel()
         label.text = "Team Wins:"
+        label.adjustsFontSizeToFitWidth = true
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue", size: 40)
@@ -234,6 +235,7 @@ class TeamInfoDisplay: UIViewController {
     let teamLosses: UILabel = {
         let label = UILabel()
         label.text = "Team Losses:"
+        label.adjustsFontSizeToFitWidth = true
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue", size: 40)
@@ -243,6 +245,7 @@ class TeamInfoDisplay: UIViewController {
     
     let currentRank: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.text = "Current Rank:"
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -293,7 +296,7 @@ class TeamInfoDisplay: UIViewController {
     func setupForCorrectStage(active1: Int, cantChallenge: [String]) {
         tourneyCantChallenge = cantChallenge
         active = active1
-        view.addSubview(challengeButton)
+        scrollView.addSubview(challengeButton)
         challengeButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         challengeButton.topAnchor.constraint(equalTo: currentRankAct.bottomAnchor, constant: 50).isActive = true
         challengeButton.heightAnchor.constraint(equalToConstant: 45).isActive = true
@@ -414,19 +417,40 @@ class TeamInfoDisplay: UIViewController {
         self.navigationItem.titleView = titleLabel
     }
     
+    let scrollView: UIScrollView = {
+        let sv = UIScrollView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.isScrollEnabled = true
+        sv.backgroundColor = .white
+        sv.minimumZoomScale = 1.0
+        //sv.maximumZoomScale = 2.5
+        return sv
+    }()
+    
     func setupViews() {
+        scrollView.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        let Width = Float(view.frame.width)
+        scrollView.contentSize = CGSize(width: Double(Width), height: Double(600))
+        
         let underlineAttribute = [NSAttributedString.Key.underlineStyle: NSUnderlineStyle.single.rawValue]
         let underlineAttributedString = NSAttributedString(string: "Player 1", attributes: underlineAttribute)
         let underlineAttributedString2 = NSAttributedString(string: "Player 2", attributes: underlineAttribute)
         player1Label.attributedText = underlineAttributedString
         player2Label.attributedText = underlineAttributedString2
-        view.addSubview(player1Label)
+        
+        view.addSubview(scrollView)
+        scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        scrollView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        scrollView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        
+        scrollView.addSubview(player1Label)
         player1Label.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        player1Label.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10).isActive = true
+        player1Label.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
         player1Label.heightAnchor.constraint(equalToConstant: 30).isActive = true
         player1Label.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
-        view.addSubview(whiteBox)
+        scrollView.addSubview(whiteBox)
         whiteBox.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         whiteBox.topAnchor.constraint(equalTo: player1Label.bottomAnchor, constant: 5).isActive = true
         whiteBox.heightAnchor.constraint(equalToConstant: 80).isActive = true
@@ -448,8 +472,16 @@ class TeamInfoDisplay: UIViewController {
         skillLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
         skillLevel.leftAnchor.constraint(equalTo: playerName.leftAnchor).isActive = true
         skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        skillLevel.widthAnchor.constraint(equalToConstant: 110).isActive = true
         
+        if view.frame.width < 375 {
+            skillLevel.font = UIFont(name: "HelveticaNeue", size: 17)
+            skillLevel2.font = UIFont(name: "HelveticaNeue", size: 17)
+            appLevel.font = UIFont(name: "HelveticaNeue", size: 17)
+            appLevel2.font = UIFont(name: "HelveticaNeue", size: 17)
+            skillLevel.widthAnchor.constraint(equalToConstant: 91).isActive = true
+        } else {
+            skillLevel.widthAnchor.constraint(equalToConstant: 110).isActive = true
+        }
         
         whiteBox.addSubview(matchesWon)
         matchesWon.topAnchor.constraint(equalTo: whiteBox.topAnchor).isActive = true
@@ -465,17 +497,17 @@ class TeamInfoDisplay: UIViewController {
         
         whiteBox.addSubview(appLevel)
         appLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
-        appLevel.leftAnchor.constraint(equalTo: skillLevel.rightAnchor, constant: 10).isActive = true
+        appLevel.leftAnchor.constraint(equalTo: skillLevel.rightAnchor, constant: 5).isActive = true
         appLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
         appLevel.rightAnchor.constraint(equalTo: matchesLost.leftAnchor).isActive = true
         
-        view.addSubview(player2Label)
+        scrollView.addSubview(player2Label)
         player2Label.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         player2Label.topAnchor.constraint(equalTo: whiteBox.bottomAnchor, constant: 28).isActive = true
         player2Label.heightAnchor.constraint(equalToConstant: 30).isActive = true
         player2Label.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         
-        view.addSubview(whiteBox2)
+        scrollView.addSubview(whiteBox2)
         whiteBox2.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         whiteBox2.topAnchor.constraint(equalTo: player2Label.bottomAnchor, constant: 5).isActive = true
         whiteBox2.heightAnchor.constraint(equalToConstant: 80).isActive = true
@@ -498,10 +530,15 @@ class TeamInfoDisplay: UIViewController {
         skillLevel2.leftAnchor.constraint(equalTo: playerName2.leftAnchor).isActive = true
         skillLevel2.heightAnchor.constraint(equalToConstant: 30).isActive = true
         skillLevel2.widthAnchor.constraint(equalToConstant: 110).isActive = true
+        if view.frame.width < 375 {
+            skillLevel2.widthAnchor.constraint(equalToConstant: 91).isActive = true
+        } else {
+            skillLevel2.widthAnchor.constraint(equalToConstant: 110).isActive = true
+        }
         
         whiteBox2.addSubview(appLevel2)
         appLevel2.topAnchor.constraint(equalTo: playerName2.bottomAnchor).isActive = true
-        appLevel2.leftAnchor.constraint(equalTo: skillLevel2.rightAnchor, constant: 10).isActive = true
+        appLevel2.leftAnchor.constraint(equalTo: skillLevel2.rightAnchor, constant: 5).isActive = true
         appLevel2.heightAnchor.constraint(equalToConstant: 30).isActive = true
         appLevel2.rightAnchor.constraint(equalTo: matchesLost.leftAnchor).isActive = true
         
@@ -517,19 +554,19 @@ class TeamInfoDisplay: UIViewController {
         matchesLost2.heightAnchor.constraint(equalToConstant: 30).isActive = true
         matchesLost2.rightAnchor.constraint(equalTo: whiteBox2.rightAnchor, constant: -8).isActive = true
         
-        view.addSubview(teamWins)
+        scrollView.addSubview(teamWins)
         teamWins.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8).isActive = true
         teamWins.topAnchor.constraint(equalTo: whiteBox2.bottomAnchor, constant: 30).isActive = true
         teamWins.heightAnchor.constraint(equalToConstant: 45).isActive = true
         teamWins.widthAnchor.constraint(equalToConstant: view.frame.width * 2 / 3 + 20).isActive = true
         
-        view.addSubview(teamLosses)
+        scrollView.addSubview(teamLosses)
         teamLosses.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8).isActive = true
         teamLosses.topAnchor.constraint(equalTo: teamWins.bottomAnchor, constant: 15).isActive = true
         teamLosses.heightAnchor.constraint(equalToConstant: 45).isActive = true
         teamLosses.widthAnchor.constraint(equalToConstant: view.frame.width * 2 / 3 + 20).isActive = true
         
-        view.addSubview(currentRank)
+        scrollView.addSubview(currentRank)
         currentRank.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8).isActive = true
         currentRank.topAnchor.constraint(equalTo: teamLosses.bottomAnchor, constant: 15).isActive = true
         currentRank.heightAnchor.constraint(equalToConstant: 45).isActive = true
@@ -539,31 +576,31 @@ class TeamInfoDisplay: UIViewController {
         teamLossesAct.text = "\(teamIdSelected.losses ?? 0)"
         currentRankAct.text = "\(teamIdSelected.rank ?? 0)"
         
-        view.addSubview(teamWinsAct)
+        scrollView.addSubview(teamWinsAct)
         teamWinsAct.leftAnchor.constraint(equalTo: teamWins.rightAnchor).isActive = true
         teamWinsAct.topAnchor.constraint(equalTo: whiteBox2.bottomAnchor, constant: 30).isActive = true
         teamWinsAct.heightAnchor.constraint(equalToConstant: 45).isActive = true
         teamWinsAct.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -16).isActive = true
         
-        view.addSubview(teamLossesAct)
+        scrollView.addSubview(teamLossesAct)
         teamLossesAct.leftAnchor.constraint(equalTo: teamWins.rightAnchor).isActive = true
         teamLossesAct.topAnchor.constraint(equalTo: teamWins.bottomAnchor, constant: 15).isActive = true
         teamLossesAct.heightAnchor.constraint(equalToConstant: 45).isActive = true
         teamLossesAct.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -16).isActive = true
         
-        view.addSubview(currentRankAct)
+        scrollView.addSubview(currentRankAct)
         currentRankAct.leftAnchor.constraint(equalTo: teamWins.rightAnchor).isActive = true
         currentRankAct.topAnchor.constraint(equalTo: teamLosses.bottomAnchor, constant: 15).isActive = true
         currentRankAct.heightAnchor.constraint(equalToConstant: 45).isActive = true
         currentRankAct.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -16).isActive = true
         
-        view.addSubview(player1Button)
+        scrollView.addSubview(player1Button)
         player1Button.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         player1Button.topAnchor.constraint(equalTo: player1Label.bottomAnchor, constant: 5).isActive = true
         player1Button.heightAnchor.constraint(equalToConstant: 80).isActive = true
         player1Button.widthAnchor.constraint(equalToConstant: view.frame.width - 24).isActive = true
         
-        view.addSubview(player2Button)
+        scrollView.addSubview(player2Button)
         player2Button.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         player2Button.topAnchor.constraint(equalTo: player2Label.bottomAnchor, constant: 5).isActive = true
         player2Button.heightAnchor.constraint(equalToConstant: 80).isActive = true
@@ -642,13 +679,9 @@ class TeamInfoDisplay: UIViewController {
                 print("Data could not be saved: \(error).")
                 return
             }
-            guard let matchId = createMatchRef.key else {
-                return
-            }
             
             
                 
-                let notificationId = matchId
                 let notificationsRef = Database.database().reference()
             let childUpdates = ["/\("tourney_notifications")/\(team_1_player_1)/\(self.tourneyId)/": team_1_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_1_player_2)/\(self.tourneyId)/": team_1_player_2 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_1)/\(self.tourneyId)/": team_2_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_2)/\(self.tourneyId)/": team_2_player_2 == uid ? 0 : 1, "/\("tourneys")/\(self.tourneyId)/\("cant_challenge")/": self.tourneyCantChallenge, "/\("tourneys")/\(self.tourneyId)/\("yet_to_view")/": self.tourneyYetToViewMatch] as [String : Any]
                 notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {

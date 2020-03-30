@@ -166,6 +166,7 @@ class MatchView: UIViewController {
                 let team_2_player_1 = value["team_2_player_1"] as? String ?? "Player not found"
                 let team_2_player_2 = value["team_2_player_2"] as? String ?? "Player not found"
                 let idList = [team_1_player_1, team_1_player_2, team_2_player_1, team_2_player_2]
+                self.checkUser(player1: team_1_player_1, player2: team_1_player_2, player3: team_2_player_1, player4: team_2_player_2)
                 self.getPlayerNames(idList: idList)
                 let team1_scores = value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                 let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
@@ -927,6 +928,19 @@ class MatchView: UIViewController {
         return (X, Y, W, H)
     }
     
+    func checkUser(player1: String, player2: String, player3: String, player4: String) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if uid == player1 || uid == player2 {
+            backgroundImage.image = UIImage(named: "match_info_display2.01")
+        } else if uid == player3 || uid == player4 {
+            backgroundImage.image = UIImage(named: "match_info_display2.02")
+        } else {
+            backgroundImage.image = UIImage(named: "match_info_display2.0")
+        }
+    }
+    
     func setupViews() {
         
         let matchInfoDisplayHeightBefore: Float = 1164
@@ -1144,7 +1158,7 @@ class MatchView: UIViewController {
         //let values = ["active": 3] as [String : Any]
         match.team1_scores = [0, 0, 0, 0, 0]
         match.forfeit = 1
-        let childUpdates = ["/\("team1_scores")/": match.team1_scores, "/\("active")/": 3, "/\("forfeit")/": 1, "/\("winner")/": 1] as [String : Any]
+        let childUpdates = ["/\("team1_scores")/": match.team1_scores ?? [0,0,0,0,0], "/\("active")/": 3, "/\("forfeit")/": 1, "/\("winner")/": 1] as [String : Any]
         let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
         ref.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
@@ -1279,7 +1293,7 @@ class MatchView: UIViewController {
             let matchActiveRef = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
             match.team1_scores = [0, 0, 0, 0, 0]
             let timeOfChallenge = Date().timeIntervalSince1970
-            let childUpdates = ["/\("team1_scores")/": match.team1_scores, "/\("active")/": 1, "/\("time")/": timeOfChallenge] as [String : Any]
+            let childUpdates = ["/\("team1_scores")/": match.team1_scores ?? [0,0,0,0,0], "/\("active")/": 1, "/\("time")/": timeOfChallenge] as [String : Any]
             matchActiveRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -1440,7 +1454,7 @@ class MatchView: UIViewController {
             
             print("Data saved successfully!")
             let ref2 = Database.database().reference().child("completed_matches").child(self.matchId)
-            let values2 = ["active": 3, "winner": self.match.winner, "forfeit": self.match.forfeit, "team_1_player_1": self.match.team_1_player_1, "team_1_player_2": self.match.team_1_player_2, "team_2_player_1": self.match.team_2_player_1, "team_2_player_2": self.match.team_2_player_2, "team1_scores": self.match.team1_scores, "team2_scores": self.match.team2_scores, "time": time] as [String : Any]
+            let values2 = ["active": 3, "winner": self.match.winner ?? 1, "forfeit": self.match.forfeit ?? -1, "team_1_player_1": self.match.team_1_player_1 ?? "none", "team_1_player_2": self.match.team_1_player_2 ?? "none", "team_2_player_1": self.match.team_2_player_1 ?? "none", "team_2_player_2": self.match.team_2_player_2 ?? "none", "team1_scores": self.match.team1_scores ?? [0,0,0,0,0], "team2_scores": self.match.team2_scores ?? [0,0,0,0,0], "time": time] as [String : Any]
             ref2.updateChildValues(values2, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -1459,7 +1473,7 @@ class MatchView: UIViewController {
             guard let uid = Auth.auth().currentUser?.uid else {
                 return
             }
-            self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
+            self.tourneyId != "none" ? self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView) : print("turd")
             if self.tourneyActive >= 2 {
                 self.adjustTourneyFinals()
                 self.updateTeamWins()

@@ -512,6 +512,7 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
     let emailTextField: UITextField = {
         let tf = UITextField()
         tf.autocapitalizationType = UITextAutocapitalizationType.none
+        tf.isUserInteractionEnabled = false
         //tf.placeholder = "Name"
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.font = UIFont(name: "HelveticaNeue-Light", size: 20)
@@ -789,8 +790,22 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
     @objc func handleReturn() {
         self.dismiss(animated: true, completion: nil)
     }
+    
+    let scrollView: UIScrollView = {
+        let sv = UIScrollView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.isScrollEnabled = true
+        sv.backgroundColor = .white
+        sv.minimumZoomScale = 1.0
+        //sv.maximumZoomScale = 2.5
+        return sv
+    }()
 
     func setupViews() {
+        scrollView.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        let Width = Float(view.frame.width)
+        scrollView.contentSize = CGSize(width: Double(Width), height: Double(700))
+        
         view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         
         view.addSubview(backButton)
@@ -799,33 +814,39 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         backButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
         backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
+        view.addSubview(scrollView)
+        scrollView.topAnchor.constraint(equalTo: backButton.bottomAnchor).isActive = true
+        scrollView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        scrollView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        
         if sender == 1 {
             backButton.isHidden = true
         } else if sender == 2 {
             backButton.isHidden = false
         }
         
-        view.addSubview(inputsContainerView)
+        scrollView.addSubview(inputsContainerView)
         inputsContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        inputsContainerViewCenterYAnchor = inputsContainerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 80)
+        inputsContainerViewCenterYAnchor = inputsContainerView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 60)
         inputsContainerViewCenterYAnchor?.isActive = true
         inputsContainerView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         inputsContainerView.heightAnchor.constraint(equalToConstant: 300).isActive = true
         
-        view.addSubview(inputsContainerView2)
+        scrollView.addSubview(inputsContainerView2)
         inputsContainerView2.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         inputsContainerView2.topAnchor.constraint(equalTo: inputsContainerView.bottomAnchor, constant: 40).isActive = true
         inputsContainerView2.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         inputsContainerView2.heightAnchor.constraint(equalToConstant: 150).isActive = true
         
-        view.addSubview(saveChanges)
+        scrollView.addSubview(saveChanges)
         saveChanges.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         saveChanges.topAnchor.constraint(equalTo: inputsContainerView2.bottomAnchor, constant: 40).isActive = true
         saveChanges.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -100).isActive = true
         saveChanges.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         
-        view.addSubview(editProfileLabel)
+        scrollView.addSubview(editProfileLabel)
         editProfileLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         editProfileLabel.bottomAnchor.constraint(equalTo: inputsContainerView.topAnchor, constant: -15).isActive = true
         editProfileLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
@@ -996,25 +1017,44 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         inputsContainerView2.addSubview(monthTextField)
         monthTextField.leftAnchor.constraint(equalTo: birthdateLabel.rightAnchor, constant: 0).isActive = true
         monthTextField.topAnchor.constraint(equalTo: birthdateLabel.topAnchor).isActive = true
-        monthTextField.widthAnchor.constraint(equalToConstant: 125).isActive = true
+        if view.frame.width < 375 {
+            monthTextField.widthAnchor.constraint(equalToConstant: 100).isActive = true
+            monthTextField.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        } else {
+            monthTextField.widthAnchor.constraint(equalToConstant: 125).isActive = true
+        }
         monthTextField.heightAnchor.constraint(equalTo: inputsContainerView2.heightAnchor, multiplier: 1/3).isActive = true
         
         inputsContainerView2.addSubview(monthDropDown)
         monthDropDown.leftAnchor.constraint(equalTo: birthdateLabel.rightAnchor, constant: 0).isActive = true
         monthDropDown.topAnchor.constraint(equalTo: birthdateLabel.topAnchor).isActive = true
-        monthDropDown.widthAnchor.constraint(equalToConstant: 125).isActive = true
+        if view.frame.width < 375 {
+            monthDropDown.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        } else {
+            monthDropDown.widthAnchor.constraint(equalToConstant: 125).isActive = true
+        }
         monthDropDown.heightAnchor.constraint(equalTo: inputsContainerView2.heightAnchor, multiplier: 1/3).isActive = true
         
         inputsContainerView2.addSubview(dayTextField)
         dayTextField.leftAnchor.constraint(equalTo: monthTextField.rightAnchor, constant: 0).isActive = true
         dayTextField.topAnchor.constraint(equalTo: birthdateLabel.topAnchor).isActive = true
-        dayTextField.widthAnchor.constraint(equalToConstant: 55).isActive = true
+        if view.frame.width < 375 {
+            dayTextField.widthAnchor.constraint(equalToConstant: 45).isActive = true
+            dayTextField.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+            yearTextField.font = UIFont(name: "HelveticaNeue-Light", size: 16)
+        } else {
+            dayTextField.widthAnchor.constraint(equalToConstant: 55).isActive = true
+        }
         dayTextField.heightAnchor.constraint(equalTo: inputsContainerView2.heightAnchor, multiplier: 1/3).isActive = true
         
         inputsContainerView2.addSubview(dayDropDown)
         dayDropDown.leftAnchor.constraint(equalTo: monthTextField.rightAnchor, constant: 0).isActive = true
         dayDropDown.topAnchor.constraint(equalTo: birthdateLabel.topAnchor).isActive = true
-        dayDropDown.widthAnchor.constraint(equalToConstant: 55).isActive = true
+        if view.frame.width < 375 {
+            dayDropDown.widthAnchor.constraint(equalToConstant: 45).isActive = true
+        } else {
+            dayDropDown.widthAnchor.constraint(equalToConstant: 55).isActive = true
+        }
         dayDropDown.heightAnchor.constraint(equalTo: inputsContainerView2.heightAnchor, multiplier: 1/3).isActive = true
         
         inputsContainerView2.addSubview(yearTextField)

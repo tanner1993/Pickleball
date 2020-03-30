@@ -29,6 +29,8 @@
 		7727354823CD4996004BEC33 /* FindFriends.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7727354723CD4996004BEC33 /* FindFriends.swift */; };
 		7731F55C242D6EF500903245 /* MatchFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F55B242D6EF500903245 /* MatchFeed.swift */; };
 		7731F55E242D70F300903245 /* FeedMatchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F55D242D70F300903245 /* FeedMatchCell.swift */; };
+		7731F560242FDBEB00903245 /* TourneyStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F55F242FDBEB00903245 /* TourneyStats.swift */; };
+		7731F562242FDC7700903245 /* TeamStatsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F561242FDC7700903245 /* TeamStatsCell.swift */; };
 		7739865B23BBEC4700195253 /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865A23BBEC4700195253 /* MainMenu.swift */; };
 		7739865D23BBEF6D00195253 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865C23BBEF6D00195253 /* Connect.swift */; };
 		773CA5CD23C2692700DED169 /* ProfileMenuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */; };
@@ -81,6 +83,8 @@
 		7727354723CD4996004BEC33 /* FindFriends.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindFriends.swift; sourceTree = "<group>"; };
 		7731F55B242D6EF500903245 /* MatchFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchFeed.swift; sourceTree = "<group>"; };
 		7731F55D242D70F300903245 /* FeedMatchCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMatchCell.swift; sourceTree = "<group>"; };
+		7731F55F242FDBEB00903245 /* TourneyStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyStats.swift; sourceTree = "<group>"; };
+		7731F561242FDC7700903245 /* TeamStatsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsCell.swift; sourceTree = "<group>"; };
 		7739865A23BBEC4700195253 /* MainMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
 		7739865C23BBEF6D00195253 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuCell.swift; sourceTree = "<group>"; };
@@ -144,6 +148,7 @@
 				7718BD7D232882830004777C /* SelectTeammate.swift */,
 				77196F79238488C1004A8C79 /* TeamInfoDisplay.swift */,
 				77196F7B238841CF004A8C79 /* MatchInfoDisplay.swift */,
+				7731F55F242FDBEB00903245 /* TourneyStats.swift */,
 			);
 			path = "Tourney Controllers";
 			sourceTree = "<group>";
@@ -215,6 +220,7 @@
 				7760977C241000C400AD30F5 /* MatchNotificationCell.swift */,
 				7757C4732419AAF5006E059A /* EmptyCell.swift */,
 				7731F55D242D70F300903245 /* FeedMatchCell.swift */,
+				7731F561242FDC7700903245 /* TeamStatsCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -386,6 +392,7 @@
 			files = (
 				7718BDC3233AC09E0004777C /* MyMatchesCell.swift in Sources */,
 				773CA5CD23C2692700DED169 /* ProfileMenuCell.swift in Sources */,
+				7731F560242FDBEB00903245 /* TourneyStats.swift in Sources */,
 				7718BD6E2322CC710004777C /* FeedCell.swift in Sources */,
 				77BBB041231EEEFC006CB608 /* Extensions.swift in Sources */,
 				77BBB0372315A6BA006CB608 /* TourneyTableViewCell.swift in Sources */,
@@ -394,6 +401,7 @@
 				77196F7A238488C1004A8C79 /* TeamInfoDisplay.swift in Sources */,
 				7718BD722323019E0004777C /* RecentMatchesCell.swift in Sources */,
 				7757C4742419AAF5006E059A /* EmptyCell.swift in Sources */,
+				7731F562242FDC7700903245 /* TeamStatsCell.swift in Sources */,
 				7727354623CCEF6D004BEC33 /* FriendList.swift in Sources */,
 				7731F55C242D6EF500903245 /* MatchFeed.swift in Sources */,
 				7760977F2410534D00AD30F5 /* MatchView.swift in Sources */,

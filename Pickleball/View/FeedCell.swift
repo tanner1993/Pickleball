@@ -14,6 +14,8 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
 
     var delegate: FeedCellProtocol?
     
+    var activityIndicatorView: UIActivityIndicatorView!
+    
     var teams = [Team]() {
         didSet {
             collectionView.reloadData()
@@ -45,11 +47,17 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
 
     
     let cellId = "cellId"
+    let cellIdNone = "cellIdNone"
+    var noNotifications = 0
     
     
     override func setupViews() {
+        activityIndicatorView = UIActivityIndicatorView(style: .gray)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.fillInRow()
+        }
         super.setupViews()
-        backgroundColor = .black
+        backgroundColor = .white
         
         //observeTourneyTeams()
         addSubview(collectionView)
@@ -58,25 +66,49 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         collectionView.heightAnchor.constraint(equalToConstant: frame.height).isActive = true
         collectionView.widthAnchor.constraint(equalToConstant: frame.width).isActive = true
         collectionView.register(TeamCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView.register(EmptyCell.self, forCellWithReuseIdentifier: cellIdNone)
+    }
+    
+    func fillInRow() {
+        if teams.count == 0 {
+            noNotifications = 1
+            collectionView.reloadData()
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return teams.count
+        return teams.count == 0 ? 1 : teams.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TeamCell
-        let uid = Auth.auth().currentUser?.uid
-        cell.team = teams[indexPath.item]
-        if cell.team?.player1 == uid || cell.team?.player2 == uid {
-            //cell.backgroundColor = .gray
-            cell.backgroundImage.image = UIImage(named: "team_cell_bg2_you")
-            myTeamId = indexPath.item
+        if teams.count == 0 {
+            if noNotifications == 0 {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdNone, for: indexPath) as! EmptyCell
+                cell.backgroundView = activityIndicatorView
+                activityIndicatorView.startAnimating()
+                return cell
+            } else {
+                activityIndicatorView.stopAnimating()
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdNone, for: indexPath) as! EmptyCell
+                cell.emptyLabel.text = "No Teams Registered"
+                cell.emptyLabel.textAlignment = .center
+                return cell
+            }
         } else {
-            //cell.backgroundColor = UIColor.white
-            cell.backgroundImage.image = UIImage(named: "team_cell_bg2")
+            activityIndicatorView.stopAnimating()
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TeamCell
+            let uid = Auth.auth().currentUser?.uid
+            cell.team = teams[indexPath.item]
+            if cell.team?.player1 == uid || cell.team?.player2 == uid {
+                //cell.backgroundColor = .gray
+                cell.backgroundImage.image = UIImage(named: "team_cell_bg2_you")
+                myTeamId = indexPath.item
+            } else {
+                //cell.backgroundColor = UIColor.white
+                cell.backgroundImage.image = UIImage(named: "team_cell_bg2")
+            }
+            return cell
         }
-        return cell
     }
     
     
@@ -86,7 +118,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: frame.width, height: 100)
+        return CGSize(width: frame.width, height: frame.width / 3.75)
     }
     
     func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
@@ -102,18 +134,22 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let myTeamIndex = myTeamId else {
-            return
+        if teams.count == 0 {
+            
+        } else {
+            guard let myTeamIndex = myTeamId else {
+                return
+            }
+            guard let tourneyId = self.tourneyIdentifier else {
+                return
+            }
+            let vc = TeamInfoDisplay()
+            vc.teamIdSelected = teams[indexPath.item]
+            vc.usersTeamId = teams[myTeamIndex]
+            vc.tourneyId = tourneyId
+            vc.active = active
+            self.delegate?.pushNavigation(vc)
         }
-        guard let tourneyId = self.tourneyIdentifier else {
-            return
-        }
-        let vc = TeamInfoDisplay()
-        vc.teamIdSelected = teams[indexPath.item]
-        vc.usersTeamId = teams[myTeamIndex]
-        vc.tourneyId = tourneyId
-        vc.active = active
-        self.delegate?.pushNavigation(vc)
     }
     
 
