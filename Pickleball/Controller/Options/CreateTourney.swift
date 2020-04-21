@@ -290,14 +290,14 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        if uid == "ehEtZLizUaT9bahIaHQ1v5pLwK23" {
+        if uid == "KqaBU4RXDbd2GlxKFuIu5Kdan9B3" {
             officialTourneyCheck.isHidden = false
         } else {
             officialTourneyCheck.isHidden = true
         }
         view.addSubview(officialTourneyCheck)
-        officialTourneyCheck.rightAnchor.constraint(equalTo: view.rightAnchor, constant: 4).isActive = true
-        officialTourneyCheck.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+        officialTourneyCheck.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -4).isActive = true
+        officialTourneyCheck.topAnchor.constraint(equalTo: view.topAnchor, constant: 30).isActive = true
         officialTourneyCheck.widthAnchor.constraint(equalToConstant: 40).isActive = true
         officialTourneyCheck.heightAnchor.constraint(equalToConstant: 40).isActive = true
         

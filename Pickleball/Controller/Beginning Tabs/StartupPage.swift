@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseAuth
 import Firebase
+import Alamofire
 
 class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
@@ -19,6 +20,9 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     var findFriends: FindFriends?
     var whichFriend = -1
     var mainMenu: MainMenu?
+    var findFriendSender = 0
+    var newUser = 0
+    var playersDeviceId = String()
     
 //    var activityIndicatorView: UIActivityIndicatorView!
 //
@@ -277,13 +281,13 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu)))
             window.addSubview(blackView)
             window.addSubview(collectionView)
-            collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 150)
+            collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 165)
             blackView.frame = window.frame
             blackView.alpha = 0
             
             UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
                 self.blackView.alpha = 1
-                self.collectionView.frame = CGRect(x: 0, y: window.frame.height - 150, width: window.frame.width, height: 150)
+                self.collectionView.frame = CGRect(x: 0, y: window.frame.height - 165, width: window.frame.width, height: 165)
             }, completion: nil)
         }
     }
@@ -292,7 +296,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         UIView.animate(withDuration: 0.5, animations: {
             self.blackView.alpha = 0
             if let window = UIApplication.shared.keyWindow {
-                self.collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 150)
+                self.collectionView.frame = CGRect(x: 0, y: window.frame.height, width: window.frame.width, height: 165)
             }
         })
     }
@@ -357,7 +361,14 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                         print("Data could not be saved: \(String(describing: error)).")
                         return
                     }
-                    
+                    Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
+                        if let value = snapshot.value {
+                            let nameOnInvite = value as? String ?? "none"
+                            let pusher = PushNotificationHandler()
+                            pusher.setupPushNotification(deviceId: self.playersDeviceId, message: "\(nameOnInvite) wants to be your friend", title: "Friend Request")
+                            //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                        }
+                    })
                     print("Crazy data 2 saved!")
                     
                     
@@ -375,12 +386,30 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         
     }
     
+//    fileprivate func setupPushNotification(deviceId: String, nameOnInvite: String) {
+//        let message = "\(nameOnInvite) sent you a friend request"
+//        let title = "Friend Request"
+//        let toDeviceId = deviceId
+//        var headers: HTTPHeaders = HTTPHeaders()
+//
+//        headers = ["Content-Type":"application/json", "Authorization":"key=\(AppDelegate.ServerKey)"]
+//        let notification = ["to":"\(toDeviceId)", "notification":["body":message,"title":title,"badge":1,"sound":"default"]] as [String:Any]
+//
+//        Alamofire.request(AppDelegate.Notification_URL as URLConvertible, method: .post as HTTPMethod, parameters: notification, encoding: JSONEncoding.default, headers: headers).responseJSON(completionHandler: {(response) in
+//            print(response)
+//        })
+//    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         activityView.startAnimating()
         setupViews()
         guard let uid = Auth.auth().currentUser?.uid else {
             return
+        }
+        print(newUser)
+        if newUser == 1 {
+            print("yessss")
         }
         if playerId == "none" {
             setupNavbarButtons()
@@ -399,6 +428,13 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             setupNavbarButtons()
             observePlayerProfile()
         }
+        if findFriendSender != 0 {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Return", style: .plain, target: self, action: #selector(handleCancel))
+        }
+    }
+    
+    @objc func handleCancel() {
+        dismiss(animated: true, completion: nil)
     }
     
     func fetchTourneyNotifications() {
@@ -501,8 +537,25 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 let winRatio = Double(matchesWon1) / (Double(matchesWon1) + Double(matchesLost1))
                 let winRatioRounded = winRatio.round(nearest: 0.01)
                 self.winRatio.text = (matchesWon1 + matchesLost1) == 0 ? "\(0)" : "\(winRatioRounded)"
+                
+                let deviceId = value["deviceId"] as? String ?? "none"
+                if self.playerId == "none" {
+                    self.uploadDeviceId(deviceId: deviceId)
+                } else {
+                    self.playersDeviceId = deviceId
+                }
             }
         }, withCancel: nil)
+    }
+    
+    func uploadDeviceId(deviceId: String) {
+        let newDeviceId = AppDelegate.DeviceId
+        if deviceId == "none" || deviceId != newDeviceId {
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
+            Database.database().reference().child("users").child(uid).child("deviceId").setValue(newDeviceId)
+        }
     }
     
     func stopAnimatingActivity(state: String) {

@@ -371,11 +371,26 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         }
         if tourneyOpenInvites.contains(uid) != true {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .plain, target: self, action: #selector(handleEnterTourney))
+        } else if tourneyOpenInvites.contains(uid) && thisTourney.active ?? 1 == 0 {
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite Friends", style: .plain, target: self, action: #selector(handleInviteFriends))
         }
         if thisTourney.active ?? 1 > 0 {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(handleRefreshList))
         }
     }
+    
+    @objc func handleInviteFriends() {
+        let layout = UICollectionViewFlowLayout()
+        let friendList = FriendList(collectionViewLayout: layout)
+        friendList.tourneyId = thisTourney.id ?? "none"
+        friendList.tourneyOpenInvites = tourneyOpenInvites
+        friendList.tourneyStandings = self
+        friendList.startTime = thisTourney.start_date ?? 0
+        friendList.simpleInvite = 1
+        navigationController?.present(friendList, animated: true, completion: nil)
+    }
+    
+    
     
     @objc func handleRefreshList() {
         let currentItem = collectionView.indexPathsForVisibleItems[0].item

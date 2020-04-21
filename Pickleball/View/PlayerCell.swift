@@ -66,15 +66,22 @@ class PlayerCell: BaseCell {
 class FriendListCell: BaseCell {
     var player: Player? {
         didSet {
-            playerName.text = "\(player?.username ?? "none")"
+            if messageButton.isHidden == true {
+                playerUserName.text = "\(player?.username ?? "none")  |  \(player?.name ?? "none")"
+                playerUsernameWidthAnchor?.constant = 225
+            } else {
+                playerUserName.text = "\(player?.username ?? "none")"
+                playerUsernameWidthAnchor?.constant = 135
+            }
+            //playerName.text = "|  \(player?.name ?? "none")"
             skillLevel.text = "\(player?.skill_level ?? 0.0)"
             appLevel.text = "\(player?.halo_level ?? 0)"
             playerLocation.text = "\(player?.state ?? "none"), \(player?.county ?? "none")"
-            if player?.friend == 2 {
-                friendImage.isHidden = false
-            } else {
-                friendImage.isHidden = true
-            }
+//            if player?.friend == 2 {
+//                friendImage.isHidden = false
+//            } else {
+//                friendImage.isHidden = true
+//            }
             let friendName = player?.name ?? "none"
             var initials = ""
             var finalChar = 0
@@ -95,19 +102,30 @@ class FriendListCell: BaseCell {
         }
     }
     
-    let friendImage: UIImageView = {
-        let image = UIImageView()
-        image.image = UIImage(named: "friend_signal")
-        image.contentMode = .scaleAspectFit
-        image.isHidden = true
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
-    }()
+//    let friendImage: UIImageView = {
+//        let image = UIImageView()
+//        image.image = UIImage(named: "friend_signal")
+//        image.contentMode = .scaleAspectFit
+//        image.isHidden = true
+//        image.translatesAutoresizingMaskIntoConstraints = false
+//        return image
+//    }()
     
-    let playerName: UILabel = {
+//    let playerName: UILabel = {
+//        let label = UILabel()
+//        label.isHidden = true
+//        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.text = "playerName"
+//        label.font = UIFont(name: "HelveticaNeue", size: 19)
+//        label.textAlignment = .left
+//        return label
+//    }()
+    
+    let playerUserName: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "playerName"
+        label.adjustsFontSizeToFitWidth = true
         label.font = UIFont(name: "HelveticaNeue", size: 19)
         label.textAlignment = .left
         return label
@@ -120,7 +138,7 @@ class FriendListCell: BaseCell {
         label.text = ""
         label.font = UIFont(name: "HelveticaNeue", size: 19)
         label.adjustsFontSizeToFitWidth = true
-        label.textAlignment = .center
+        label.textAlignment = .right
         return label
     }()
     
@@ -173,7 +191,13 @@ class FriendListCell: BaseCell {
         return view
     }()
     
+    var playerUsernameWidthAnchor: NSLayoutConstraint?
+    
     override func setupViews() {
+        
+        if frame.width < 375 {
+            messageButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 17)
+        }
         
         addSubview(playerInitials)
         playerInitials.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
@@ -181,39 +205,46 @@ class FriendListCell: BaseCell {
         playerInitials.heightAnchor.constraint(equalToConstant: 70).isActive = true
         playerInitials.widthAnchor.constraint(equalToConstant: 70).isActive = true
         
-        addSubview(playerName)
-        playerName.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        playerName.leftAnchor.constraint(equalTo: playerInitials.rightAnchor, constant: 4).isActive = true
-        playerName.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
-        playerName.widthAnchor.constraint(equalToConstant: 160).isActive = true
+        addSubview(playerUserName)
+        playerUserName.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        playerUserName.leftAnchor.constraint(equalTo: playerInitials.rightAnchor, constant: 4).isActive = true
+        playerUserName.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
+        playerUsernameWidthAnchor = playerUserName.widthAnchor.constraint(equalToConstant: 135)
+        playerUsernameWidthAnchor?.isActive = true
+        
+//        addSubview(playerName)
+//        playerName.topAnchor.constraint(equalTo: topAnchor).isActive = true
+//        playerName.leftAnchor.constraint(equalTo: playerUserName.rightAnchor, constant: 4).isActive = true
+//        playerName.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
+//        playerName.rightAnchor.constraint(equalTo: rightAnchor, constant: -2).isActive = true
         
         addSubview(skillLevel)
-        skillLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
-        skillLevel.leftAnchor.constraint(equalTo: playerName.leftAnchor).isActive = true
+        skillLevel.topAnchor.constraint(equalTo: playerUserName.bottomAnchor).isActive = true
+        skillLevel.leftAnchor.constraint(equalTo: playerUserName.leftAnchor).isActive = true
         skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
         skillLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
         
         addSubview(appLevel)
-        appLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
+        appLevel.topAnchor.constraint(equalTo: playerUserName.bottomAnchor).isActive = true
         appLevel.leftAnchor.constraint(equalTo: skillLevel.rightAnchor, constant: 15).isActive = true
         appLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
         appLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
         
         addSubview(messageButton)
         messageButton.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
-        messageButton.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 4).isActive = true
+        messageButton.leftAnchor.constraint(equalTo: playerUserName.rightAnchor, constant: 4).isActive = true
         messageButton.heightAnchor.constraint(equalToConstant: frame.height - 8).isActive = true
         messageButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
         
-        addSubview(friendImage)
-        friendImage.topAnchor.constraint(equalTo: playerName.topAnchor, constant: 10).isActive = true
-        friendImage.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 2).isActive = true
-        friendImage.heightAnchor.constraint(equalToConstant: 20).isActive = true
-        friendImage.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+//        addSubview(friendImage)
+//        friendImage.topAnchor.constraint(equalTo: playerUserName.topAnchor, constant: 10).isActive = true
+//        friendImage.leftAnchor.constraint(equalTo: playerUserName.rightAnchor, constant: 2).isActive = true
+//        friendImage.heightAnchor.constraint(equalToConstant: 20).isActive = true
+//        friendImage.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
         
         addSubview(playerLocation)
         playerLocation.topAnchor.constraint(equalTo: appLevel.topAnchor).isActive = true
-        playerLocation.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 2).isActive = true
+        playerLocation.leftAnchor.constraint(equalTo: leftAnchor, constant: 200).isActive = true
         playerLocation.heightAnchor.constraint(equalToConstant: 30).isActive = true
         playerLocation.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
         

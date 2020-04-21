@@ -17,6 +17,18 @@ class EmptyCell: BaseCell {
         return label
     }()
     
+    let findFriendsButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
+        button.setTitle("No friends", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 5
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     override func setupViews() {
         
         addSubview(emptyLabel)

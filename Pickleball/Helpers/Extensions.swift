@@ -9,6 +9,23 @@
 import UIKit
 import Firebase
 import FirebaseAuth
+import Alamofire
+
+class PushNotificationHandler: NSObject {
+    func setupPushNotification(deviceId: String, message: String, title: String) {
+//        let message = "\(nameOnInvite) sent you a friend request"
+//        let title = "Friend Request"
+        let toDeviceId = deviceId
+        var headers: HTTPHeaders = HTTPHeaders()
+        
+        headers = ["Content-Type":"application/json", "Authorization":"key=\(AppDelegate.ServerKey)"]
+        let notification = ["to":"\(toDeviceId)", "notification":["body":message,"title":title,"badge":1,"sound":"default"]] as [String:Any]
+        
+        Alamofire.request(AppDelegate.Notification_URL as URLConvertible, method: .post as HTTPMethod, parameters: notification, encoding: JSONEncoding.default, headers: headers).responseJSON(completionHandler: {(response) in
+            print(response)
+        })
+    }
+}
 
 extension UIView {
     func addConstraintsWithFormat(format: String, views: UIView...) {

@@ -169,6 +169,12 @@ class TeamStatsCell: UITableViewCell {
     }()
     
     func setupViews() {
+        
+        if frame.width < 375 {
+            pointsWon.font = UIFont(name: "HelveticaNeue-Light", size: 23)
+            pointsLost.font = UIFont(name: "HelveticaNeue-Light", size: 23)
+        }
+        
         addSubview(teamStatPlaceholder)
         teamStatPlaceholder.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         teamStatPlaceholder.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true

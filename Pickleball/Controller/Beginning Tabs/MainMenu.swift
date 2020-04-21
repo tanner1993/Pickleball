@@ -21,12 +21,12 @@ class MainMenu: UITabBarController {
     
     private func setupTabBarController() {
         let layout = UICollectionViewFlowLayout()
-        let tourneyList = TourneyList()
-        let tourneyList2 = UINavigationController(rootViewController: tourneyList)
-        tourneyList2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
-        tourneyList2.navigationBar.tintColor = .white
-        tourneyList2.navigationBar.isTranslucent = false
-        tourneyList2.tabBarItem = UITabBarItem(title: "Tourneys", image: UIImage(named: "tourneys_tab"), tag: 0)
+        let play = Play()
+        let play2 = UINavigationController(rootViewController: play)
+        play2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
+        play2.navigationBar.tintColor = .white
+        play2.navigationBar.isTranslucent = false
+        play2.tabBarItem = UITabBarItem(title: "Play", image: UIImage(named: "tourneys_tab"), tag: 0)
         
         let myProfile = StartupPage()
         myProfile.mainMenu = self
@@ -57,7 +57,7 @@ class MainMenu: UITabBarController {
         notifications2.tabBarItem = UITabBarItem(title: "Events", image: UIImage(named: "event_tab"), tag: 4)
         
         
-        let tabBarList = [myProfile2, tourneyList2, matchFeed2, connect2, notifications2]
+        let tabBarList = [myProfile2, play2, matchFeed2, connect2, notifications2]
         
     
         viewControllers = tabBarList

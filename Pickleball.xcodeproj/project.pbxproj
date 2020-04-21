@@ -18,7 +18,6 @@
 		7718BD8023288A340004777C /* PlayerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD7F23288A340004777C /* PlayerCell.swift */; };
 		7718BD82232AC84A0004777C /* StartupPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD81232AC84A0004777C /* StartupPage.swift */; };
 		7718BD84232C13C00004777C /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD83232C13C00004777C /* Notifications.swift */; };
-		7718BDA62330195D0004777C /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BDA52330195D0004777C /* Notification.swift */; };
 		7718BDC3233AC09E0004777C /* MyMatchesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BDC2233AC09E0004777C /* MyMatchesCell.swift */; };
 		7718BDC5233ADDAF0004777C /* TourneyList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BDC4233ADDAF0004777C /* TourneyList.swift */; };
 		7718BDC7233ADE700004777C /* Tourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BDC6233ADE700004777C /* Tourney.swift */; };
@@ -31,12 +30,14 @@
 		7731F55E242D70F300903245 /* FeedMatchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F55D242D70F300903245 /* FeedMatchCell.swift */; };
 		7731F560242FDBEB00903245 /* TourneyStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F55F242FDBEB00903245 /* TourneyStats.swift */; };
 		7731F562242FDC7700903245 /* TeamStatsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7731F561242FDC7700903245 /* TeamStatsCell.swift */; };
+		7731F56724364CEE00903245 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7731F56624364CEE00903245 /* GoogleService-Info.plist */; };
 		7739865B23BBEC4700195253 /* MainMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865A23BBEC4700195253 /* MainMenu.swift */; };
 		7739865D23BBEF6D00195253 /* Connect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7739865C23BBEF6D00195253 /* Connect.swift */; };
 		773CA5CD23C2692700DED169 /* ProfileMenuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */; };
 		773CA5CF23C27E5200DED169 /* EditProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CE23C27E5200DED169 /* EditProfile.swift */; };
 		77427F3123CFBD6C00372773 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77427F3023CFBD6C00372773 /* Message.swift */; };
 		7745AC72240CA413008C8900 /* FriendInviteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7745AC71240CA413008C8900 /* FriendInviteCell.swift */; };
+		7755A849244A00A700A5CA45 /* Play.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7755A848244A00A700A5CA45 /* Play.swift */; };
 		7757C4742419AAF5006E059A /* EmptyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7757C4732419AAF5006E059A /* EmptyCell.swift */; };
 		7757C4762427F372006E059A /* WelcomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7757C4752427F372006E059A /* WelcomePage.swift */; };
 		7760977B240EF21100AD30F5 /* CreateMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977A240EF21100AD30F5 /* CreateMatch.swift */; };
@@ -48,7 +49,6 @@
 		77BBB028231499C3006CB608 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB026231499C3006CB608 /* Main.storyboard */; };
 		77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB029231499C5006CB608 /* Assets.xcassets */; };
 		77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */; };
-		77BBB03523158E65006CB608 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 77BBB03423158E65006CB608 /* GoogleService-Info.plist */; };
 		77BBB0372315A6BA006CB608 /* TourneyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB0362315A6BA006CB608 /* TourneyTableViewCell.swift */; };
 		77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB0382319E5C5006CB608 /* TourneyStandings.swift */; };
 		77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB03E231EE5BE006CB608 /* TourneyMenuBar.swift */; };
@@ -72,7 +72,6 @@
 		7718BD7F23288A340004777C /* PlayerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerCell.swift; sourceTree = "<group>"; };
 		7718BD81232AC84A0004777C /* StartupPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupPage.swift; sourceTree = "<group>"; };
 		7718BD83232C13C00004777C /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
-		7718BDA52330195D0004777C /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		7718BDC2233AC09E0004777C /* MyMatchesCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyMatchesCell.swift; sourceTree = "<group>"; };
 		7718BDC4233ADDAF0004777C /* TourneyList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyList.swift; sourceTree = "<group>"; };
 		7718BDC6233ADE700004777C /* Tourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tourney.swift; sourceTree = "<group>"; };
@@ -85,12 +84,15 @@
 		7731F55D242D70F300903245 /* FeedMatchCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedMatchCell.swift; sourceTree = "<group>"; };
 		7731F55F242FDBEB00903245 /* TourneyStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyStats.swift; sourceTree = "<group>"; };
 		7731F561242FDC7700903245 /* TeamStatsCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TeamStatsCell.swift; sourceTree = "<group>"; };
+		7731F56624364CEE00903245 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7739865A23BBEC4700195253 /* MainMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenu.swift; sourceTree = "<group>"; };
 		7739865C23BBEF6D00195253 /* Connect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Connect.swift; sourceTree = "<group>"; };
 		773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuCell.swift; sourceTree = "<group>"; };
 		773CA5CE23C27E5200DED169 /* EditProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfile.swift; sourceTree = "<group>"; };
 		77427F3023CFBD6C00372773 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		7745AC71240CA413008C8900 /* FriendInviteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendInviteCell.swift; sourceTree = "<group>"; };
+		7755A847244785E000A5CA45 /* Pickleball.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Pickleball.entitlements; sourceTree = "<group>"; };
+		7755A848244A00A700A5CA45 /* Play.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Play.swift; sourceTree = "<group>"; };
 		7757C4732419AAF5006E059A /* EmptyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyCell.swift; sourceTree = "<group>"; };
 		7757C4752427F372006E059A /* WelcomePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomePage.swift; sourceTree = "<group>"; };
 		7760977A240EF21100AD30F5 /* CreateMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMatch.swift; sourceTree = "<group>"; };
@@ -104,7 +106,6 @@
 		77BBB029231499C5006CB608 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		77BBB02C231499C5006CB608 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		77BBB02E231499C5006CB608 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		77BBB03423158E65006CB608 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		77BBB0362315A6BA006CB608 /* TourneyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyTableViewCell.swift; sourceTree = "<group>"; };
 		77BBB0382319E5C5006CB608 /* TourneyStandings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyStandings.swift; sourceTree = "<group>"; };
 		77BBB03E231EE5BE006CB608 /* TourneyMenuBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyMenuBar.swift; sourceTree = "<group>"; };
@@ -137,6 +138,7 @@
 				7718BD83232C13C00004777C /* Notifications.swift */,
 				7757C4752427F372006E059A /* WelcomePage.swift */,
 				7731F55B242D6EF500903245 /* MatchFeed.swift */,
+				7755A848244A00A700A5CA45 /* Play.swift */,
 			);
 			path = "Beginning Tabs";
 			sourceTree = "<group>";
@@ -190,6 +192,7 @@
 		77BBB021231499C3006CB608 /* Pickleball */ = {
 			isa = PBXGroup;
 			children = (
+				7755A847244785E000A5CA45 /* Pickleball.entitlements */,
 				77BBB03A231EE521006CB608 /* View */,
 				77BBB03B231EE540006CB608 /* Controller */,
 				77BBB03D231EE56E006CB608 /* Helpers */,
@@ -197,10 +200,10 @@
 				77BBB029231499C5006CB608 /* Assets.xcassets */,
 				77BBB022231499C3006CB608 /* AppDelegate.swift */,
 				77BBB026231499C3006CB608 /* Main.storyboard */,
+				7731F56624364CEE00903245 /* GoogleService-Info.plist */,
 				77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */,
 				77BBB0362315A6BA006CB608 /* TourneyTableViewCell.swift */,
 				77BBB02E231499C5006CB608 /* Info.plist */,
-				77BBB03423158E65006CB608 /* GoogleService-Info.plist */,
 			);
 			path = Pickleball;
 			sourceTree = "<group>";
@@ -241,7 +244,6 @@
 				77BBB0442320838F006CB608 /* Team.swift */,
 				7718BD73232332600004777C /* Match.swift */,
 				7718BD7B2328694F0004777C /* Player.swift */,
-				7718BDA52330195D0004777C /* Notification.swift */,
 				7718BDC6233ADE700004777C /* Tourney.swift */,
 				77427F3023CFBD6C00372773 /* Message.swift */,
 			);
@@ -308,6 +310,14 @@
 				TargetAttributes = {
 					77BBB01E231499C3006CB608 = {
 						CreatedOnToolsVersion = 10.1;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -334,8 +344,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7731F56724364CEE00903245 /* GoogleService-Info.plist in Resources */,
 				77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */,
-				77BBB03523158E65006CB608 /* GoogleService-Info.plist in Resources */,
 				77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */,
 				77BBB028231499C3006CB608 /* Main.storyboard in Resources */,
 			);
@@ -418,6 +428,7 @@
 				7757C4762427F372006E059A /* WelcomePage.swift in Sources */,
 				77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */,
 				77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */,
+				7755A849244A00A700A5CA45 /* Play.swift in Sources */,
 				7739865D23BBEF6D00195253 /* Connect.swift in Sources */,
 				7718BD84232C13C00004777C /* Notifications.swift in Sources */,
 				77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */,
@@ -432,7 +443,6 @@
 				7718BD74232332600004777C /* Match.swift in Sources */,
 				7718BDC5233ADDAF0004777C /* TourneyList.swift in Sources */,
 				7727354423CCE7A3004BEC33 /* ChatLogs.swift in Sources */,
-				7718BDA62330195D0004777C /* Notification.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -580,6 +590,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_ENTITLEMENTS = Pickleball/Pickleball.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UGU2X2N7R3;
 				INFOPLIST_FILE = Pickleball/Info.plist;
@@ -600,6 +611,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_ENTITLEMENTS = Pickleball/Pickleball.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UGU2X2N7R3;
 				INFOPLIST_FILE = Pickleball/Info.plist;

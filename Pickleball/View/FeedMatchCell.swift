@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Firebase
 
 class FeedMatchCell: UITableViewCell {
     
@@ -44,9 +45,50 @@ class FeedMatchCell: UITableViewCell {
             return "\(-day) days ago"
         }
     }
+ 
     
     var match = Match2() {
         didSet {
+            let player = Player()
+//            let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
+//            player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+//                if let value = snapshot.value as? [String: AnyObject] {
+//                    self.challengerTeam1.setTitle(value["username"] as? String, for: .normal)
+//                    let exp = value["exp"] as? Int ?? 0
+//                    self.appLevel.text = "\(player.haloLevel(exp: exp))"
+//                }
+//            })
+//
+//            let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
+//            player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+//                if let value = snapshot.value as? [String: AnyObject] {
+//                    self.challengerTeam2.setTitle(value["username"] as? String, for: .normal)
+//                    let exp = value["exp"] as? Int ?? 0
+//                    self.appLevel2.text = "\(player.haloLevel(exp: exp))"
+//                }
+//            })
+//
+//            let player1ref2 = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope")
+//            player1ref2.observeSingleEvent(of: .value, with: {(snapshot) in
+//                if let value = snapshot.value as? [String: AnyObject] {
+//                    self.challengedTeam1.setTitle(value["username"] as? String, for: .normal)
+//                    let exp = value["exp"] as? Int ?? 0
+//                    self.appLevel3.text = "\(player.haloLevel(exp: exp))"
+//                }
+//            })
+//
+//            let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
+//            player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
+//                if let value = snapshot.value as? [String: AnyObject] {
+//                    self.challengedTeam2.setTitle(value["username"] as? String, for: .normal)
+//                    let exp = value["exp"] as? Int ?? 0
+//                    self.appLevel4.text = "\(player.haloLevel(exp: exp))"
+//                }
+//            })
+            let screenSize = UIScreen.main.bounds
+            let screenWidth = screenSize.width
+            let width = Float(screenWidth)
+            let height = Float(screenWidth / 1.875)
             if let seconds = self.match.time {
                 
                 let dateTime = Date(timeIntervalSince1970: seconds)
@@ -67,6 +109,18 @@ class FeedMatchCell: UITableViewCell {
                     }
                 }
             }
+            switch match.active {
+            case 0:
+                headerLabel.text = "Pre-Match Confirmation"
+            case 1:
+                headerLabel.text = "Enter Scores"
+            case 2:
+                headerLabel.text = "Confirm Scores"
+            case 3:
+                headerLabel.text = "Match Complete"
+            default:
+                print("")
+            }
             timeStamp.textColor = .black
             grayBox.isHidden = true
             addSubview(grayBox)
@@ -83,7 +137,7 @@ class FeedMatchCell: UITableViewCell {
                 bringSubviewToFront(challengerTeam2)
                 bringSubviewToFront(tourneySymbol)
                 whiteBox.addSubview(tourneySymbol)
-                let tourneyLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: 375, hia: 200)
+                let tourneyLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: width, hia: height)
                 tourneySymbol.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(tourneyLoc.Y)).isActive = true
                 tourneySymbol.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(tourneyLoc.X)).isActive = true
                 tourneySymbol.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.H)).isActive = true
@@ -96,7 +150,7 @@ class FeedMatchCell: UITableViewCell {
                 bringSubviewToFront(challengedTeam1)
                 bringSubviewToFront(challengedTeam2)
                 bringSubviewToFront(tourneySymbol2)
-                let tourneyLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: 375, hia: 200)
+                let tourneyLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: width, hia: height)
                     
                 whiteBox.addSubview(tourneySymbol2)
                 tourneySymbol2.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(tourneyLoc2.Y)).isActive = true
@@ -104,16 +158,29 @@ class FeedMatchCell: UITableViewCell {
                 tourneySymbol2.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.H)).isActive = true
                 tourneySymbol2.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.W)).isActive = true
                 }
-            match1Label.text = "\(match.team1_scores?[0] ?? -1)"
-            match2Label.text = "\(match.team1_scores?[1] ?? -1)"
-            match3Label.text = "\(match.team1_scores?[2] ?? -1)"
-            match4Label.text = "\(match.team1_scores?[3] ?? -1)"
-            match5Label.text = "\(match.team1_scores?[4] ?? -1)"
-            match1Label2.text = "\(match.team2_scores?[0] ?? -1)"
-            match2Label2.text = "\(match.team2_scores?[1] ?? -1)"
-            match3Label2.text = "\(match.team2_scores?[2] ?? -1)"
-            match4Label2.text = "\(match.team2_scores?[3] ?? -1)"
-            match5Label2.text = "\(match.team2_scores?[4] ?? -1)"
+            if match.active != 0 {
+                match1Label.text = "\(match.team1_scores?[0] ?? -1)"
+                match2Label.text = "\(match.team1_scores?[1] ?? -1)"
+                match3Label.text = "\(match.team1_scores?[2] ?? -1)"
+                match4Label.text = "\(match.team1_scores?[3] ?? -1)"
+                match5Label.text = "\(match.team1_scores?[4] ?? -1)"
+                match1Label2.text = "\(match.team2_scores?[0] ?? -1)"
+                match2Label2.text = "\(match.team2_scores?[1] ?? -1)"
+                match3Label2.text = "\(match.team2_scores?[2] ?? -1)"
+                match4Label2.text = "\(match.team2_scores?[3] ?? -1)"
+                match5Label2.text = "\(match.team2_scores?[4] ?? -1)"
+            } else {
+                match1Label.text = ""
+                match2Label.text = ""
+                match3Label.text = ""
+                match4Label.text = ""
+                match5Label.text = ""
+                match1Label2.text = ""
+                match2Label2.text = ""
+                match3Label2.text = ""
+                match4Label2.text = ""
+                match5Label2.text = ""
+            }
 //            guard let startTime = match.time else {
 //                return
 //            }
@@ -339,6 +406,39 @@ class FeedMatchCell: UITableViewCell {
         return button
     }()
     
+    let team11: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .left
+        return label
+    }()
+    let team12: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .left
+        return label
+    }()
+    let team21: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .left
+        return label
+    }()
+    let team22: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .left
+        return label
+    }()
+    
     let match1Label: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -432,7 +532,51 @@ class FeedMatchCell: UITableViewCell {
         return view
     }()
     
+    let headerLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 24)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let confirmCheck1: UIImageView = {
+        let image = UIImageView()
+        image.contentMode = .scaleAspectFit
+        image.image = UIImage(named: "confirmed_check")
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
+    
+    let confirmCheck2: UIImageView = {
+        let image = UIImageView()
+        image.contentMode = .scaleAspectFit
+        image.image = UIImage(named: "confirmed_check")
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
+    
+    let confirmCheck3: UIImageView = {
+        let image = UIImageView()
+        image.contentMode = .scaleAspectFit
+        image.image = UIImage(named: "confirmed_check")
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
+    
+    let confirmCheck4: UIImageView = {
+        let image = UIImageView()
+        image.contentMode = .scaleAspectFit
+        image.image = UIImage(named: "confirmed_check")
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
+    
     func setupViews() {
+        let screenSize = UIScreen.main.bounds
+        let screenWidth = screenSize.width
+        let width = Float(screenWidth)
+        let height = Float(screenWidth / 1.875)
         
         addSubview(timeStamp)
         timeStamp.topAnchor.constraint(equalTo: topAnchor, constant: 1).isActive = true
@@ -440,15 +584,21 @@ class FeedMatchCell: UITableViewCell {
         timeStamp.heightAnchor.constraint(equalToConstant: 25).isActive = true
         timeStamp.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
         
+        addSubview(headerLabel)
+        headerLabel.topAnchor.constraint(equalTo: timeStamp.bottomAnchor).isActive = true
+        headerLabel.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        headerLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        headerLabel.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        
         addSubview(whiteBox)
         whiteBox.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         whiteBox.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        whiteBox.heightAnchor.constraint(equalToConstant: 200).isActive = true
+        whiteBox.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
         whiteBox.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
         
         whiteBox.addSubview(challengerPlaceholder)
         
-        let challengerPlaceholderLoc = calculateButtonPosition(x: 303, y: 92, w: 582, h: 165, wib: 750, hib: 400, wia: 375, hia: 200)
+        let challengerPlaceholderLoc = calculateButtonPosition(x: 303, y: 92, w: 582, h: 165, wib: 750, hib: 400, wia: width, hia: height)
         
         challengerPlaceholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(challengerPlaceholderLoc.Y)).isActive = true
         challengerPlaceholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(challengerPlaceholderLoc.X)).isActive = true
@@ -457,7 +607,7 @@ class FeedMatchCell: UITableViewCell {
         
         whiteBox.addSubview(challengedPlaceholder)
         
-        let challengedPlaceholderLoc = calculateButtonPosition(x: 303, y: 308, w: 582, h: 165, wib: 750, hib: 400, wia: 375, hia: 200)
+        let challengedPlaceholderLoc = calculateButtonPosition(x: 303, y: 308, w: 582, h: 165, wib: 750, hib: 400, wia: width, hia: height)
         
         challengedPlaceholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(challengedPlaceholderLoc.Y)).isActive = true
         challengedPlaceholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(challengedPlaceholderLoc.X)).isActive = true
@@ -491,7 +641,7 @@ class FeedMatchCell: UITableViewCell {
         
         whiteBox.addSubview(challenged)
         
-        let challengedLoc = calculateButtonPosition(x: 250, y: 198, w: 350, h: 50, wib: 750, hib: 400, wia: 375, hia: 200)
+        let challengedLoc = calculateButtonPosition(x: 250, y: 198, w: 350, h: 50, wib: 750, hib: 400, wia: width, hia: height)
         
         challenged.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(challengedLoc.Y)).isActive = true
         challenged.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(challengedLoc.X)).isActive = true
@@ -502,6 +652,10 @@ class FeedMatchCell: UITableViewCell {
         whiteBox.addSubview(challengedTeam1)
         whiteBox.addSubview(challengerTeam2)
         whiteBox.addSubview(challengedTeam2)
+        whiteBox.addSubview(team11)
+        whiteBox.addSubview(team12)
+        whiteBox.addSubview(team21)
+        whiteBox.addSubview(team22)
         whiteBox.addSubview(match1Label)
         whiteBox.addSubview(match2Label)
         whiteBox.addSubview(match3Label)
@@ -513,7 +667,7 @@ class FeedMatchCell: UITableViewCell {
         whiteBox.addSubview(match4Label2)
         whiteBox.addSubview(match5Label2)
         
-        let teamRankLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: 375, hia: 200)
+        let teamRankLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: width, hia: height)
         
         whiteBox.addSubview(teamRank1)
         teamRank1.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(teamRankLoc.Y)).isActive = true
@@ -521,13 +675,33 @@ class FeedMatchCell: UITableViewCell {
         teamRank1.heightAnchor.constraint(equalToConstant: CGFloat(teamRankLoc.H)).isActive = true
         teamRank1.widthAnchor.constraint(equalToConstant: CGFloat(teamRankLoc.W)).isActive = true
         
-        let teamRankLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: 375, hia: 200)
+        let teamRankLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: width, hia: height)
         
         whiteBox.addSubview(teamRank2)
         teamRank2.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(teamRankLoc2.Y)).isActive = true
         teamRank2.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(teamRankLoc2.X)).isActive = true
         teamRank2.heightAnchor.constraint(equalToConstant: CGFloat(teamRankLoc2.H)).isActive = true
         teamRank2.widthAnchor.constraint(equalToConstant: CGFloat(teamRankLoc2.W)).isActive = true
+        
+        team11.topAnchor.constraint(equalTo: challengerPlaceholder.topAnchor, constant: 5).isActive = true
+        team11.leftAnchor.constraint(equalTo: teamRank1.rightAnchor).isActive = true
+        team11.rightAnchor.constraint(equalTo: challengerPlaceholder.rightAnchor).isActive = true
+        team11.bottomAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor).isActive = true
+        
+        team12.topAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor).isActive = true
+        team12.leftAnchor.constraint(equalTo: teamRank1.rightAnchor).isActive = true
+        team12.rightAnchor.constraint(equalTo: challengerPlaceholder.rightAnchor).isActive = true
+        team12.bottomAnchor.constraint(equalTo: challengerPlaceholder.bottomAnchor, constant: -5).isActive = true
+        
+        team21.topAnchor.constraint(equalTo: challengedPlaceholder.topAnchor, constant: 5).isActive = true
+        team21.leftAnchor.constraint(equalTo: teamRank2.rightAnchor).isActive = true
+        team21.rightAnchor.constraint(equalTo: challengedPlaceholder.rightAnchor).isActive = true
+        team21.bottomAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor).isActive = true
+        
+        team22.topAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor).isActive = true
+        team22.leftAnchor.constraint(equalTo: teamRank2.rightAnchor).isActive = true
+        team22.rightAnchor.constraint(equalTo: challengedPlaceholder.rightAnchor).isActive = true
+        team22.bottomAnchor.constraint(equalTo: challengedPlaceholder.bottomAnchor, constant: -5).isActive = true
         
         challengerTeam1.topAnchor.constraint(equalTo: challengerPlaceholder.topAnchor, constant: 5).isActive = true
         challengerTeam1.leftAnchor.constraint(equalTo: teamRank1.rightAnchor).isActive = true
@@ -550,35 +724,35 @@ class FeedMatchCell: UITableViewCell {
         challengedTeam2.bottomAnchor.constraint(equalTo: challengedPlaceholder.bottomAnchor, constant: -5).isActive = true
         
         whiteBox.addSubview(match1Placeholder)
-        let match1PlaceholderLoc = calculateButtonPosition(x: 672, y: 42, w: 146, h: 62, wib: 750, hib: 400, wia: 375, hia: 200)
+        let match1PlaceholderLoc = calculateButtonPosition(x: 672, y: 42, w: 146, h: 62, wib: 750, hib: 400, wia: width, hia: height)
         match1Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match1PlaceholderLoc.Y)).isActive = true
         match1Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match1PlaceholderLoc.X)).isActive = true
         match1Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match1PlaceholderLoc.H)).isActive = true
         match1Placeholder.widthAnchor.constraint(equalToConstant: CGFloat(match1PlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(match2Placeholder)
-        let match2PlaceholderLoc = calculateButtonPosition(x: 672, y: 120, w: 146, h: 62, wib: 750, hib: 400, wia: 375, hia: 200)
+        let match2PlaceholderLoc = calculateButtonPosition(x: 672, y: 120, w: 146, h: 62, wib: 750, hib: 400, wia: width, hia: height)
         match2Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match2PlaceholderLoc.Y)).isActive = true
         match2Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match2PlaceholderLoc.X)).isActive = true
         match2Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match2PlaceholderLoc.H)).isActive = true
         match2Placeholder.widthAnchor.constraint(equalToConstant: CGFloat(match2PlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(match3Placeholder)
-        let match3PlaceholderLoc = calculateButtonPosition(x: 672, y: 198, w: 146, h: 62, wib: 750, hib: 400, wia: 375, hia: 200)
+        let match3PlaceholderLoc = calculateButtonPosition(x: 672, y: 198, w: 146, h: 62, wib: 750, hib: 400, wia: width, hia: height)
         match3Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match3PlaceholderLoc.Y)).isActive = true
         match3Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match3PlaceholderLoc.X)).isActive = true
         match3Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match3PlaceholderLoc.H)).isActive = true
         match3Placeholder.widthAnchor.constraint(equalToConstant: CGFloat(match3PlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(match4Placeholder)
-        let match4PlaceholderLoc = calculateButtonPosition(x: 672, y: 276, w: 146, h: 62, wib: 750, hib: 400, wia: 375, hia: 200)
+        let match4PlaceholderLoc = calculateButtonPosition(x: 672, y: 276, w: 146, h: 62, wib: 750, hib: 400, wia: width, hia: height)
         match4Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match4PlaceholderLoc.Y)).isActive = true
         match4Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match4PlaceholderLoc.X)).isActive = true
         match4Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match4PlaceholderLoc.H)).isActive = true
         match4Placeholder.widthAnchor.constraint(equalToConstant: CGFloat(match4PlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(match5Placeholder)
-        let match5PlaceholderLoc = calculateButtonPosition(x: 672, y: 354, w: 146, h: 62, wib: 750, hib: 400, wia: 375, hia: 200)
+        let match5PlaceholderLoc = calculateButtonPosition(x: 672, y: 354, w: 146, h: 62, wib: 750, hib: 400, wia: width, hia: height)
         match5Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match5PlaceholderLoc.Y)).isActive = true
         match5Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match5PlaceholderLoc.X)).isActive = true
         match5Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match5PlaceholderLoc.H)).isActive = true

@@ -21,8 +21,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     let blackView = UIView()
     var selectedDropDown = -1
     var buttonsCreated = 0
-    var friends = [String]()
-    var almostFriends = [String]()
+    var sender = 0
     
     var tourneyList: TourneyList?
     
@@ -34,8 +33,13 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         
         self.collectionView!.register(FriendListCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.backgroundColor = .white
-        collectionView?.contentInset = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
-        collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+        if sender == 0 {
+            collectionView?.contentInset = UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
+            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+        } else {
+            collectionView?.contentInset = UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
+            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+        }
         setupFilterCollectionView()
         
         let widthofscreen = Int(view.frame.width)
@@ -126,10 +130,9 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         
         if collectionView == self.collectionView {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FriendListCell
-            cell.player = searchResults[indexPath.item]
             cell.messageButton.isHidden = true
             cell.playerLocation.isHidden = false
-            
+            cell.player = searchResults[indexPath.item]
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! ProfileMenuCell
@@ -157,13 +160,18 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             playerProfile.findFriends = self
             playerProfile.playerId = searchResults[indexPath.item].id ?? "none"
             playerProfile.whichFriend = indexPath.item
-//            if searchResults[indexPath.item].friend == 2 {
-//                playerProfile.isFriend = 2
-//            } else if searchResults[indexPath.item].friend == 1 {
-//                playerProfile.isFriend = 1
-//            }
             playerProfile.isFriend = 3
-            navigationController?.pushViewController(playerProfile, animated: true)
+            if sender == 0 {
+                navigationController?.pushViewController(playerProfile, animated: true)
+            } else {
+                let friendNavController = UINavigationController(rootViewController: playerProfile)
+                //friendList.hidesBottomBarWhenPushed = true
+                playerProfile.findFriendSender = 1
+                friendNavController.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
+                friendNavController.navigationBar.tintColor = .white
+                friendNavController.navigationBar.isTranslucent = false
+                present(friendNavController, animated: true, completion: nil)
+            }
         } else {
             switch selectedDropDown {
             case 0:
@@ -231,10 +239,34 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     let inputsArray = ["Skill Level", "State", "County", "Sex", "Age Group"]
     
+    let backButton: UIButton = {
+        let button = UIButton(type: .system)
+        //button.backgroundColor = .white
+        button.setTitle("Return", for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleReturn), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func handleReturn() {
+        dismiss(animated: true, completion: nil)
+    }
+    
     func setupViews() {
         
         view.addSubview(searchBar)
-        searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        if sender == 0 {
+            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+        } else {
+            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50).isActive = true
+            view.addSubview(backButton)
+            backButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true
+            backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+            backButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+            backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        }
         searchBar.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         searchBar.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         searchBar.heightAnchor.constraint(equalToConstant: 50).isActive = true
@@ -309,13 +341,6 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     player.halo_level = haloLevel
                     player.state = state
                     player.county = county
-                    if self.friends.contains(player.id ?? "noId") == true {
-                        player.friend = 2
-                    } else if self.almostFriends.contains(player.id ?? "noId") == true {
-                        player.friend = 1
-                    } else {
-                        player.friend = 0
-                    }
                     
                     if player.id != Auth.auth().currentUser?.uid {
                         self.players.append(player)

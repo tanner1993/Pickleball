@@ -410,6 +410,22 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         return lb
     }()
     
+    let resignButton: UIButton = {
+        let button = UIButton(type: .system)
+        //button.backgroundColor = .green
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(hideKeyboard), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func hideKeyboard() {
+        nameTextField.resignFirstResponder()
+        nameTextField2.resignFirstResponder()
+        emailTextField.resignFirstResponder()
+        usernameTextField.resignFirstResponder()
+        self.view.endEditing(true)
+    }
+    
     let nameLabel: UILabel = {
         let lb = UILabel()
         lb.text = "First"
@@ -851,6 +867,12 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         editProfileLabel.bottomAnchor.constraint(equalTo: inputsContainerView.topAnchor, constant: -15).isActive = true
         editProfileLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         editProfileLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        scrollView.addSubview(resignButton)
+        resignButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        resignButton.bottomAnchor.constraint(equalTo: inputsContainerView.topAnchor, constant: -15).isActive = true
+        resignButton.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
+        resignButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         inputsContainerView.addSubview(nameLabel)
         nameLabel.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true

@@ -28,6 +28,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     var tourneyOpenInvites = [String]()
     var tourneyStandings = TourneyStandings()
     var startTime: Double = 0
+    var simpleInvite = 0
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -102,7 +103,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         let button = UIButton(type: .system)
         //button.backgroundColor = .white
         button.setTitle("Return", for: .normal)
-        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(handleReturn), for: .touchUpInside)
@@ -191,16 +192,16 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     @objc func handleSearchFriends() {
         let layout = UICollectionViewFlowLayout()
         let findFriends = FindFriends(collectionViewLayout: layout)
-        var friendStrings = [String]()
-        var almostFriendStrings = [String]()
-        for index in friends {
-            friendStrings.append(index.id ?? "noId")
-        }
-        for index in almostFriends {
-            almostFriendStrings.append(index.id ?? "noId")
-        }
-        findFriends.friends = friendStrings
-        findFriends.almostFriends = almostFriendStrings
+//        var friendStrings = [String]()
+//        var almostFriendStrings = [String]()
+//        for index in friends {
+//            friendStrings.append(index.id ?? "noId")
+//        }
+//        for index in almostFriends {
+//            almostFriendStrings.append(index.id ?? "noId")
+//        }
+//        findFriends.friends = friendStrings
+//        findFriends.almostFriends = almostFriendStrings
         navigationController?.pushViewController(findFriends, animated: true)
     }
     
@@ -223,18 +224,19 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
             } else {
                 activityIndicatorView.stopAnimating()
                 let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! EmptyCell
-                cell.emptyLabel.text = "No Friends"
+                cell.emptyLabel.text = "You have no friends :(,\nclick HERE to find friends!"
+                cell.emptyLabel.numberOfLines = 2
                 return cell
             }
         } else {
             activityIndicatorView.stopAnimating()
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! FriendListCell
-            cell.player = friends[indexPath.item]
             cell.messageButton.tag = indexPath.item
             cell.messageButton.addTarget(self, action: #selector(sendMessage), for: .touchUpInside)
             if whoSent != 0 || tourneyId != "none" {
                 cell.messageButton.isHidden = true
             }
+            cell.player = friends[indexPath.item]
             return cell
         }
     }
@@ -244,14 +246,27 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if whoSent == 0 {
+        print(noNotifications)
+        print(friends.count)
+        if noNotifications == 1 && friends.count == 0 {
+            let layout = UICollectionViewFlowLayout()
+            let findFriends = FindFriends(collectionViewLayout: layout)
+            findFriends.sender = 1
+            present(findFriends, animated: true, completion: nil)
+        } else if friends.count == 0 {
+            
+        } else if whoSent == 0 {
             if tourneyId == "none" {
                 let playerProfile = StartupPage()
                 playerProfile.playerId = friends[indexPath.item].id ?? "none"
                 playerProfile.isFriend = 2
                 navigationController?.pushViewController(playerProfile, animated: true)
             } else {
-                sendTourneyInvitation(toId: friends[indexPath.item].id ?? "none")
+                if simpleInvite == 0 {
+                    sendTourneyInvitation(toId: friends[indexPath.item].id ?? "none", deviceId: friends[indexPath.item].deviceId ?? "none")
+                } else {
+                    sendSimpleInvite(toId: friends[indexPath.item].id ?? "none", deviceId: friends[indexPath.item].deviceId ?? "none")
+                }
             }
         } else {
             returnPlayerDetails(whichOne: indexPath.item)
@@ -264,14 +279,17 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
             createMatch?.teammate.id = friends[whichOne].id ?? "none"
             createMatch?.teammate.username = friends[whichOne].username ?? "none"
             createMatch?.teammate.skillLevel = "\(friends[whichOne].skill_level ?? 1.0)"
+            createMatch?.teammate.deviceId = friends[whichOne].deviceId ?? "none"
         case 2:
             createMatch?.opponent1.id = friends[whichOne].id ?? "none"
             createMatch?.opponent1.username = friends[whichOne].username ?? "none"
             createMatch?.opponent1.skillLevel = "\(friends[whichOne].skill_level ?? 1.0)"
+            createMatch?.opponent1.deviceId = friends[whichOne].deviceId ?? "none"
         case 3:
             createMatch?.opponent2.id = friends[whichOne].id ?? "none"
             createMatch?.opponent2.username = friends[whichOne].username ?? "none"
             createMatch?.opponent2.skillLevel = "\(friends[whichOne].skill_level ?? 1.0)"
+            createMatch?.opponent2.deviceId = friends[whichOne].deviceId ?? "none"
         default:
             print("failed")
         }
@@ -288,7 +306,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         connect?.presentChatLogs(recipientId: recipientId)
     }
     
-    func sendTourneyInvitation(toId: String) {
+    func sendTourneyInvitation(toId: String, deviceId: String) {
         let check = checkAlreadyRegistered(toId: toId)
         if check == false {
             let alreadyRegistered = UIAlertController(title: "Sorry", message: "This player has already registered for this tourney", preferredStyle: .alert)
@@ -336,6 +354,67 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
                 }
                 
                 print("Crazy data 2 saved!")
+                Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let nameOnInvite = value as? String ?? "none"
+                        let pusher = PushNotificationHandler()
+                        pusher.setupPushNotification(deviceId: deviceId, message: "\(nameOnInvite) wants you to play in a tourney with them", title: "Tourney Invite")
+                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                    }
+                })
+                
+            })
+            
+        })
+    }
+    
+    func sendSimpleInvite(toId: String, deviceId: String) {
+        let check = checkAlreadyRegistered(toId: toId)
+        if check == false {
+            let alreadyRegistered = UIAlertController(title: "No need", message: "This player has already registered for this tourney", preferredStyle: .alert)
+            alreadyRegistered.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alreadyRegistered, animated: true, completion: nil)
+            return
+        }
+        let joinInviteConfirmed = UIAlertController(title: "Successfully sent tourney invite", message: "It's waiting in your friends inbox", preferredStyle: .alert)
+        joinInviteConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
+        self.present(joinInviteConfirmed, animated: true, completion: nil)
+        let uid = Auth.auth().currentUser!.uid
+        let timeStamp = Int(Date().timeIntervalSince1970)
+        let ref = Database.database().reference().child("notifications")
+        let notificationRef = ref.childByAutoId()
+        let values = ["type": "tourney_invite_simple", "fromId": uid, "toId": toId, "timestamp": timeStamp, "tourneyId": tourneyId] as [String : Any]
+        notificationRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            let notificationsRef = Database.database().reference()
+            let notificationId = notificationRef.key!
+            let childUpdates = ["/\("user_notifications")/\(toId)/\(notificationId)/": 1] as [String : Any]
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self.present(messageSendFailed, animated: true, completion: nil)
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                
+                print("Crazy data 2 saved!")
+                Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let nameOnInvite = value as? String ?? "none"
+                        let pusher = PushNotificationHandler()
+                        pusher.setupPushNotification(deviceId: deviceId, message: "\(nameOnInvite) wants you to check out a tourney", title: "Tourney Invite")
+                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                    }
+                })
                 
             })
             
@@ -343,7 +422,9 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
     }
     
     func handleDismiss(action: UIAlertAction) {
-        tourneyStandings.navigationItem.rightBarButtonItem = nil
+        if simpleInvite == 0 {
+            tourneyStandings.navigationItem.rightBarButtonItem = nil
+        }
         dismiss(animated: true, completion: nil)
     }
     
@@ -408,6 +489,8 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
                     let skillLevel = value["skill_level"] as? Float ?? 0.0
                     let exp = value["exp"] as? Int ?? 0
                     let haloLevel = player.haloLevel(exp: exp)
+                    let deviceId = value["deviceId"] as? String ?? "none"
+                    player.deviceId = deviceId
                     player.name = name
                     player.username = username
                     player.id = friendId

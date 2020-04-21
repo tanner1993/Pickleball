@@ -80,7 +80,7 @@ class TourneyList: UITableViewController {
         let searchButton = UIBarButtonItem(image: searchImage, style: .plain, target: self, action: #selector(handleSearchTourneys))
         let createNewButton = UIBarButtonItem(image: plusImage, style: .plain, target: self, action: #selector(handleCreateNewTourney))
         self.navigationItem.rightBarButtonItems = [searchButton, createNewButton]
-        self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Official", style: .plain, target: self, action: #selector(handleOfficalTourneys))
+        //self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Official", style: .plain, target: self, action: #selector(handleOfficalTourneys))
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
         titleLabel.text = "My Tourneys"

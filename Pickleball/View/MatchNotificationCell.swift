@@ -117,6 +117,7 @@ class MatchNotificationCell: UITableViewCell {
     
     let matchTitleText: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
         label.textColor = UIColor.init(r: 88, g: 148, b: 200)

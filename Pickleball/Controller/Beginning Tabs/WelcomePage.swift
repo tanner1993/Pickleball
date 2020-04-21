@@ -11,8 +11,6 @@ import Firebase
 
 class WelcomePage: UIViewController {
     
-    var newUser = 0
-    
     let enterProfilePageButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Continue", for: .normal)
@@ -86,6 +84,7 @@ class WelcomePage: UIViewController {
     
     @objc func handleEnterProfilePage() {
         let profilePage = MainMenu()
+        UIApplication.shared.applicationIconBadgeNumber = 0
         //profilePage.tabBar.unselectedItemTintColor = .white
         profilePage.welcomePage = self
         profilePage.tabBar.isTranslucent = false

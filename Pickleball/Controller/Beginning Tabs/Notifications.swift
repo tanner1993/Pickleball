@@ -103,7 +103,7 @@ class Notifications: UITableViewController {
                     let toId = value["toId"] as? String ?? "No toId"
                     let fromId = value["fromId"] as? String ?? "No fromId"
                     notification.message = messageText
-                    if messageText == "tourney_invite" {
+                    if messageText == "tourney_invite" || messageText == "tourney_invite_simple" {
                         let tourneyId = value["tourneyId"] as? String ?? "none"
                         notification.tourneyId = tourneyId
                     }
@@ -191,6 +191,16 @@ class Notifications: UITableViewController {
                 cell.rejectButton.tag = indexPath.row
                 cell.rejectButton.addTarget(self, action: #selector(rejectTourney), for: .touchUpInside)
                 return cell
+            } else if notifications[indexPath.row].message == "tourney_invite_simple" {
+                observeTourneyTeams(tourneyId: notifications[indexPath.row].tourneyId ?? "none")
+                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
+                cell.appLevel.isHidden = true
+                cell.friendInvite = notifications[indexPath.row]
+                cell.confirmButton.isHidden = true
+                cell.rejectButton.tag = indexPath.row
+                cell.rejectButton.setTitle("Dismiss", for: .normal)
+                cell.rejectButton.addTarget(self, action: #selector(dismissNotification), for: .touchUpInside)
+                return cell
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
                 return cell
@@ -252,14 +262,7 @@ class Notifications: UITableViewController {
                 navigationController?.pushViewController(matchDisplay, animated: true)
             } else if notifications[indexPath.row].message == "reject_match" {
                 
-            } else if notifications[indexPath.row].message == "tourney_invite" {
-//                let layout = UICollectionViewFlowLayout()
-//                let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
-//                tourneyStandingsPage.hidesBottomBarWhenPushed = true
-//                tourneyStandingsPage.notificationSentYou = 1
-//                tourneyStandingsPage.tourneyIdentifier = notifications[indexPath.item].tourneyId
-//                navigationController?.pushViewController(tourneyStandingsPage, animated: true)
-                let layout = UICollectionViewFlowLayout()
+            } else if notifications[indexPath.row].message == "tourney_invite" || notifications[indexPath.row].message == "tourney_invite_simple" {
                 let tourneySearch = TourneySearch()
                 tourneySearch.inviteTourneyId = notifications[indexPath.item].tourneyId ?? "none"
                 tourneySearch.hidesBottomBarWhenPushed = true
@@ -277,6 +280,7 @@ class Notifications: UITableViewController {
         Database.database().reference().child("notifications").child(notificationId).removeValue()
         Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
         notifications.remove(at: sender.tag)
+        self.noNotifications = 1
         tableView.reloadData()
     }
     

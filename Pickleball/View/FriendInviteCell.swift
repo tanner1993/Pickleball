@@ -32,7 +32,7 @@ class FriendInviteCell: UITableViewCell {
             }
             let fromId = friendInvite?.fromId ?? "none"
             let toId = friendInvite?.toId ?? "none"
-            if friendInvite?.message == "tourney_invite" {
+            if friendInvite?.message == "tourney_invite" || friendInvite?.message == "tourney_invite_simple" {
                 let tourneyId = friendInvite?.tourneyId ?? "none"
                     let ref = Database.database().reference().child("tourneys").child(tourneyId)
                     ref.observeSingleEvent(of: .value, with: {(snapshot) in
@@ -56,6 +56,10 @@ class FriendInviteCell: UITableViewCell {
                     if self.friendInvite?.message == "tourney_invite" {
                         self.playerName.font = UIFont(name: "HelveticaNeue", size: 13)
                         self.playerName.text = fromId == uid ? "You invited \(username) to a tourney:" : "\(username) invited you to a tourney:"
+                        self.friendSymbol.image = UIImage(named: "tourney_symbol")
+                    } else if self.friendInvite?.message == "tourney_invite_simple" {
+                        self.playerName.font = UIFont(name: "HelveticaNeue", size: 13)
+                        self.playerName.text = "\(username) wants you to join a tourney:"
                         self.friendSymbol.image = UIImage(named: "tourney_symbol")
                     } else {
                         self.playerName.font = UIFont(name: "HelveticaNeue", size: 15)
