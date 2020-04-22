@@ -55,16 +55,13 @@ class CreateMatch: UIViewController {
     func getPlayerDetails() {
         if teammate.id != "none" {
             teammateLabel.text = teammate.username
-            teammateLabel.isHidden = false
             selectTeammateButton.setTitle("", for: .normal)
         }
         if opponent1.id != "none" {
             opponentLabel1.text = opponent1.username
-            opponentLabel1.isHidden = false
             selectOpponentButton1.setTitle("", for: .normal)
         }
         if opponent2.id != "none" {
-            opponentLabel2.isHidden = false
             opponentLabel2.text = opponent2.username
             selectOpponentButton2.setTitle("", for: .normal)
         }
@@ -112,11 +109,20 @@ class CreateMatch: UIViewController {
     }
     
     @objc func handleCreateMatch() {
-        if teammate.id == "none" || opponent1.id == "none" || opponent2.id == "none" {
-            let createMatchFailed = UIAlertController(title: "Cannot create match", message: "Must choose 1 teammate and 2 opponents", preferredStyle: .alert)
-            createMatchFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-            self.present(createMatchFailed, animated: true, completion: nil)
-            return
+        if singlesDoublesControl.selectedSegmentIndex == 1 {
+            if teammate.id == "none" || opponent1.id == "none" || opponent2.id == "none" {
+                let createMatchFailed = UIAlertController(title: "Cannot create match", message: "Must choose 1 teammate and 2 opponents", preferredStyle: .alert)
+                createMatchFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(createMatchFailed, animated: true, completion: nil)
+                return
+            }
+        } else {
+            if opponent1.id == "none" {
+                let createMatchFailed = UIAlertController(title: "Cannot create match", message: "Must choose an opponent", preferredStyle: .alert)
+                createMatchFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(createMatchFailed, animated: true, completion: nil)
+                return
+            }
         }
         let createMatchConfirmed = UIAlertController(title: "Successfully created the match", message: "Check your matches to see it", preferredStyle: .alert)
         createMatchConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
@@ -125,7 +131,23 @@ class CreateMatch: UIViewController {
         let timeOfChallenge = Date().timeIntervalSince1970
         let ref = Database.database().reference().child("matches")
         let createMatchRef = ref.childByAutoId()
-        let values = ["active": 0, "team_1_player_1": uid, "team_1_player_2": teammate.id, "team_2_player_1": opponent1.id, "team_2_player_2": opponent2.id, "team1_scores": [1, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
+        var style = Int()
+        switch matchesControl.selectedSegmentIndex {
+        case 0:
+            style = 0
+        case 1:
+            style = 1
+        case 2:
+            style = 2
+        default:
+            style = 0
+        }
+        var values = [String : Any]()
+        if singlesDoublesControl.selectedSegmentIndex == 1 {
+            values = ["active": 0, "team_1_player_1": uid, "team_1_player_2": teammate.id, "team_2_player_1": opponent1.id, "team_2_player_2": opponent2.id, "team1_scores": [1, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge, "style": style]
+        } else {
+            values = ["active": 0, "team_1_player_1": uid, "team_2_player_1": opponent1.id, "team1_scores": [1, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge, "style": style]
+        }
         createMatchRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -138,7 +160,13 @@ class CreateMatch: UIViewController {
             }
                 let notificationId = matchId
             let notificationsRef = Database.database().reference().child("user_matches")
-            let childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.teammate.id)/\(notificationId)/": 1, "/\(self.opponent1.id)/\(notificationId)/": 1, "/\(self.opponent2.id)/\(notificationId)/": 1,] as [String : Any]
+            
+            var childUpdates = [String : Any]()
+            if self.singlesDoublesControl.selectedSegmentIndex == 1 {
+                childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.teammate.id)/\(notificationId)/": 1, "/\(self.opponent1.id)/\(notificationId)/": 1, "/\(self.opponent2.id)/\(notificationId)/": 1]
+            } else {
+                childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.opponent1.id)/\(notificationId)/": 1]
+            }
             notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -155,10 +183,11 @@ class CreateMatch: UIViewController {
                     if let value = snapshot.value {
                         let nameOnInvite = value as? String ?? "none"
                         let pusher = PushNotificationHandler()
-                        pusher.setupPushNotification(deviceId: self.teammate.deviceId, message: "\(nameOnInvite) invited you to play in a match with them", title: "Match Invite")
+                        if self.singlesDoublesControl.selectedSegmentIndex == 1 {
+                            pusher.setupPushNotification(deviceId: self.teammate.deviceId, message: "\(nameOnInvite) invited you to play in a match with them", title: "Match Invite")
+                            pusher.setupPushNotification(deviceId: self.opponent2.deviceId, message: "\(nameOnInvite) invited you to play in a match with them", title: "Match Invite")
+                        }
                         pusher.setupPushNotification(deviceId: self.opponent1.deviceId, message: "\(nameOnInvite) invited you to play in a match with them", title: "Match Invite")
-                        pusher.setupPushNotification(deviceId: self.opponent2.deviceId, message: "\(nameOnInvite) invited you to play in a match with them", title: "Match Invite")
-                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
                     }
                 })
                 
@@ -488,14 +517,12 @@ class CreateMatch: UIViewController {
         createMatchButton.heightAnchor.constraint(equalToConstant: 90).isActive = true
         
         inputsContainerViewTeam1.addSubview(teammateLabel)
-        teammateLabel.isHidden = true
         teammateLabel.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
         teammateLabel.bottomAnchor.constraint(equalTo: inputsContainerViewTeam1.bottomAnchor).isActive = true
         teammateLabel.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor).isActive = true
         teammateLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
         inputsContainerViewTeam2.addSubview(opponentLabel1)
-        opponentLabel1.isHidden = true
         opponentLabel1.leftAnchor.constraint(equalTo: inputsContainerViewTeam2.leftAnchor).isActive = true
         opponentLabel1.topAnchor.constraint(equalTo: inputsContainerViewTeam2.topAnchor).isActive = true
         opponentLabel1.rightAnchor.constraint(equalTo: inputsContainerViewTeam2.rightAnchor).isActive = true
@@ -504,7 +531,6 @@ class CreateMatch: UIViewController {
 
 
         inputsContainerViewTeam2.addSubview(opponentLabel2)
-        opponentLabel2.isHidden = true
         opponentLabel2.leftAnchor.constraint(equalTo: inputsContainerViewTeam2.leftAnchor).isActive = true
         opponentLabel2.topAnchor.constraint(equalTo: selectOpponentButton1.bottomAnchor).isActive = true
         opponentLabel2.rightAnchor.constraint(equalTo: inputsContainerViewTeam2.rightAnchor).isActive = true

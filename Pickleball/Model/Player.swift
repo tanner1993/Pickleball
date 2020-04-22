@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Firebase
 
 class Player: NSObject {
     var name: String?
@@ -28,6 +29,29 @@ class Player: NSObject {
     var sex: String?
     var friend: Int?
     var deviceId: String?
+    
+    func updatePlayerStats(playerId: String, winner: Int) {
+        let user1NameRef = Database.database().reference().child("users").child(playerId)
+        user1NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                let playerWins = value["match_wins"] as? Int
+                let playerLosses = value["match_losses"] as? Int
+                let childUpdates = ["/\("match_wins")/": winner == 1 ? playerWins! + 1 : playerWins!, "/\("match_losses")/": winner == 1 ? playerLosses! : playerLosses! + 1] as [String : Any]
+                user1NameRef.updateChildValues(childUpdates, withCompletionBlock: {
+                    (error:Error?, ref:DatabaseReference) in
+                    
+                    if error != nil {
+                        print("Data could not be saved: \(String(describing: error)).")
+                        return
+                    }
+                    
+                    print("Crazy data 2 saved!")
+                    
+                    
+                })
+            }
+        })
+    }
 }
 
 extension Player {

@@ -216,10 +216,15 @@ class MatchFeed: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if sender == 1 {
-            let matchDisplay = MatchView()
-            matchDisplay.matchId = matches[indexPath.item].matchId ?? "none"
-            navigationController?.pushViewController(matchDisplay, animated: true)
+        if matches.count > 0 {
+            if sender == 1 {
+                let matchDisplay = MatchView()
+                matchDisplay.matchId = matches[indexPath.item].matchId ?? "none"
+                matchDisplay.match = matches[indexPath.item]
+                matchDisplay.whichItem = indexPath.item
+                matchDisplay.matchFeed = self
+                navigationController?.pushViewController(matchDisplay, animated: true)
+            }
         }
     }
     
@@ -323,6 +328,7 @@ class MatchFeed: UITableViewController {
                     let active = value["active"] as? Int ?? 0
                     let submitter = value["submitter"] as? Int ?? 0
                     let winner = value["winner"] as? Int ?? 0
+                    let style = value["style"] as? Int ?? 0
                     let team_1_player_1 = value["team_1_player_1"] as? String ?? "Player not found"
                     let team_1_player_2 = value["team_1_player_2"] as? String ?? "Player not found"
                     let team_2_player_1 = value["team_2_player_1"] as? String ?? "Player not found"
@@ -330,6 +336,7 @@ class MatchFeed: UITableViewController {
                     let team1_scores = value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                     let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                     let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+                    let forfeit = value["forfeit"] as? Int ?? 0
                     matchT.active = active
                     matchT.winner = winner
                     matchT.submitter = submitter
@@ -341,6 +348,9 @@ class MatchFeed: UITableViewController {
                     matchT.team2_scores = team2_scores
                     matchT.matchId = snapshot.key
                     matchT.time = time
+                    matchT.forfeit = forfeit
+                    matchT.style = style
+                    matchT.doubles = team_1_player_2 == "Player not found" ? false : true
                     self.matches.append(matchT)
                     DispatchQueue.main.async {
                         self.tableView.reloadData()

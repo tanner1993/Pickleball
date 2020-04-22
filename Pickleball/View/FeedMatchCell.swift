@@ -128,7 +128,7 @@ class FeedMatchCell: UITableViewCell {
             grayBox.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
             grayBox.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
             grayBox.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-            if match.winner == 1 {
+            if match.winner == 1 && match.active == 3 {
                 tourneySymbol.isHidden = false
                 tourneySymbol2.isHidden = true
                 bringSubviewToFront(grayBox)
@@ -142,7 +142,7 @@ class FeedMatchCell: UITableViewCell {
                 tourneySymbol.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(tourneyLoc.X)).isActive = true
                 tourneySymbol.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.H)).isActive = true
                 tourneySymbol.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.W)).isActive = true
-            } else if match.winner == 2 {
+            } else if match.winner == 2 && match.active == 3 {
                 tourneySymbol.isHidden = true
                 tourneySymbol2.isHidden = false
                 bringSubviewToFront(grayBox)
