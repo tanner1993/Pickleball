@@ -56,7 +56,7 @@ class Match2: NSObject {
         guard let player1 = team_1_player_1, let player2 = team_1_player_2, let player3 = team_2_player_1, let player4 = team_2_player_2 else {
             return
         }
-        let childUpdates = ["/\("tourney_notifications")/\(player1)/\(tourneyId)/": team_1_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(player2)/\(tourneyId)/": team_1_player_2 == uid ? 0 : 1, "/\("tourney_notifications")/\(player3)/\(tourneyId)/": team_2_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(player4)/\(tourneyId)/": team_2_player_2 == uid ? 0 : 1, "/\("tourneys")/\(tourneyId)/\("yet_to_view")/": yetToView] as [String : Any]
+        let childUpdates = ["/\("user_tourneys")/\(player1)/\(tourneyId)/": team_1_player_1 == uid ? 0 : 1, "/\("user_tourneys")/\(player2)/\(tourneyId)/": team_1_player_2 == uid ? 0 : 1, "/\("user_tourneys")/\(player3)/\(tourneyId)/": team_2_player_1 == uid ? 0 : 1, "/\("user_tourneys")/\(player4)/\(tourneyId)/": team_2_player_2 == uid ? 0 : 1, "/\("tourneys")/\(tourneyId)/\("yet_to_view")/": yetToView] as [String : Any]
         notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -107,6 +107,134 @@ class Match2: NSObject {
             return 0
         } else {
             return 1
+        }
+    }
+    
+    func checkScoresValiditySingle(game1UserScore: String, game1OppScore: String) -> Int {
+        var team1Score = Int()
+        var team2Score = Int()
+        if game1UserScore == "" || game1OppScore == "" {
+            return 1
+        } else {
+            team1Score = Int(game1UserScore)!
+            team2Score = Int(game1OppScore)!
+        }
+        
+        if (team1Score < 11 && team2Score < 11) {
+            return 2
+        } else if (abs(team1Score - team2Score) < 2) {
+            return 3
+        } else {
+            let gameWinner = winChecker(user: team1Score, opp: team2Score)
+            
+            if gameWinner == 0 {
+                winner = 1
+                team1_scores = [team1Score, 0, 0, 0, 0]
+                team2_scores = [team2Score, 0, 0, 0, 0]
+                return 0
+            } else if gameWinner == 1 {
+                winner = 2
+                team1_scores = [team1Score, 0, 0, 0, 0]
+                team2_scores = [team2Score, 0, 0, 0, 0]
+                return 0
+            } else {
+                return 10
+            }
+        }
+    }
+    
+    func checkScoresValidityThree(game1UserScore: String, game1OppScore: String, game2UserScore: String, game2OppScore: String, game3UserScore: String, game3OppScore: String) -> Int {
+        var team1Wins = 0
+        var team2Wins = 0
+        var finalTeam1Scores = [Int]()
+        var finalTeam2Scores = [Int]()
+        var gameWinners = [Int]()
+        if game1UserScore == "" || game1OppScore == "" || game2UserScore == "" || game2OppScore == "" {
+            return 1
+        } else {
+            finalTeam1Scores.append(Int(game1UserScore)!)
+            finalTeam2Scores.append(Int(game1OppScore)!)
+            finalTeam1Scores.append(Int(game2UserScore)!)
+            finalTeam2Scores.append(Int(game2OppScore)!)
+        }
+        
+        if (finalTeam1Scores[0] < 11 && finalTeam2Scores[0] < 11) || (finalTeam1Scores[1] < 11 && finalTeam2Scores[1] < 11) {
+            return 2
+        } else if (abs(finalTeam1Scores[0] - finalTeam2Scores[0]) < 2) || (abs(finalTeam1Scores[1] - finalTeam2Scores[1]) < 2) {
+            return 3
+        } else {
+            for index in 0...1 {
+                gameWinners.append(winChecker(user: finalTeam1Scores[index], opp: finalTeam2Scores[index]))
+                if gameWinners[index] == 0 {
+                    team1Wins += 1
+                } else {
+                    team2Wins += 1
+                }
+            }
+            if team1Wins == 2 {
+                winner = 1
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                team1_scores = finalTeam1Scores
+                team2_scores = finalTeam2Scores
+                return 0
+            } else if team2Wins == 2 {
+                winner = 2
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                team1_scores = finalTeam1Scores
+                team2_scores = finalTeam2Scores
+                return 0
+            }
+        }
+        
+        if game3UserScore == "" || game3OppScore == "" {
+            return 6
+        } else {
+            finalTeam1Scores.append(Int(game3UserScore)!)
+            finalTeam2Scores.append(Int(game3OppScore)!)
+        }
+        
+        if finalTeam1Scores[2] < 11 && finalTeam2Scores[2] < 11 {
+            return 2
+        } else if abs(finalTeam1Scores[2] - finalTeam2Scores[2]) < 2 {
+            return 3
+        } else {
+            gameWinners.append(winChecker(user: finalTeam1Scores[2], opp: finalTeam2Scores[2]))
+            if gameWinners[3] == 0 {
+                team1Wins += 1
+            } else {
+                team2Wins += 1
+            }
+            
+            if team1Wins == 2 {
+                winner = 1
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                team1_scores = finalTeam1Scores
+                team2_scores = finalTeam2Scores
+                return 0
+            } else if team2Wins == 2 {
+                winner = 2
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                finalTeam1Scores.append(0)
+                finalTeam2Scores.append(0)
+                team1_scores = finalTeam1Scores
+                team2_scores = finalTeam2Scores
+                return 0
+            }
+            return 10
         }
     }
     
@@ -226,7 +354,7 @@ class Match2: NSObject {
                 team2_scores = finalTeam2Scores
                 return 0
             } else {
-                return -1
+                return 10
             }
         }
     }

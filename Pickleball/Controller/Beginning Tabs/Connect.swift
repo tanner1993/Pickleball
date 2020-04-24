@@ -46,6 +46,13 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
+    
+    override func viewDidAppear(_ animated: Bool) {
+        if let tabItems = self.tabBarController?.tabBar.items {
+            let tabItem = tabItems[3]
+            tabItem.badgeValue = .none
+        }
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -145,6 +152,11 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             guard let recipientId = messages[indexPath.item].chatPartnerId() else {
                 return
             }
+            if messages[indexPath.item].seen == false {
+            Database.database().reference().child("user_messages").child(messages[indexPath.item].toId!).child(messages[indexPath.item].fromId!).child(messages[indexPath.item].id!).setValue(0, andPriority: .none)
+                messages[indexPath.item].seen = true
+                collectionView.reloadData()
+            }
             presentChatLogs(recipientId: recipientId)
         }
     }
@@ -176,9 +188,9 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             ref2.observe(.childAdded, with: { (snapshot) in
                 let messageId = snapshot.key
                 let messageSeen = snapshot.value! as! Int
-                if messageSeen == 1 {
-                    Database.database().reference().child("user_messages").child(uid).child(recipientId).child(messageId).setValue(0, andPriority: .none)
-                }
+//                if messageSeen == 1 {
+//                    Database.database().reference().child("user_messages").child(uid).child(recipientId).child(messageId).setValue(0, andPriority: .none)
+//                }
                 let messagesReference = Database.database().reference().child("messages").child(messageId)
                 messagesReference.observeSingleEvent(of: .value, with: {(snapshot) in
                     if let value = snapshot.value as? NSDictionary {
@@ -192,6 +204,9 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                         message.toId = toId
                         message.fromId = fromId
                         message.id = messageId
+                        if messageSeen == 1 {
+                            message.seen = false
+                        }
                         for (index, element) in self.messages.enumerated() {
                             if (element.toId == message.toId && element.fromId == message.fromId) || (element.toId == message.fromId && element.fromId == message.toId) {
                                 self.messages[index] = message
@@ -211,10 +226,6 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                 }, withCancel: nil)
             }, withCancel: nil)
         }, withCancel: nil)
-        if let tabItems = self.tabBarController?.tabBar.items {
-            let tabItem = tabItems[3]
-            tabItem.badgeValue = .none
-        }
     }
 
 }
@@ -223,6 +234,11 @@ class RecentMessagesCell: BaseCell {
     
     var message: Message? {
         didSet {
+            if message?.seen == false {
+                notifBadge.isHidden = false
+            } else {
+                notifBadge.isHidden = true
+            }
             recentMessage.text = message?.message
             let chatPartnerId = message?.chatPartnerId()
             var chatPartnerName = "nothing"
@@ -296,6 +312,19 @@ class RecentMessagesCell: BaseCell {
         }
     }
     
+    let notifBadge: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.layer.cornerRadius = 13
+        label.layer.masksToBounds = true
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+    
     let playerName: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -366,12 +395,18 @@ class RecentMessagesCell: BaseCell {
         recentMessage.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
         recentMessage.leftAnchor.constraint(equalTo: playerHaloLevel.rightAnchor, constant: 6).isActive = true
         recentMessage.heightAnchor.constraint(equalToConstant: 25).isActive = true
-        recentMessage.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        recentMessage.rightAnchor.constraint(equalTo: rightAnchor, constant: -31).isActive = true
         
         addSubview(separatorView)
         separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         separatorView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
         separatorView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        
+        addSubview(notifBadge)
+        notifBadge.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 5).isActive = true
+        notifBadge.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
+        notifBadge.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        notifBadge.widthAnchor.constraint(equalToConstant: 26).isActive = true
     }
 }

@@ -22,6 +22,7 @@ extension UIDevice {
 class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     
     var recipientName = "nobody"
+    var recipientDevice = "none"
     var recipientId = "none"
     var messages = [Message]()
     
@@ -95,6 +96,7 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         let recipientNameRef = Database.database().reference().child("users").child(recipientId)
         recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
+                self.recipientDevice = value["deviceId"] as? String ?? "none"
                 self.recipientName = value["username"] as? String ?? "noname"
                 let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
                 titleLabel.textColor = .white
@@ -144,7 +146,7 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        let ref = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 40)
+        let ref = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 15)
         ref.observe(.childAdded, with: { (snapshot) in
             let messageId = snapshot.key
                 let messagesReference = Database.database().reference().child("messages").child(messageId)
@@ -161,7 +163,7 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                         message.fromId = fromId
                         message.id = messageId
                         self.messages.append(message)
-                        if self.messages.count > 40 {
+                        if self.messages.count > 15 {
                             self.deleteOldestMessage()
                         }
                         DispatchQueue.main.async { self.collectionView.reloadData()
@@ -226,6 +228,14 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                 }
                 
                 print("Crazy data 2 saved!")
+                Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let nameOnInvite = value as? String ?? "none"
+                        let pusher = PushNotificationHandler()
+                        pusher.setupPushNotification(deviceId: self.recipientDevice, message: message, title: "\(nameOnInvite)")
+                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                    }
+                })
                 
                 
             })

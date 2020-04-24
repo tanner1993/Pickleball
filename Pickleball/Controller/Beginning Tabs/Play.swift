@@ -11,6 +11,9 @@ import Firebase
 
 class Play: UIViewController {
     
+    var matchNotif = false
+    var tourneyNotif = false
+    
     var matchIds = [String]()
 
     override func viewDidLoad() {
@@ -18,6 +21,47 @@ class Play: UIViewController {
         
         setupNavbarTitle()
         setupViews()
+        setupNotifBubbles()
+    }
+    
+    let notifBadge1: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.layer.cornerRadius = 13
+        label.layer.masksToBounds = true
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let notifBadge2: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.layer.cornerRadius = 13
+        label.layer.masksToBounds = true
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+    
+    func setupNotifBubbles() {
+        if let tabItems = self.tabBarController?.tabBar.items {
+            let tabItem = tabItems[1]
+            if tabItem.badgeValue == "T" {
+                notifBadge1.isHidden = false
+            } else if tabItem.badgeValue == "M" {
+                notifBadge2.isHidden = false
+            } else if tabItem.badgeValue == "2" {
+                notifBadge1.isHidden = false
+                notifBadge2.isHidden = false
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -62,6 +106,19 @@ class Play: UIViewController {
         let tourneyMy = TourneyList()
         tourneyMy.hidesBottomBarWhenPushed = true
         tourneyMy.sender = 0
+        if let tabItems = self.tabBarController?.tabBar.items {
+            let tabItem = tabItems[1]
+            if tabItem.badgeValue == "T" {
+                notifBadge1.isHidden = true
+                tabItem.badgeValue = .none
+            } else if tabItem.badgeValue == "M" {
+                notifBadge2.isHidden = false
+            } else if tabItem.badgeValue == "2" {
+                tabItem.badgeValue = "M"
+                notifBadge1.isHidden = true
+                notifBadge2.isHidden = false
+            }
+        }
         navigationController?.pushViewController(tourneyMy, animated: true)
     }
     
@@ -91,6 +148,19 @@ class Play: UIViewController {
         let matchesMy = MatchFeed()
         matchesMy.hidesBottomBarWhenPushed = true
         matchesMy.sender = 1
+        if let tabItems = self.tabBarController?.tabBar.items {
+            let tabItem = tabItems[1]
+            if tabItem.badgeValue == "T" {
+                notifBadge1.isHidden = false
+            } else if tabItem.badgeValue == "M" {
+                tabItem.badgeValue = .none
+                notifBadge2.isHidden = true
+            } else if tabItem.badgeValue == "2" {
+                notifBadge1.isHidden = false
+                notifBadge2.isHidden = true
+                tabItem.badgeValue = "T"
+            }
+        }
         matchesMy.matchIds = matchIds.reversed()
         navigationController?.pushViewController(matchesMy, animated: true)
     }
@@ -103,6 +173,12 @@ class Play: UIViewController {
         tourneyPlayLabel.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         tourneyPlayLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor).isActive = true
         
+        view.addSubview(notifBadge1)
+        notifBadge1.widthAnchor.constraint(equalToConstant: 26).isActive = true
+        notifBadge1.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5).isActive = true
+        notifBadge1.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -5).isActive = true
+        notifBadge1.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        
 //        view.addSubview(tourneySymbol)
 //        tourneySymbol.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
 //        tourneySymbol.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5).isActive = true
@@ -114,6 +190,12 @@ class Play: UIViewController {
         matchPlayLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor).isActive = true
         matchPlayLabel.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         matchPlayLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        
+        view.addSubview(notifBadge2)
+        notifBadge2.widthAnchor.constraint(equalToConstant: 26).isActive = true
+        notifBadge2.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor, constant: 5).isActive = true
+        notifBadge2.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -5).isActive = true
+        notifBadge2.heightAnchor.constraint(equalToConstant: 26).isActive = true
     }
 
 }

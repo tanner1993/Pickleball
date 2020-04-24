@@ -683,7 +683,7 @@ class TeamInfoDisplay: UIViewController {
             
                 
                 let notificationsRef = Database.database().reference()
-            let childUpdates = ["/\("tourney_notifications")/\(team_1_player_1)/\(self.tourneyId)/": team_1_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_1_player_2)/\(self.tourneyId)/": team_1_player_2 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_1)/\(self.tourneyId)/": team_2_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_2)/\(self.tourneyId)/": team_2_player_2 == uid ? 0 : 1, "/\("tourneys")/\(self.tourneyId)/\("cant_challenge")/": self.tourneyCantChallenge, "/\("tourneys")/\(self.tourneyId)/\("yet_to_view")/": self.tourneyYetToViewMatch] as [String : Any]
+            let childUpdates = ["/\("user_tourneys")/\(team_1_player_1)/\(self.tourneyId)/": team_1_player_1 == uid ? 0 : 1, "/\("user_tourneys")/\(team_1_player_2)/\(self.tourneyId)/": team_1_player_2 == uid ? 0 : 1, "/\("user_tourneys")/\(team_2_player_1)/\(self.tourneyId)/": team_2_player_1 == uid ? 0 : 1, "/\("user_tourneys")/\(team_2_player_2)/\(self.tourneyId)/": team_2_player_2 == uid ? 0 : 1, "/\("tourneys")/\(self.tourneyId)/\("cant_challenge")/": self.tourneyCantChallenge, "/\("tourneys")/\(self.tourneyId)/\("yet_to_view")/": self.tourneyYetToViewMatch] as [String : Any]
                 notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                     (error:Error?, ref:DatabaseReference) in
                     

@@ -49,7 +49,6 @@ class FeedMatchCell: UITableViewCell {
     
     var match = Match2() {
         didSet {
-            let player = Player()
 //            let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
 //            player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
 //                if let value = snapshot.value as? [String: AnyObject] {
@@ -157,7 +156,10 @@ class FeedMatchCell: UITableViewCell {
                 tourneySymbol2.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(tourneyLoc2.X)).isActive = true
                 tourneySymbol2.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.H)).isActive = true
                 tourneySymbol2.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.W)).isActive = true
-                }
+            } else {
+                tourneySymbol.isHidden = true
+                tourneySymbol2.isHidden = true
+            }
             if match.active != 0 {
                 match1Label.text = "\(match.team1_scores?[0] ?? -1)"
                 match2Label.text = "\(match.team1_scores?[1] ?? -1)"
@@ -181,31 +183,157 @@ class FeedMatchCell: UITableViewCell {
                 match4Label2.text = ""
                 match5Label2.text = ""
             }
-//            guard let startTime = match.time else {
-//                return
-//            }
-//            if match.active == 3 {
-//                timeLeftLabel.text = "FIN"
-//            } else {
-//                if match.active == 0 && (startTime + 86400) < Date().timeIntervalSince1970 {
-//                    timeLeftLabel.text = "match\nexp"
-//                } else if (startTime + (86400 * 3)) < Date().timeIntervalSince1970 {
-//                    timeLeftLabel.text = "match\nexp"
-//                } else {
-//                    var hoursLeft: Double = 0
-//                    if match.active == 0 {
-//                        hoursLeft = ((startTime + 86400) - Date().timeIntervalSince1970) / 3600
-//                    } else {
-//                        hoursLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 3600
-//                    }
-//                    let hoursRounded = hoursLeft.round(nearest: 1)
-//                    if hoursRounded == 0 {
-//                        timeLeftLabel.text = "<0.5\ndays\nleft"
-//                    } else {
-//                        timeLeftLabel.text = "\(hoursRounded)\nhours\nleft"
-//                    }
-//                }
-//            }
+            if match.doubles != true {
+                challenger1BottomAnchor?.isActive = false
+                challenger1BottomAnchor = challengerTeam1.bottomAnchor.constraint(equalTo: challengerPlaceholder.bottomAnchor)
+                challenger1BottomAnchor?.constant = -5
+                challenger1BottomAnchor?.isActive = true
+                challenged1BottomAnchor?.isActive = false
+                challenged1BottomAnchor = challengedTeam1.bottomAnchor.constraint(equalTo: challengedPlaceholder.bottomAnchor)
+                challenged1BottomAnchor?.constant = -5
+                challenged1BottomAnchor?.isActive = true
+                
+                appLevel1Anchor?.isActive = false
+                appLevel1Anchor = appLevel.centerYAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor)
+                appLevel1Anchor?.isActive = true
+                appLevel3Anchor?.isActive = false
+                appLevel3Anchor = appLevel3.centerYAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor)
+                appLevel3Anchor?.isActive = true
+            } else {
+                challenger1BottomAnchor?.isActive = false
+                challenger1BottomAnchor = challengerTeam1.bottomAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor)
+                challenger1BottomAnchor?.constant = 0
+                challenger1BottomAnchor?.isActive = true
+                challenged1BottomAnchor?.isActive = false
+                challenged1BottomAnchor = challengedTeam1.bottomAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor)
+                challenged1BottomAnchor?.constant = 0
+                challenged1BottomAnchor?.isActive = true
+                
+                appLevel1Anchor?.isActive = false
+                appLevel1Anchor = appLevel.topAnchor.constraint(equalTo: challengerPlaceholder.topAnchor)
+                appLevel1Anchor?.isActive = true
+                appLevel3Anchor?.isActive = false
+                appLevel3Anchor = appLevel3.topAnchor.constraint(equalTo: challengedPlaceholder.topAnchor)
+                appLevel3Anchor?.isActive = true
+            }
+            if match.style == 0 {
+                match2Placeholder.isHidden = true
+                match3Placeholder.isHidden = true
+                match4Placeholder.isHidden = true
+                match5Placeholder.isHidden = true
+                match2Label.isHidden = true
+                match2Label2.isHidden = true
+                match3Label.isHidden = true
+                match3Label2.isHidden = true
+                match4Label.isHidden = true
+                match4Label2.isHidden = true
+                match5Label.isHidden = true
+                match5Label2.isHidden = true
+            } else if match.style == 1 {
+                match2Placeholder.isHidden = false
+                match3Placeholder.isHidden = false
+                match4Placeholder.isHidden = true
+                match5Placeholder.isHidden = true
+                match2Label.isHidden = false
+                match2Label2.isHidden = false
+                match3Label.isHidden = false
+                match3Label2.isHidden = false
+                match4Label.isHidden = true
+                match4Label2.isHidden = true
+                match5Label.isHidden = true
+                match5Label2.isHidden = true
+            } else {
+                match2Placeholder.isHidden = false
+                match3Placeholder.isHidden = false
+                match4Placeholder.isHidden = false
+                match5Placeholder.isHidden = false
+                match2Label.isHidden = false
+                match2Label2.isHidden = false
+                match3Label.isHidden = false
+                match3Label2.isHidden = false
+                match4Label.isHidden = false
+                match4Label2.isHidden = false
+                match5Label.isHidden = false
+                match5Label2.isHidden = false
+            }
+            
+            let active = match.active
+            let submitter = match.submitter
+            
+            if match.doubles == true {
+                if active == 0 {
+                    let confirmers = match.team1_scores!
+                    confirmCheck1.isHidden = false
+                    if confirmers[1] == 1 {
+                        confirmCheck2.isHidden = false
+                    } else {
+                        confirmCheck2.isHidden = true
+                    }
+                    if confirmers[2] == 1 {
+                        confirmCheck3.isHidden = false
+                    } else {
+                        confirmCheck3.isHidden = true
+                    }
+                    if confirmers[3] == 1 {
+                        confirmCheck4.isHidden = false
+                    } else {
+                        confirmCheck4.isHidden = true
+                    }
+                    
+                } else if active == 1 {
+                    confirmCheck1.isHidden = true
+                    confirmCheck2.isHidden = true
+                    confirmCheck3.isHidden = true
+                    confirmCheck4.isHidden = true
+                } else if active == 2 {
+                    if submitter == 1 {
+                        confirmCheck1.isHidden = false
+                        confirmCheck2.isHidden = false
+                        confirmCheck3.isHidden = true
+                        confirmCheck4.isHidden = true
+                    } else {
+                        confirmCheck3.isHidden = false
+                        confirmCheck4.isHidden = false
+                        confirmCheck1.isHidden = true
+                        confirmCheck2.isHidden = true
+                    }
+                    
+                } else {
+                    confirmCheck1.isHidden = true
+                    confirmCheck2.isHidden = true
+                    confirmCheck3.isHidden = true
+                    confirmCheck4.isHidden = true
+                }
+            } else {
+                confirmCheck2.isHidden = true
+                confirmCheck4.isHidden = true
+                if active == 0 {
+                    let confirmers = match.team1_scores!
+                    confirmCheck1.isHidden = false
+                    if confirmers[2] == 1 {
+                        confirmCheck3.isHidden = false
+                    } else {
+                        confirmCheck3.isHidden = true
+                    }
+                    
+                } else if active == 1 {
+                    confirmCheck1.isHidden = true
+                    confirmCheck3.isHidden = true
+                } else if active == 2 {
+                    if submitter == 1 {
+                        confirmCheck1.isHidden = false
+                        confirmCheck3.isHidden = true
+                    } else {
+                        confirmCheck3.isHidden = false
+                        confirmCheck1.isHidden = true
+                    }
+                    
+                } else {
+                    confirmCheck1.isHidden = true
+                    confirmCheck3.isHidden = true
+                }
+            }
+
         }
     }
     
@@ -406,39 +534,6 @@ class FeedMatchCell: UITableViewCell {
         return button
     }()
     
-    let team11: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .left
-        return label
-    }()
-    let team12: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .left
-        return label
-    }()
-    let team21: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .left
-        return label
-    }()
-    let team22: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .left
-        return label
-    }()
-    
     let match1Label: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -572,6 +667,11 @@ class FeedMatchCell: UITableViewCell {
         return image
     }()
     
+    var challenger1BottomAnchor: NSLayoutConstraint?
+    var challenged1BottomAnchor: NSLayoutConstraint?
+    var appLevel1Anchor: NSLayoutConstraint?
+    var appLevel3Anchor: NSLayoutConstraint?
+    
     func setupViews() {
         let screenSize = UIScreen.main.bounds
         let screenWidth = screenSize.width
@@ -615,7 +715,8 @@ class FeedMatchCell: UITableViewCell {
         challengedPlaceholder.widthAnchor.constraint(equalToConstant: CGFloat(challengedPlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(appLevel)
-        appLevel.topAnchor.constraint(equalTo: challengerPlaceholder.topAnchor).isActive = true
+        appLevel1Anchor = appLevel.topAnchor.constraint(equalTo: challengerPlaceholder.topAnchor)
+        appLevel1Anchor?.isActive = true
         appLevel.rightAnchor.constraint(equalTo: challengerPlaceholder.rightAnchor, constant: -10).isActive = true
         appLevel.heightAnchor.constraint(equalTo: challengerPlaceholder.heightAnchor, multiplier: 1/2).isActive = true
         appLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
@@ -627,7 +728,8 @@ class FeedMatchCell: UITableViewCell {
         appLevel2.widthAnchor.constraint(equalToConstant: 40).isActive = true
         
         whiteBox.addSubview(appLevel3)
-        appLevel3.topAnchor.constraint(equalTo: challengedPlaceholder.topAnchor).isActive = true
+        appLevel3Anchor = appLevel3.topAnchor.constraint(equalTo: challengedPlaceholder.topAnchor)
+        appLevel3Anchor?.isActive = true
         appLevel3.rightAnchor.constraint(equalTo: challengedPlaceholder.rightAnchor, constant: -10).isActive = true
         appLevel3.heightAnchor.constraint(equalTo: challengedPlaceholder.heightAnchor, multiplier: 1/2).isActive = true
         appLevel3.widthAnchor.constraint(equalToConstant: 40).isActive = true
@@ -652,10 +754,6 @@ class FeedMatchCell: UITableViewCell {
         whiteBox.addSubview(challengedTeam1)
         whiteBox.addSubview(challengerTeam2)
         whiteBox.addSubview(challengedTeam2)
-        whiteBox.addSubview(team11)
-        whiteBox.addSubview(team12)
-        whiteBox.addSubview(team21)
-        whiteBox.addSubview(team22)
         whiteBox.addSubview(match1Label)
         whiteBox.addSubview(match2Label)
         whiteBox.addSubview(match3Label)
@@ -683,30 +781,11 @@ class FeedMatchCell: UITableViewCell {
         teamRank2.heightAnchor.constraint(equalToConstant: CGFloat(teamRankLoc2.H)).isActive = true
         teamRank2.widthAnchor.constraint(equalToConstant: CGFloat(teamRankLoc2.W)).isActive = true
         
-        team11.topAnchor.constraint(equalTo: challengerPlaceholder.topAnchor, constant: 5).isActive = true
-        team11.leftAnchor.constraint(equalTo: teamRank1.rightAnchor).isActive = true
-        team11.rightAnchor.constraint(equalTo: challengerPlaceholder.rightAnchor).isActive = true
-        team11.bottomAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor).isActive = true
-        
-        team12.topAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor).isActive = true
-        team12.leftAnchor.constraint(equalTo: teamRank1.rightAnchor).isActive = true
-        team12.rightAnchor.constraint(equalTo: challengerPlaceholder.rightAnchor).isActive = true
-        team12.bottomAnchor.constraint(equalTo: challengerPlaceholder.bottomAnchor, constant: -5).isActive = true
-        
-        team21.topAnchor.constraint(equalTo: challengedPlaceholder.topAnchor, constant: 5).isActive = true
-        team21.leftAnchor.constraint(equalTo: teamRank2.rightAnchor).isActive = true
-        team21.rightAnchor.constraint(equalTo: challengedPlaceholder.rightAnchor).isActive = true
-        team21.bottomAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor).isActive = true
-        
-        team22.topAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor).isActive = true
-        team22.leftAnchor.constraint(equalTo: teamRank2.rightAnchor).isActive = true
-        team22.rightAnchor.constraint(equalTo: challengedPlaceholder.rightAnchor).isActive = true
-        team22.bottomAnchor.constraint(equalTo: challengedPlaceholder.bottomAnchor, constant: -5).isActive = true
-        
         challengerTeam1.topAnchor.constraint(equalTo: challengerPlaceholder.topAnchor, constant: 5).isActive = true
         challengerTeam1.leftAnchor.constraint(equalTo: teamRank1.rightAnchor).isActive = true
         challengerTeam1.rightAnchor.constraint(equalTo: challengerPlaceholder.rightAnchor).isActive = true
-        challengerTeam1.bottomAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor).isActive = true
+        challenger1BottomAnchor = challengerTeam1.bottomAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor)
+        challenger1BottomAnchor?.isActive = true
         
         challengerTeam2.topAnchor.constraint(equalTo: challengerPlaceholder.centerYAnchor).isActive = true
         challengerTeam2.leftAnchor.constraint(equalTo: teamRank1.rightAnchor).isActive = true
@@ -716,7 +795,8 @@ class FeedMatchCell: UITableViewCell {
         challengedTeam1.topAnchor.constraint(equalTo: challengedPlaceholder.topAnchor, constant: 5).isActive = true
         challengedTeam1.leftAnchor.constraint(equalTo: teamRank2.rightAnchor).isActive = true
         challengedTeam1.rightAnchor.constraint(equalTo: challengedPlaceholder.rightAnchor).isActive = true
-        challengedTeam1.bottomAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor).isActive = true
+        challenged1BottomAnchor = challengedTeam1.bottomAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor)
+        challenged1BottomAnchor?.isActive = true
         
         challengedTeam2.topAnchor.constraint(equalTo: challengedPlaceholder.centerYAnchor).isActive = true
         challengedTeam2.leftAnchor.constraint(equalTo: teamRank2.rightAnchor).isActive = true
@@ -807,6 +887,31 @@ class FeedMatchCell: UITableViewCell {
         match5Label2.rightAnchor.constraint(equalTo: match5Placeholder.rightAnchor, constant: -2).isActive = true
         match5Label2.leftAnchor.constraint(equalTo: match5Placeholder.centerXAnchor, constant: 1).isActive = true
         match5Label2.bottomAnchor.constraint(equalTo: match5Placeholder.bottomAnchor).isActive = true
+        
+        whiteBox.addSubview(confirmCheck1)
+        let confirmCheck1Loc = calculateButtonPosition(x: 90, y: 92, w: 50, h: 70, wib: 750, hib: 400, wia: width, hia: height)
+        confirmCheck1.centerYAnchor.constraint(equalTo: challengerTeam1.centerYAnchor).isActive = true
+        confirmCheck1.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
+        confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
+        confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
+        
+        whiteBox.addSubview(confirmCheck2)
+        confirmCheck2.centerYAnchor.constraint(equalTo: challengerTeam2.centerYAnchor).isActive = true
+        confirmCheck2.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
+        confirmCheck2.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
+        confirmCheck2.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
+        
+        whiteBox.addSubview(confirmCheck3)
+        confirmCheck3.centerYAnchor.constraint(equalTo: challengedTeam1.centerYAnchor).isActive = true
+        confirmCheck3.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
+        confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
+        confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
+        
+        whiteBox.addSubview(confirmCheck4)
+        confirmCheck4.centerYAnchor.constraint(equalTo: challengedTeam2.centerYAnchor).isActive = true
+        confirmCheck4.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
+        confirmCheck4.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
+        confirmCheck4.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
         
         whiteBox.addSubview(separatorView)
         separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true

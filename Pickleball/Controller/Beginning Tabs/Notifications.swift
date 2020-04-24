@@ -43,12 +43,9 @@ class Notifications: UITableViewController {
     }
     
     func setupNavbarAndTitle() {
-        //let plusImage = UIImage(named: "plus")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
-        let createNewMatchButton = UIBarButtonItem(title: "Create Match", style: .plain, target: self, action: #selector(handleCreateNewMatch))
-        self.navigationItem.rightBarButtonItem = createNewMatchButton
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        titleLabel.text = "Events"
+        titleLabel.text = "Notifications"
         titleLabel.textColor = .white
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
@@ -80,6 +77,13 @@ class Notifications: UITableViewController {
         if notifications.count == 0 {
             noNotifications = 1
             tableView.reloadData()
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        if let tabItems = self.tabBarController?.tabBar.items {
+            let tabItem = tabItems[4]
+            tabItem.badgeValue = .none
         }
     }
     
@@ -119,10 +123,6 @@ class Notifications: UITableViewController {
                 }
             }, withCancel: nil)
         }, withCancel: nil)
-        if let tabItems = self.tabBarController?.tabBar.items {
-            let tabItem = tabItems[4]
-            tabItem.badgeValue = .none
-        }
     }
     
     func setupCollectionView() {
@@ -277,11 +277,11 @@ class Notifications: UITableViewController {
             return
         }
         let notificationId = notifications[sender.tag].id!
-        Database.database().reference().child("notifications").child(notificationId).removeValue()
-        Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
         notifications.remove(at: sender.tag)
         self.noNotifications = 1
         tableView.reloadData()
+        Database.database().reference().child("notifications").child(notificationId).removeValue()
+        Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -369,7 +369,7 @@ class Notifications: UITableViewController {
                 return
             }
         
-            Database.database().reference().child("user_tourneys").child(uid).child(tourneyId).setValue(1)
+            Database.database().reference().child("user_tourneys").child(uid).child(tourneyId).setValue(0)
             Database.database().reference().child("user_tourneys").child(fromId).child(tourneyId).setValue(1)
             
             Database.database().reference().child("notifications").child(notificationId).removeValue()

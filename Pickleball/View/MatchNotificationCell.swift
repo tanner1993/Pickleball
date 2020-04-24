@@ -32,7 +32,7 @@ class MatchNotificationCell: UITableViewCell {
             recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
                     let fromName = value["username"] as? String ?? "noname"
-                    self.matchTitleText.text = "Match: \(self.matchInvite?.toId ?? "none")"
+                    self.matchTitleText.text = "\(fromName) rejected the match you invited them to"
                     if let seconds = self.matchInvite?.timeStamp {
                         
                         let dateTime = Date(timeIntervalSince1970: seconds)
@@ -105,11 +105,9 @@ class MatchNotificationCell: UITableViewCell {
     
     let viewButton: UIButton = {
         let button = UIButton(type: .system)
-        button.backgroundColor = UIColor(r: 56, g: 12, b: 200)
         button.setTitle("View Match", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 5
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 15)
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
@@ -119,8 +117,9 @@ class MatchNotificationCell: UITableViewCell {
         let label = UILabel()
         label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 18)
+        label.numberOfLines = 2
+        label.textColor = .black
         label.textAlignment = .center
         return label
     }()
@@ -185,11 +184,11 @@ class MatchNotificationCell: UITableViewCell {
 //        playerInitials.heightAnchor.constraint(equalToConstant: 50).isActive = true
 //        playerInitials.widthAnchor.constraint(equalToConstant: 50).isActive = true
         
-        addSubview(matchInfoText)
-        matchInfoText.topAnchor.constraint(equalTo: matchTitleText.bottomAnchor, constant: 0).isActive = true
-        matchInfoText.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        matchInfoText.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        matchInfoText.widthAnchor.constraint(equalToConstant: frame.width - 10).isActive = true
+        addSubview(viewButton)
+        viewButton.topAnchor.constraint(equalTo: matchTitleText.bottomAnchor, constant: 0).isActive = true
+        viewButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        viewButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        viewButton.widthAnchor.constraint(equalToConstant: frame.width - 10).isActive = true
         
         addSubview(separatorView)
         separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true

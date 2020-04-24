@@ -233,7 +233,6 @@ class MatchView: UIViewController {
     func handleRejectConfirmed(action: UIAlertAction) {
         if tourneyId == "none" {
             performRejectActive0(whichOne: rejectIndex)
-            dismiss(animated: true, completion: nil)
         } else {
             performRejectActive0Tourney()
         }
@@ -630,6 +629,7 @@ class MatchView: UIViewController {
 
     let userPlayer1: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Teammate 1"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
@@ -659,6 +659,7 @@ class MatchView: UIViewController {
     
     let userPlayer2: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Teammate 1"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
@@ -688,6 +689,7 @@ class MatchView: UIViewController {
     
     let oppPlayer1: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Teammate 1"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
@@ -717,6 +719,7 @@ class MatchView: UIViewController {
     
     let oppPlayer2: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Teammate 1"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
@@ -936,6 +939,37 @@ class MatchView: UIViewController {
         return view
     }()
     
+    let whiteCover2: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let whiteCover3: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let matchDeleted: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Match has been erased"
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let matchStyleLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
     func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
         let X = x / wib * wia
         let Y = y / hib * hia
@@ -976,6 +1010,20 @@ class MatchView: UIViewController {
         confirmCheck3.isHidden = true
         confirmCheck4.isHidden = true
         
+        let matchStyleLabelLoc = calculateButtonPosition(x: 375, y: 592, w: 430, h: 84, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+        view.addSubview(matchStyleLabel)
+        matchStyleLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(matchStyleLabelLoc.Y)).isActive = true
+        matchStyleLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(matchStyleLabelLoc.X)).isActive = true
+        matchStyleLabel.heightAnchor.constraint(equalToConstant: CGFloat(matchStyleLabelLoc.H)).isActive = true
+        matchStyleLabel.widthAnchor.constraint(equalToConstant: CGFloat(matchStyleLabelLoc.W)).isActive = true
+        if match.style == 0 {
+            matchStyleLabel.text = "Single Match"
+        } else if match.style == 1 {
+            matchStyleLabel.text = "Best 2 out of 3"
+        } else {
+            matchStyleLabel.text = "Best 3 out of 5"
+        }
+        
         let whiteCoverLoc = calculateButtonPosition(x: 479.5, y: 832, w: 275, h: 331, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
         view.addSubview(whiteCover)
         whiteCover.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(whiteCoverLoc.Y)).isActive = true
@@ -983,20 +1031,83 @@ class MatchView: UIViewController {
         whiteCover.heightAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc.H)).isActive = true
         whiteCover.widthAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc.W)).isActive = true
         
-        let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 77, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
-        view.addSubview(confirmCheck1)
-        confirmCheck1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck1Loc.Y)).isActive = true
-        confirmCheck1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
-        confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
-        confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
+        if match.style == 0 {
+            let whiteCoverLoc2 = calculateButtonPosition(x: 375, y: 865, w: 487, h: 275, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            view.addSubview(whiteCover2)
+            whiteCover2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(whiteCoverLoc2.Y)).isActive = true
+            whiteCover2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(whiteCoverLoc2.X)).isActive = true
+            whiteCover2.heightAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.H)).isActive = true
+            whiteCover2.widthAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.W)).isActive = true
+        } else if match.style == 1 {
+            let whiteCoverLoc2 = calculateButtonPosition(x: 375, y: 935, w: 487, h: 150, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            view.addSubview(whiteCover2)
+            whiteCover2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(whiteCoverLoc2.Y)).isActive = true
+            whiteCover2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(whiteCoverLoc2.X)).isActive = true
+            whiteCover2.heightAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.H)).isActive = true
+            whiteCover2.widthAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.W)).isActive = true
+        }
         
         if match.doubles == true {
+            
+            let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 75, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            view.addSubview(userPlayer1)
+            userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+            userPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer1Loc.X)).isActive = true
+            userPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+            userPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.W)).isActive = true
+            
+            view.addSubview(userPlayer1Skill)
+            userPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+            userPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+            userPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+            userPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+            
+            view.addSubview(userPlayer1Level)
+            userPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+            userPlayer1Level.leftAnchor.constraint(equalTo: userPlayer1Skill.rightAnchor, constant: 40).isActive = true
+            userPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+            userPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+            
+            let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 381, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            
+            view.addSubview(oppPlayer1)
+            oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+            oppPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer1Loc.X)).isActive = true
+            oppPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+            oppPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.W)).isActive = true
+            
+            view.addSubview(oppPlayer1Skill)
+            oppPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+            oppPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+            oppPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+            oppPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+            
+            view.addSubview(oppPlayer1Level)
+            oppPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+            oppPlayer1Level.leftAnchor.constraint(equalTo: oppPlayer1Skill.rightAnchor, constant: 40).isActive = true
+            oppPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+            oppPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+            
+            let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 77, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            view.addSubview(confirmCheck1)
+            confirmCheck1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck1Loc.Y)).isActive = true
+            confirmCheck1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
+            confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
+            confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
+            
             let confirmCheck2Loc = calculateButtonPosition(x: 666, y: 163, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
             view.addSubview(confirmCheck2)
             confirmCheck2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck2Loc.Y)).isActive = true
             confirmCheck2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck2Loc.X)).isActive = true
             confirmCheck2.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck2Loc.H)).isActive = true
             confirmCheck2.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck2Loc.W)).isActive = true
+            
+            let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 383, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            view.addSubview(confirmCheck3)
+            confirmCheck3.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck3Loc.Y)).isActive = true
+            confirmCheck3.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck3Loc.X)).isActive = true
+            confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.H)).isActive = true
+            confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.W)).isActive = true
             
             let confirmCheck4Loc = calculateButtonPosition(x: 666, y: 469, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
             view.addSubview(confirmCheck4)
@@ -1044,54 +1155,68 @@ class MatchView: UIViewController {
             oppPlayer2Level.leftAnchor.constraint(equalTo: oppPlayer2Skill.rightAnchor, constant: 40).isActive = true
             oppPlayer2Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
             oppPlayer2Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+        } else {
+            
+            userPlayer1.font = UIFont(name: "HelveticaNeue-Light", size: 30)
+            oppPlayer1.font = UIFont(name: "HelveticaNeue-Light", size: 30)
+            userPlayer1Skill.font = UIFont(name: "HelveticaNeue", size: 30)
+            oppPlayer1Skill.font = UIFont(name: "HelveticaNeue", size: 30)
+            userPlayer1Level.font = UIFont(name: "HelveticaNeue", size: 30)
+            oppPlayer1Level.font = UIFont(name: "HelveticaNeue", size: 30)
+            
+            let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 122, w: 90, h: 90, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            view.addSubview(confirmCheck1)
+            confirmCheck1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck1Loc.Y)).isActive = true
+            confirmCheck1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
+            confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
+            confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
+            
+            let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 428, w: 90, h: 90, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            view.addSubview(confirmCheck3)
+            confirmCheck3.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck3Loc.Y)).isActive = true
+            confirmCheck3.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck3Loc.X)).isActive = true
+            confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.H)).isActive = true
+            confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.W)).isActive = true
+            
+            let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 120, w: 327, h: 160, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            view.addSubview(userPlayer1)
+            userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+            userPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer1Loc.X)).isActive = true
+            userPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+            userPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.W)).isActive = true
+            
+            view.addSubview(userPlayer1Skill)
+            userPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+            userPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+            userPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+            userPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+            
+            view.addSubview(userPlayer1Level)
+            userPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+            userPlayer1Level.leftAnchor.constraint(equalTo: userPlayer1Skill.rightAnchor, constant: 40).isActive = true
+            userPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+            userPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+            
+            let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 426, w: 327, h: 160, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
+            
+            view.addSubview(oppPlayer1)
+            oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+            oppPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer1Loc.X)).isActive = true
+            oppPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+            oppPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.W)).isActive = true
+            
+            view.addSubview(oppPlayer1Skill)
+            oppPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+            oppPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+            oppPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+            oppPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+            
+            view.addSubview(oppPlayer1Level)
+            oppPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+            oppPlayer1Level.leftAnchor.constraint(equalTo: oppPlayer1Skill.rightAnchor, constant: 40).isActive = true
+            oppPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+            oppPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
         }
-        
-        let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 383, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
-        view.addSubview(confirmCheck3)
-        confirmCheck3.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck3Loc.Y)).isActive = true
-        confirmCheck3.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck3Loc.X)).isActive = true
-        confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.H)).isActive = true
-        confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.W)).isActive = true
-        
-        let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 75, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
-        view.addSubview(userPlayer1)
-        userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-        userPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer1Loc.X)).isActive = true
-        userPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-        userPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.W)).isActive = true
-        
-        view.addSubview(userPlayer1Skill)
-        userPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-        userPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
-        userPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-        userPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-        
-        view.addSubview(userPlayer1Level)
-        userPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-        userPlayer1Level.leftAnchor.constraint(equalTo: userPlayer1Skill.rightAnchor, constant: 40).isActive = true
-        userPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-        userPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-        
-        
-        let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 381, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
-        
-        view.addSubview(oppPlayer1)
-        oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-        oppPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer1Loc.X)).isActive = true
-        oppPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-        oppPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.W)).isActive = true
-        
-        view.addSubview(oppPlayer1Skill)
-        oppPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-        oppPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
-        oppPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-        oppPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-        
-        view.addSubview(oppPlayer1Level)
-        oppPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-        oppPlayer1Level.leftAnchor.constraint(equalTo: oppPlayer1Skill.rightAnchor, constant: 40).isActive = true
-        oppPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-        oppPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
         
         
         let game1UserScoreLoc = calculateButtonPosition(x: 407.52, y: 698, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(view.frame.width), hia: matchInfoDisplayHeightAfter)
@@ -1182,13 +1307,13 @@ class MatchView: UIViewController {
     
     func performRejectActive0Tourney() {
         match.winner = 1
-        matchFeed?.matches[whichItem].winner = 1
+        //matchFeed?.matches[whichItem].winner = 1
         winner = 1
         //let values = ["active": 3] as [String : Any]
         match.team1_scores = [0, 0, 0, 0, 0]
-        matchFeed?.matches[whichItem].team1_scores = [0, 0, 0, 0, 0]
+        //matchFeed?.matches[whichItem].team1_scores = [0, 0, 0, 0, 0]
         match.forfeit = 1
-        matchFeed?.matches[whichItem].forfeit = 1
+        //matchFeed?.matches[whichItem].forfeit = 1
         let childUpdates = ["/\("team1_scores")/": match.team1_scores ?? [0,0,0,0,0], "/\("active")/": 3, "/\("forfeit")/": 1, "/\("winner")/": 1] as [String : Any]
         let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
         ref.updateChildValues(childUpdates, withCompletionBlock: {
@@ -1201,7 +1326,7 @@ class MatchView: UIViewController {
             
             print("Data saved successfully!")
             self.match.active = 3
-            self.matchFeed?.matches[self.whichItem].active = 3
+            //self.matchFeed?.matches[self.whichItem].active = 3
             self.setupNavbarTitle(status: 3)
             self.confirmCheck1.isHidden = false
             self.confirmCheck2.isHidden = false
@@ -1229,6 +1354,20 @@ class MatchView: UIViewController {
     }
     
     func performRejectActive0(whichOne: Int) {
+        view.addSubview(whiteCover3)
+        whiteCover3.topAnchor.constraint(equalTo: backgroundImage.topAnchor).isActive = true
+        whiteCover3.bottomAnchor.constraint(equalTo: backgroundImage.bottomAnchor).isActive = true
+        whiteCover3.leftAnchor.constraint(equalTo: backgroundImage.leftAnchor).isActive = true
+        whiteCover3.widthAnchor.constraint(equalTo: backgroundImage.widthAnchor).isActive = true
+        
+        view.addSubview(matchDeleted)
+        matchDeleted.topAnchor.constraint(equalTo: backgroundImage.topAnchor).isActive = true
+        matchDeleted.bottomAnchor.constraint(equalTo: backgroundImage.bottomAnchor).isActive = true
+        matchDeleted.leftAnchor.constraint(equalTo: backgroundImage.leftAnchor).isActive = true
+        matchDeleted.rightAnchor.constraint(equalTo: backgroundImage.rightAnchor).isActive = true
+        
+        matchFeed?.matches.remove(at: whichItem)
+        matchFeed?.tableView.reloadData()
         Database.database().reference().child("matches").child(matchId).removeValue()
         if match.doubles == true {
             Database.database().reference().child("user_matches").child(match.team_1_player_2!).child(matchId).removeValue()
@@ -1275,6 +1414,27 @@ class MatchView: UIViewController {
                 }
                 
                 print("Crazy data 2 saved!")
+                var nameOnInvite = String()
+                switch uid {
+                case self.match.team_1_player_1:
+                    nameOnInvite = self.userPlayer1.text!
+                case self.match.team_1_player_2:
+                    nameOnInvite = self.userPlayer2.text!
+                case self.match.team_2_player_1:
+                    nameOnInvite = self.oppPlayer1.text!
+                case self.match.team_2_player_2:
+                    nameOnInvite = self.oppPlayer2.text!
+                default:
+                    print("failedUser")
+                }
+                Database.database().reference().child("users").child(toId).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let deviceId = value as? String ?? "none"
+                        let pusher = PushNotificationHandler()
+                        pusher.setupPushNotification(deviceId: deviceId, message: "\(nameOnInvite) rejected a match you invited them to", title: "Match Canceled")
+                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                    }
+                })
                 
                 
             })
@@ -1293,6 +1453,7 @@ class MatchView: UIViewController {
                 let ref = Database.database().reference().child("matches").child(matchId).child("team1_scores")
                 match.team1_scores![whichOne] = 1
                 matchFeed?.matches[whichItem].team1_scores![whichOne] = 1
+                matchFeed?.tableView.reloadData()
                 switch whichOne {
                 case 1:
                     confirmCheck2.isHidden = false
@@ -1345,6 +1506,7 @@ class MatchView: UIViewController {
                 
                 self.match.active = 1
                 self.matchFeed?.matches[self.whichItem].active = 1
+                self.matchFeed?.tableView.reloadData()
                 self.setupNavbarTitle(status: 1)
                 
                 print("Crazy data 2 saved!")
@@ -1396,7 +1558,14 @@ class MatchView: UIViewController {
         finalTeam1Scores.removeAll()
         finalTeam2Scores.removeAll()
         gameWinners.removeAll()
-        let scoresValidation = match.checkScoresValidityFive(game1UserScore: game1UserScore.text!, game1OppScore: game1OppScore.text!, game2UserScore: game2UserScore.text!, game2OppScore: game2OppScore.text!, game3UserScore: game3UserScore.text!, game3OppScore: game3OppScore.text!, game4UserScore: game4UserScore.text!, game4OppScore: game4OppScore.text!, game5UserScore: game5UserScore.text!, game5OppScore: game5OppScore.text!)
+        var scoresValidation = Int()
+        if match.style == 0 {
+            scoresValidation = match.checkScoresValiditySingle(game1UserScore: game1UserScore.text!, game1OppScore: game1OppScore.text!)
+        } else if match.style == 1 {
+            scoresValidation = match.checkScoresValidityThree(game1UserScore: game1UserScore.text!, game1OppScore: game1OppScore.text!, game2UserScore: game2UserScore.text!, game2OppScore: game2OppScore.text!, game3UserScore: game3UserScore.text!, game3OppScore: game3OppScore.text!)
+        } else {
+            scoresValidation = match.checkScoresValidityFive(game1UserScore: game1UserScore.text!, game1OppScore: game1OppScore.text!, game2UserScore: game2UserScore.text!, game2OppScore: game2OppScore.text!, game3UserScore: game3UserScore.text!, game3OppScore: game3OppScore.text!, game4UserScore: game4UserScore.text!, game4OppScore: game4OppScore.text!, game5UserScore: game5UserScore.text!, game5OppScore: game5OppScore.text!)
+        }
         
         switch scoresValidation {
         case 0:
@@ -1462,7 +1631,7 @@ class MatchView: UIViewController {
             matchStatusLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
             
         case 1:
-            let newalert = UIAlertController(title: "Sorry", message: "At least 3 games need to be completed in order to determine the winner of a match", preferredStyle: UIAlertController.Style.alert)
+            let newalert = UIAlertController(title: "Sorry", message: "Not enough games were completed to determine the winner of the match", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
         case 2:
@@ -1481,8 +1650,12 @@ class MatchView: UIViewController {
             let newalert = UIAlertController(title: "Sorry", message: "A team needs to win at least 3 games before a winner of the match can be determined and game 5 has no scores", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
+        case 6:
+            let newalert = UIAlertController(title: "Sorry", message: "A team needs to win at least 2 games before a winner of the match can be determined and game 3 has no scores", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
         default:
-            let newalert = UIAlertController(title: "Sorry", message: "Nothing worked", preferredStyle: UIAlertController.Style.alert)
+            let newalert = UIAlertController(title: "Sorry", message: "Cannot determine winner", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
             
@@ -1515,6 +1688,7 @@ class MatchView: UIViewController {
                 })
             self.match.active = 3
             self.matchFeed?.matches[self.whichItem].active = 3
+            self.matchFeed?.tableView.reloadData()
             self.setupNavbarTitle(status: 3)
             self.confirmCheck1.isHidden = false
             self.confirmCheck2.isHidden = false
@@ -1571,120 +1745,6 @@ class MatchView: UIViewController {
             disableScores(team1Scores: match.team1_scores!, team2Scores: match.team2_scores!)
         }
     }
-    
-//    func winChecker(user: Int, opp: Int) -> Int {
-//        if user > opp {
-//            return 0
-//        } else {
-//            return 1
-//        }
-//    }
-//
-//    func checkScoresValidity() -> Int {
-//        team1Wins = 0
-//        team2Wins = 0
-//        if game1UserScore.text == "" || game1OppScore.text == "" || game2UserScore.text == "" || game2OppScore.text == "" || game3UserScore.text == "" || game3OppScore.text == "" {
-//            return 1
-//        } else {
-//            finalTeam1Scores.append(Int(game1UserScore.text!)!)
-//            finalTeam2Scores.append(Int(game1OppScore.text!)!)
-//            finalTeam1Scores.append(Int(game2UserScore.text!)!)
-//            finalTeam2Scores.append(Int(game2OppScore.text!)!)
-//            finalTeam1Scores.append(Int(game3UserScore.text!)!)
-//            finalTeam2Scores.append(Int(game3OppScore.text!)!)
-//        }
-//
-//        if (finalTeam1Scores[0] < 11 && finalTeam2Scores[0] < 11) || (finalTeam1Scores[1] < 11 && finalTeam2Scores[1] < 11) || (finalTeam1Scores[2] < 11 && finalTeam2Scores[2] < 11) {
-//            return 2
-//        } else if (abs(finalTeam1Scores[0] - finalTeam2Scores[0]) < 2) || (abs(finalTeam1Scores[1] - finalTeam2Scores[1]) < 2) || (abs(finalTeam1Scores[2] - finalTeam2Scores[2]) < 2) {
-//            return 3
-//        } else {
-//            for index in 0...2 {
-//                gameWinners.append(winChecker(user: finalTeam1Scores[index], opp: finalTeam2Scores[index]))
-//                if gameWinners[index] == 0 {
-//                    team1Wins += 1
-//                } else {
-//                    team2Wins += 1
-//                }
-//            }
-//            if team1Wins == 3 {
-//                winner = 1
-//                finalTeam1Scores.append(0)
-//                finalTeam2Scores.append(0)
-//                finalTeam1Scores.append(0)
-//                finalTeam2Scores.append(0)
-//                return 0
-//            } else if team2Wins == 3 {
-//                winner = 2
-//                finalTeam1Scores.append(0)
-//                finalTeam2Scores.append(0)
-//                finalTeam1Scores.append(0)
-//                finalTeam2Scores.append(0)
-//                return 0
-//            }
-//        }
-//
-//        if game4UserScore.text == "" || game4OppScore.text == "" {
-//            return 4
-//        } else {
-//            finalTeam1Scores.append(Int(game4UserScore.text!)!)
-//            finalTeam2Scores.append(Int(game4OppScore.text!)!)
-//        }
-//
-//        if finalTeam1Scores[3] < 11 && finalTeam2Scores[3] < 11 {
-//            return 2
-//        } else if abs(finalTeam1Scores[3] - finalTeam2Scores[3]) < 2 {
-//            return 3
-//        } else {
-//            gameWinners.append(winChecker(user: finalTeam1Scores[3], opp: finalTeam2Scores[3]))
-//            if gameWinners[3] == 0 {
-//                team1Wins += 1
-//            } else {
-//                team2Wins += 1
-//            }
-//
-//            if team1Wins == 3 {
-//                winner = 1
-//                finalTeam1Scores.append(0)
-//                finalTeam2Scores.append(0)
-//                return 0
-//            } else if team2Wins == 3 {
-//                winner = 2
-//                finalTeam1Scores.append(0)
-//                finalTeam2Scores.append(0)
-//                return 0
-//            }
-//        }
-//        if game5UserScore.text == "" || game5OppScore.text == "" {
-//            return 5
-//        } else {
-//            finalTeam1Scores.append(Int(game5UserScore.text!)!)
-//            finalTeam2Scores.append(Int(game5OppScore.text!)!)
-//        }
-//
-//        if finalTeam1Scores[4] < 11 && finalTeam2Scores[4] < 11 {
-//            return 2
-//        } else if abs(finalTeam1Scores[4] - finalTeam2Scores[4]) < 2 {
-//            return 3
-//        } else {
-//            gameWinners.append(winChecker(user: finalTeam1Scores[4], opp: finalTeam2Scores[4]))
-//            if gameWinners[4] == 0 {
-//                team1Wins += 1
-//            } else {
-//                team2Wins += 1
-//            }
-//
-//            if team1Wins == 3 {
-//                winner = 1
-//                return 0
-//            } else if team2Wins == 3 {
-//                winner = 2
-//                return 0
-//            } else {
-//                return -1
-//            }
-//        }
-//    }
     
     func reorganizeTeams() -> [Int] {
         var newTeam1Rank = -10

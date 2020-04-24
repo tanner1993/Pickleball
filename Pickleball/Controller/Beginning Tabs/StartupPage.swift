@@ -402,6 +402,10 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        if let tabItems = self.tabBarController?.tabBar.items {
+            let tabItem = tabItems[1]
+            tabItem.badgeValue = "T"
+        }
         activityView.startAnimating()
         setupViews()
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -417,6 +421,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             fetchNotifications()
             fetchMessages()
             fetchTourneyNotifications()
+            fetchMatchNotifications()
             observePlayerProfile()
         } else if playerId == uid {
             observePlayerProfile()
@@ -441,21 +446,51 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        let ref = Database.database().reference().child("tourney_notifications").child(uid)
+        let ref = Database.database().reference().child("user_tourneys").child(uid)
         ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
             guard let notificationSeen = snapshot.value else {
                 return
             }
-                let notifNumber = notificationSeen as? Int ?? -1
-                if notifNumber == 1 {
-                    if let tabItems = self.tabBarController?.tabBar.items {
-                        let tabItem = tabItems[1]
-                        tabItem.badgeValue = "1"
+            let notifNumber = notificationSeen as? Int ?? -1
+            if notifNumber == 1 {
+                if let tabItems = self.tabBarController?.tabBar.items {
+                    let tabItem = tabItems[1]
+                    if tabItem.badgeValue == "M" {
+                        tabItem.badgeValue = "2"
+                    } else {
+                        tabItem.badgeValue = "T"
                     }
                 }
+            }
             
         })
     }
+    
+    func fetchMatchNotifications() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_matches").child(uid)
+        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+            guard let notificationSeen = snapshot.value else {
+                return
+            }
+            
+            let notifNumber = notificationSeen as? Int ?? -1
+            if notifNumber == 1 {
+                if let tabItems = self.tabBarController?.tabBar.items {
+                    let tabItem = tabItems[1]
+                    if tabItem.badgeValue == "T" {
+                        tabItem.badgeValue = "2"
+                    } else {
+                        tabItem.badgeValue = "T"
+                    }
+                }
+            }
+            
+        })
+    }
+    
     
     func fetchNotifications() {
         guard let uid = Auth.auth().currentUser?.uid else {

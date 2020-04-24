@@ -19,8 +19,11 @@ class MainMenu: UITabBarController {
         setupTabBarController()
     }
     
+    
+    
     private func setupTabBarController() {
         let layout = UICollectionViewFlowLayout()
+        
         let play = Play()
         let play2 = UINavigationController(rootViewController: play)
         play2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
@@ -54,7 +57,7 @@ class MainMenu: UITabBarController {
         notifications2.navigationBar.barTintColor = UIColor.init(r: 88, g: 148, b: 200)
         notifications2.navigationBar.isTranslucent = false
         notifications2.navigationBar.tintColor = .white
-        notifications2.tabBarItem = UITabBarItem(title: "Events", image: UIImage(named: "event_tab"), tag: 4)
+        notifications2.tabBarItem = UITabBarItem(title: "Notifications", image: UIImage(named: "event_tab"), tag: 4)
         
         
         let tabBarList = [myProfile2, play2, matchFeed2, connect2, notifications2]

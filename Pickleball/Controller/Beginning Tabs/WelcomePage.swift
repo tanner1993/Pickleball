@@ -11,6 +11,9 @@ import Firebase
 
 class WelcomePage: UIViewController {
     
+    var matchNotif = false
+    var tourneyNotif = false
+    
     let enterProfilePageButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Continue", for: .normal)
@@ -85,7 +88,6 @@ class WelcomePage: UIViewController {
     @objc func handleEnterProfilePage() {
         let profilePage = MainMenu()
         UIApplication.shared.applicationIconBadgeNumber = 0
-        //profilePage.tabBar.unselectedItemTintColor = .white
         profilePage.welcomePage = self
         profilePage.tabBar.isTranslucent = false
         present(profilePage, animated: true, completion: nil)
@@ -96,6 +98,10 @@ class WelcomePage: UIViewController {
             perform(#selector(handleLogout), with: nil, afterDelay: 0)
         }
     }
+    
+    
+    
+    
     
     @objc func handleLogout() {
         do {

@@ -27,6 +27,7 @@ class CreateMatch: UIViewController {
         var deviceId: String
     }
     
+    var matchFeed: MatchFeed?
     var teammate = player(id: "none", username: "none", skillLevel: "none", deviceId: "none")
     var opponent1 = player(id: "none", username: "none", skillLevel: "none", deviceId: "none")
     var opponent2 = player(id: "none", username: "none", skillLevel: "none", deviceId: "none")
@@ -190,6 +191,29 @@ class CreateMatch: UIViewController {
                         pusher.setupPushNotification(deviceId: self.opponent1.deviceId, message: "\(nameOnInvite) invited you to play in a match with them", title: "Match Invite")
                     }
                 })
+                let matchT = Match2()
+                matchT.active = 0
+                matchT.winner = 0
+                matchT.submitter = 0
+                matchT.team_1_player_1 = uid
+                matchT.team_1_player_2 = self.teammate.id
+                matchT.team_2_player_1 = self.opponent1.id
+                matchT.team_2_player_2 = self.opponent2.id
+                matchT.team1_scores = [1, 0, 0, 0, 0]
+                matchT.team2_scores = [0, 0, 0, 0, 0]
+                matchT.matchId = matchId
+                matchT.time = timeOfChallenge
+                matchT.style = style
+                matchT.forfeit = 0
+                if self.singlesDoublesControl.selectedSegmentIndex == 1 {
+                    matchT.doubles = true
+                } else {
+                    matchT.doubles = false
+                    matchT.team_1_player_2 = "Player not found"
+                    matchT.team_2_player_2 = "Player not found"
+                }
+                self.matchFeed?.matches.insert(matchT, at: 0)
+                self.matchFeed?.tableView.reloadData()
                 
                 
             })

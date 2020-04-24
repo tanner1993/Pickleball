@@ -33,7 +33,7 @@ class MatchFeed: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.7) {
             self.fillInRow()
         }
         view.backgroundColor = .white
@@ -84,6 +84,7 @@ class MatchFeed: UITableViewController {
     @objc func handleCreateNewMatch() {
         let createNewMatch = CreateMatch()
         createNewMatch.hidesBottomBarWhenPushed = true
+        createNewMatch.matchFeed = self
         navigationController?.present(createNewMatch, animated: true, completion: nil)
     }
     
@@ -94,7 +95,6 @@ class MatchFeed: UITableViewController {
 //    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
 //        return matches.count
 //    }
-    
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if matches.count == 0 {
@@ -112,9 +112,13 @@ class MatchFeed: UITableViewController {
             }
         } else {
             activityIndicatorView.stopAnimating()
-            
             let match = matches[indexPath.item]
             let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FeedMatchCell
+            if sender == 0 {
+                cell.headerLabel.isHidden = true
+            } else {
+                cell.headerLabel.isHidden = false
+            }
             if nameTracker[match.team_1_player_1 ?? "nope"] == nil {
                 let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
                 player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
@@ -130,21 +134,27 @@ class MatchFeed: UITableViewController {
                 cell.challengerTeam1.setTitle(nameTracker[match.team_1_player_1 ?? "nope"], for: .normal)
                 cell.appLevel.text = levelTracker[match.team_1_player_1 ?? "nope"]
             }
-            
-            if nameTracker[match.team_1_player_2 ?? "nope"] == nil {
-                let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
-                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-                    if let value = snapshot.value as? [String: AnyObject] {
-                        cell.challengerTeam2.setTitle(value["username"] as? String, for: .normal)
-                        self.nameTracker[match.team_1_player_2 ?? "nope"] = value["username"] as? String
-                        let exp = value["exp"] as? Int ?? 0
-                        cell.appLevel2.text = "\(self.player.haloLevel(exp: exp))"
-                        self.levelTracker[match.team_1_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
-                    }
-                })
+            if match.doubles == true {
+                cell.challengerTeam2.isHidden = false
+                cell.appLevel2.isHidden = false
+                if nameTracker[match.team_1_player_2 ?? "nope"] == nil {
+                    let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
+                    player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                        if let value = snapshot.value as? [String: AnyObject] {
+                            cell.challengerTeam2.setTitle(value["username"] as? String, for: .normal)
+                            self.nameTracker[match.team_1_player_2 ?? "nope"] = value["username"] as? String
+                            let exp = value["exp"] as? Int ?? 0
+                            cell.appLevel2.text = "\(self.player.haloLevel(exp: exp))"
+                            self.levelTracker[match.team_1_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
+                        }
+                    })
+                } else {
+                    cell.challengerTeam2.setTitle(nameTracker[match.team_1_player_2 ?? "nope"], for: .normal)
+                    cell.appLevel2.text = levelTracker[match.team_1_player_2 ?? "nope"]
+                }
             } else {
-                cell.challengerTeam2.setTitle(nameTracker[match.team_1_player_2 ?? "nope"], for: .normal)
-                cell.appLevel2.text = levelTracker[match.team_1_player_2 ?? "nope"]
+                cell.challengerTeam2.isHidden = true
+                cell.appLevel2.isHidden = true
             }
             
             if nameTracker[match.team_2_player_1 ?? "nope"] == nil {
@@ -163,20 +173,27 @@ class MatchFeed: UITableViewController {
                 cell.appLevel3.text = levelTracker[match.team_2_player_1 ?? "nope"]
             }
             
-            if nameTracker[match.team_2_player_2 ?? "nope"] == nil {
-                let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
-                player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
-                    if let value = snapshot.value as? [String: AnyObject] {
-                        cell.challengedTeam2.setTitle(value["username"] as? String, for: .normal)
-                        self.nameTracker[match.team_2_player_2 ?? "nope"] = value["username"] as? String
-                        let exp = value["exp"] as? Int ?? 0
-                        cell.appLevel4.text = "\(self.player.haloLevel(exp: exp))"
-                        self.levelTracker[match.team_2_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
-                    }
-                })
+            if match.doubles == true {
+                cell.challengedTeam2.isHidden = false
+                cell.appLevel4.isHidden = false
+                if nameTracker[match.team_2_player_2 ?? "nope"] == nil {
+                    let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
+                    player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
+                        if let value = snapshot.value as? [String: AnyObject] {
+                            cell.challengedTeam2.setTitle(value["username"] as? String, for: .normal)
+                            self.nameTracker[match.team_2_player_2 ?? "nope"] = value["username"] as? String
+                            let exp = value["exp"] as? Int ?? 0
+                            cell.appLevel4.text = "\(self.player.haloLevel(exp: exp))"
+                            self.levelTracker[match.team_2_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
+                        }
+                    })
+                } else {
+                    cell.challengedTeam2.setTitle(nameTracker[match.team_2_player_2 ?? "nope"], for: .normal)
+                    cell.appLevel4.text = levelTracker[match.team_2_player_2 ?? "nope"]
+                }
             } else {
-                cell.challengedTeam2.setTitle(nameTracker[match.team_2_player_2 ?? "nope"], for: .normal)
-                cell.appLevel4.text = levelTracker[match.team_2_player_2 ?? "nope"]
+                cell.challengedTeam2.isHidden = true
+                cell.appLevel4.isHidden = true
             }
             let uid = Auth.auth().currentUser?.uid
             if match.active == 3 {
@@ -225,6 +242,14 @@ class MatchFeed: UITableViewController {
                 matchDisplay.matchFeed = self
                 navigationController?.pushViewController(matchDisplay, animated: true)
             }
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
+        if sender == 1 {
+            return true
+        } else {
+            return false
         }
     }
     
@@ -297,6 +322,8 @@ class MatchFeed: UITableViewController {
                     let team1_scores = value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                     let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                     let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+                    let style = value["style"] as? Int ?? 0
+                    let forfeit = value["forfeit"] as? Int ?? 0
                     matchT.active = active
                     matchT.winner = winner
                     matchT.submitter = submitter
@@ -308,6 +335,9 @@ class MatchFeed: UITableViewController {
                     matchT.team2_scores = team2_scores
                     matchT.matchId = snapshot.key
                     matchT.time = time
+                    matchT.style = style
+                    matchT.forfeit = forfeit
+                    matchT.doubles = team_1_player_2 == "Player not found" ? false : true
                     self.matches.append(matchT)
                     self.matches = self.matches.sorted { p1, p2 in
                         return (p1.time!) > (p2.time!)

@@ -35,15 +35,15 @@ class TourneyList: UITableViewController {
         return view
     }()
     
-    let localOfficialTourneys: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.textColor = .white
-        label.textAlignment = .center
-        label.text = "Official Tourneys Near You"
-        return label
-    }()
+//    let localOfficialTourneys: UILabel = {
+//        let label = UILabel()
+//        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+//        label.textColor = .white
+//        label.textAlignment = .center
+//        label.text = "Official Tourneys Near You"
+//        return label
+//    }()
     
     let separatorView: UIView = {
         let view = UIView()
@@ -54,12 +54,8 @@ class TourneyList: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if sender == 0 {
-            fetchTourneys()
-            setupNavbarButtons()
-        } else {
-            fetchOfficialTourneys()
-        }
+        fetchTourneys()
+        setupNavbarButtons()
         setupCollectionView()
         setupViews()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.3) {
@@ -89,12 +85,12 @@ class TourneyList: UITableViewController {
         self.navigationItem.titleView = titleLabel
     }
     
-    @objc func handleOfficalTourneys() {
-        let tourneyOfficial = TourneyList()
-        tourneyOfficial.hidesBottomBarWhenPushed = true
-        tourneyOfficial.sender = 1
-        navigationController?.pushViewController(tourneyOfficial, animated: true)
-    }
+//    @objc func handleOfficalTourneys() {
+//        let tourneyOfficial = TourneyList()
+//        tourneyOfficial.hidesBottomBarWhenPushed = true
+//        tourneyOfficial.sender = 1
+//        navigationController?.pushViewController(tourneyOfficial, animated: true)
+//    }
     
     @objc func handleSearchTourneys() {
         let layout = UICollectionViewFlowLayout()
@@ -184,60 +180,60 @@ class TourneyList: UITableViewController {
         
     }
     
-    func fetchOfficialTourneys() {
-        let rootRef = Database.database().reference()
-        let query = rootRef.child("tourneys")
-        query.observe(.childAdded, with: { (snapshot) in
-            print(snapshot)
-            if let value = snapshot.value as? [String: AnyObject] {
-                let tourney = Tourney()
-                let name = value["name"] as? String ?? "No Name"
-                let type = value["type"] as? String ?? "No Type"
-                let skillLevel = value["skill_level"] as? Float ?? 0
-                let sex = value["sex"] as? String ?? "None"
-                let ageGroup = value["age_group"] as? String ?? "No Age Group"
-                let startDate = value["start_date"] as? Double ?? 0
-                let time = value["time"] as? Double ?? Date().timeIntervalSince1970
-                let duration = value["duration"] as? Int ?? 0
-                let creator = value["creator"] as? String ?? "No Creator"
-                let state = value["state"] as? String ?? "No State"
-                let county = value["county"] as? String ?? "No State"
-                let active = value["active"] as? Int ?? -1
-                let finals1 = value["finals1"] as? Int ?? -1
-                let finals2 = value["finals2"] as? Int ?? -1
-                let winner = value["winner"] as? Int ?? -1
-                let official = value["official"] as? Int ?? -1
-                let teams = value["teams"]
-                if let turd = teams {
-                    tourney.regTeams = turd.count
-                } else {
-                    tourney.regTeams = 0
-                }
-
-                tourney.name = name
-                tourney.type = type
-                tourney.skill_level = skillLevel
-                tourney.id = snapshot.key
-                tourney.sex = sex
-                tourney.age_group = ageGroup
-                tourney.start_date = startDate
-                tourney.time = time
-                tourney.duration = duration
-                tourney.creator = creator
-                tourney.state = state
-                tourney.county = county
-                tourney.active = active
-                tourney.finals1 = finals1
-                tourney.finals2 = finals2
-                tourney.winner = winner
-                if official == 1 {
-                    self.myTourneys.append(tourney)
-                }
-
-                DispatchQueue.main.async { self.tableView.reloadData() }
-            }
-        })
-    }
+//    func fetchOfficialTourneys() {
+//        let rootRef = Database.database().reference()
+//        let query = rootRef.child("tourneys")
+//        query.observe(.childAdded, with: { (snapshot) in
+//            print(snapshot)
+//            if let value = snapshot.value as? [String: AnyObject] {
+//                let tourney = Tourney()
+//                let name = value["name"] as? String ?? "No Name"
+//                let type = value["type"] as? String ?? "No Type"
+//                let skillLevel = value["skill_level"] as? Float ?? 0
+//                let sex = value["sex"] as? String ?? "None"
+//                let ageGroup = value["age_group"] as? String ?? "No Age Group"
+//                let startDate = value["start_date"] as? Double ?? 0
+//                let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+//                let duration = value["duration"] as? Int ?? 0
+//                let creator = value["creator"] as? String ?? "No Creator"
+//                let state = value["state"] as? String ?? "No State"
+//                let county = value["county"] as? String ?? "No State"
+//                let active = value["active"] as? Int ?? -1
+//                let finals1 = value["finals1"] as? Int ?? -1
+//                let finals2 = value["finals2"] as? Int ?? -1
+//                let winner = value["winner"] as? Int ?? -1
+//                let official = value["official"] as? Int ?? -1
+//                let teams = value["teams"]
+//                if let turd = teams {
+//                    tourney.regTeams = turd.count
+//                } else {
+//                    tourney.regTeams = 0
+//                }
+//
+//                tourney.name = name
+//                tourney.type = type
+//                tourney.skill_level = skillLevel
+//                tourney.id = snapshot.key
+//                tourney.sex = sex
+//                tourney.age_group = ageGroup
+//                tourney.start_date = startDate
+//                tourney.time = time
+//                tourney.duration = duration
+//                tourney.creator = creator
+//                tourney.state = state
+//                tourney.county = county
+//                tourney.active = active
+//                tourney.finals1 = finals1
+//                tourney.finals2 = finals2
+//                tourney.winner = winner
+//                if official == 1 {
+//                    self.myTourneys.append(tourney)
+//                }
+//
+//                DispatchQueue.main.async { self.tableView.reloadData() }
+//            }
+//        })
+//    }
     
     func setupCollectionView() {
         tableView?.register(TourneyCell.self, forCellReuseIdentifier: cellId)
