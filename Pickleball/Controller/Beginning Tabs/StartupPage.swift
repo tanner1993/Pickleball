@@ -24,6 +24,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     var newUser = 0
     var playersDeviceId = String()
     
+    
 //    var activityIndicatorView: UIActivityIndicatorView!
 //
 //    override func loadView() {
@@ -402,10 +403,6 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let tabItems = self.tabBarController?.tabBar.items {
-            let tabItem = tabItems[1]
-            tabItem.badgeValue = "T"
-        }
         activityView.startAnimating()
         setupViews()
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -443,16 +440,18 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     }
     
     func fetchTourneyNotifications() {
+        var foundTourney = false
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
         let ref = Database.database().reference().child("user_tourneys").child(uid)
-        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+        ref.observe(.childAdded, with: {(snapshot) in
             guard let notificationSeen = snapshot.value else {
                 return
             }
             let notifNumber = notificationSeen as? Int ?? -1
-            if notifNumber == 1 {
+            if notifNumber == 1 && foundTourney == false {
+                foundTourney = true
                 if let tabItems = self.tabBarController?.tabBar.items {
                     let tabItem = tabItems[1]
                     if tabItem.badgeValue == "M" {
@@ -467,23 +466,25 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     }
     
     func fetchMatchNotifications() {
+        var foundMatch = false
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
         let ref = Database.database().reference().child("user_matches").child(uid)
-        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+        ref.observe(.childAdded, with: {(snapshot) in
             guard let notificationSeen = snapshot.value else {
                 return
             }
-            
             let notifNumber = notificationSeen as? Int ?? -1
-            if notifNumber == 1 {
+            print(notifNumber)
+            if notifNumber == 1 && foundMatch == false {
+                foundMatch = true
                 if let tabItems = self.tabBarController?.tabBar.items {
                     let tabItem = tabItems[1]
                     if tabItem.badgeValue == "T" {
                         tabItem.badgeValue = "2"
                     } else {
-                        tabItem.badgeValue = "T"
+                        tabItem.badgeValue = "M"
                     }
                 }
             }

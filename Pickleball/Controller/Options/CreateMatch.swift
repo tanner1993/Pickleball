@@ -375,7 +375,7 @@ class CreateMatch: UIViewController {
     
     let matchesLabel: UILabel = {
         let label = UILabel()
-        label.text = "# of matches"
+        label.text = "# of games"
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.textAlignment = .center

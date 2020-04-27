@@ -13,6 +13,7 @@ import FirebaseAuth
 class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
     var delegate: FeedCellProtocol?
+    var style = Int()
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -148,7 +149,9 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
             vc.usersTeamId = teams[myTeamIndex]
             vc.tourneyId = tourneyId
             vc.active = active
+            vc.style = style
             self.delegate?.pushNavigation(vc)
+            
         }
     }
     

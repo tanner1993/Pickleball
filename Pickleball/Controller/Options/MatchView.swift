@@ -48,8 +48,11 @@ class MatchView: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         setupViews()
-        //fetchMatch()
-        furtherSetup()
+        if tourneyId != "none" {
+            fetchMatch()
+        } else {
+            furtherSetup()
+        }
         setupKeyboardObservers()
         numberToolbar.items=[
             UIBarButtonItem(title: "Cancel", style: UIBarButtonItem.Style.plain, target: self, action: #selector(MatchView.hoopla)),

@@ -66,7 +66,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 let ageGroup = value["age_group"] as? String ?? "No Age Group"
                 let startDate = value["start_date"] as? Double ?? 0
                 let time = value["time"] as? Double ?? 0
-                let duration = value["duration"] as? Int ?? 0
+                let endDate = value["duration"] as? Double ?? 0
                 let creator = value["creator"] as? String ?? "No Creator"
                 let state = value["state"] as? String ?? "No State"
                 let county = value["county"] as? String ?? "No State"
@@ -74,6 +74,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 let finals1 = value["finals1"] as? Int ?? -1
                 let finals2 = value["finals2"] as? Int ?? -1
                 let winner = value["winner"] as? Int ?? -1
+                let style = value["style"] as? Int ?? -1
                 let teams = value["teams"]
                 if let turd = teams {
                     tourney.regTeams = turd.count
@@ -92,7 +93,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 tourney.age_group = ageGroup
                 tourney.start_date = startDate
                 tourney.time = time
-                tourney.duration = duration
+                tourney.end_date = endDate
                 tourney.creator = creator
                 tourney.state = state
                 tourney.county = county
@@ -100,6 +101,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 tourney.finals1 = finals1
                 tourney.finals2 = finals2
                 tourney.winner = winner
+                tourney.style = style
                 self.searchResults.append(tourney)
                 
                 DispatchQueue.main.async { self.tableView.reloadData() }
@@ -157,8 +159,19 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         } else {
             cell.backgroundColor = .white
         }
-        
+        cell.editButton.addTarget(self, action: #selector(handleEdit), for: .touchUpInside)
+        cell.editButton.tag = indexPath.item
         return cell
+    }
+    
+    @objc func handleEdit(sender: UIButton) {
+        let tourneyIndex = sender.tag
+        let createTourney = CreateTourney()
+        createTourney.tourneySearch = self
+        createTourney.tourneyIndex = tourneyIndex
+        createTourney.sender = true
+        createTourney.tourneyInfo = searchResults[tourneyIndex]
+        present(createTourney, animated: true, completion: nil)
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -373,7 +386,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 let ageGroup = value["age_group"] as? String ?? "No Age Group"
                 let startDate = value["start_date"] as? Double ?? 0
                 let time = value["time"] as? Double ?? 0
-                let duration = value["duration"] as? Int ?? 0
+                let endDate = value["duration"] as? Double ?? 0
                 let creator = value["creator"] as? String ?? "No Creator"
                 let state = value["state"] as? String ?? "No State"
                 let county = value["county"] as? String ?? "No State"
@@ -381,6 +394,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 let finals1 = value["finals1"] as? Int ?? -1
                 let finals2 = value["finals2"] as? Int ?? -1
                 let winner = value["winner"] as? Int ?? -1
+                let style = value["style"] as? Int ?? -1
                 let teams = value["teams"]
                 if let turd = teams {
                     tourney.regTeams = turd.count
@@ -399,7 +413,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 tourney.age_group = ageGroup
                 tourney.start_date = startDate
                 tourney.time = time
-                tourney.duration = duration
+                tourney.end_date = endDate
                 tourney.creator = creator
                 tourney.state = state
                 tourney.county = county
@@ -407,6 +421,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 tourney.finals1 = finals1
                 tourney.finals2 = finals2
                 tourney.winner = winner
+                tourney.style = style
                 self.tourneys.append(tourney)
                 
                 DispatchQueue.main.async { self.tableView.reloadData() }

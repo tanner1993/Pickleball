@@ -21,6 +21,7 @@ class MatchFeed: UITableViewController {
     var nameTracker = [String: String]()
     var levelTracker = [String: String]()
     var matchIds = [String]()
+    var matchNotifs = [Bool]()
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -241,8 +242,21 @@ class MatchFeed: UITableViewController {
                 matchDisplay.whichItem = indexPath.item
                 matchDisplay.matchFeed = self
                 navigationController?.pushViewController(matchDisplay, animated: true)
+                if matches[indexPath.item].seen == false {
+                    disableNotification(matchIndex: indexPath.item)
+                }
             }
         }
+    }
+    
+    func disableNotification(matchIndex: Int) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        Database.database().reference().child("user_matches").child(uid).child(matches[matchIndex].matchId!).setValue(0)
+        matches[matchIndex].seen = true
+        matchNotifs[matchIndex] = true
+        tableView.reloadData()
     }
     
     override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
@@ -348,9 +362,9 @@ class MatchFeed: UITableViewController {
     }
     
     func fetchMyMatches() {
-        for index in matchIds {
+        for (index, element) in matchIds.enumerated() {
             let rootRef = Database.database().reference()
-            let query = rootRef.child("matches").child(index)
+            let query = rootRef.child("matches").child(element)
             query.observeSingleEvent(of: .value, with: { (snapshot) in
                 print(snapshot)
                 if let value = snapshot.value as? NSDictionary {
@@ -381,6 +395,7 @@ class MatchFeed: UITableViewController {
                     matchT.forfeit = forfeit
                     matchT.style = style
                     matchT.doubles = team_1_player_2 == "Player not found" ? false : true
+                    matchT.seen = self.matchNotifs[index] == true ? true : false
                     self.matches.append(matchT)
                     DispatchQueue.main.async {
                         self.tableView.reloadData()

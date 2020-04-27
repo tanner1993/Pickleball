@@ -79,7 +79,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         }
         if yetToView.contains(uid) {
             notifBadge.isHidden = true
-            Database.database().reference().child("tourney_notifications").child(uid).child(tourneyId).removeValue()
             yetToView.remove(at: yetToView.firstIndex(of: uid)!)
             Database.database().reference().child("tourneys").child(tourneyId).child("yet_to_view").setValue(yetToView)
             tourneyListPage?.removeBadge(whichOne: tourneyListIndex)
@@ -338,6 +337,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                         let team1_scores = value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                         let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                         let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+                        let style = value["style"] as? Int ?? 0
                         matchT.active = active
                         matchT.winner = winner
                         matchT.submitter = submitter
@@ -349,6 +349,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                         matchT.team2_scores = team2_scores
                         matchT.matchId = snapshot.key
                         matchT.time = time
+                        matchT.style = style
+                        matchT.doubles = true
                         if idList.contains(uid) == true {
                             self.matches.append(matchT)
                             self.matches = self.matches.sorted { p1, p2 in
@@ -479,10 +481,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             let attributedTime = NSMutableAttributedString(string: normalTime)
             let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 14), NSAttributedString.Key.foregroundColor : UIColor.white]
             let calendar = Calendar.current
-            let weeksLong: Double = Double(thisTourney.duration ?? 2)
-            let secondsLong: Double = weeksLong * 7 * 86400
-            print(secondsLong)
-            let startDater = Date(timeIntervalSince1970: ((thisTourney.time ?? Date().timeIntervalSince1970) + secondsLong))
+            let startDater = Date(timeIntervalSince1970: thisTourney.end_date ?? 0)
             let components = calendar.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater)
             let monthInt = components.month!
             let monthAbb = months[monthInt - 1].prefix(3)
@@ -684,6 +683,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             cell.delegate = self
             cell.active = thisTourney.active ?? 0
             cell.tourneyIdentifier = thisTourney.id
+            cell.style = thisTourney.style!
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! ProfileMenuCell

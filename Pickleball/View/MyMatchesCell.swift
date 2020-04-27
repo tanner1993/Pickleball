@@ -80,6 +80,11 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! RecentMatchesCell
         let uid = Auth.auth().currentUser?.uid
         let match = matches[indexPath.item]
+        if match.active != 3 && yetToView.contains(uid!) {
+            cell.notifBadge.isHidden = false
+        } else {
+            cell.notifBadge.isHidden = true
+        }
         if match.active == 3 {
             if match.winner == 1 {
                 cell.challengerPlaceholder.image = UIImage(named: "winning_team_placeholder")
@@ -141,7 +146,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: frame.width, height: frame.width / 1.875 + 26)
+        return CGSize(width: frame.width, height: frame.width / 1.875 + 66)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
@@ -164,32 +169,16 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         vc.finals1 = finals1
         vc.finals2 = finals2
         vc.yetToView = yetToView
+        vc.match.style = matches[indexPath.item].style ?? 0
+        vc.match.doubles = true
         self.delegate?.pushNavigation(vc)
-        print(userTeamId)
-//        if userTeamId == matches[indexPath.item].challengerTeamId {
-//            vc.userIsChallenger = 0
-//            for index in teams {
-//                if index.teamId == userTeamId {
-//                    vc.userTeam = index
-//                } else if index.teamId == matches[indexPath.item].challengedTeamId {
-//                    vc.oppTeam = index
-//                }
-//            }
-//            self.delegate?.pushNavigation(vc)
-//        } else if userTeamId == matches[indexPath.item].challengedTeamId {
-//            vc.userIsChallenger = 1
-//            for index in teams {
-//                if index.teamId == userTeamId {
-//                    vc.userTeam = index
-//                } else if index.teamId == matches[indexPath.item].challengerTeamId {
-//                    vc.oppTeam = index
-//                }
-//            }
-//            vc.teams = teams
-//            vc.tourneyStandings = TourneyStandings()
-//            self.delegate?.pushNavigation(vc)
-//        }
-        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if yetToView.contains(uid) {
+            yetToView.remove(at: yetToView.firstIndex(of: uid)!)
+            collectionView.reloadData()
+        }
     }
     
 }

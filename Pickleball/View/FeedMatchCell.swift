@@ -84,6 +84,13 @@ class FeedMatchCell: UITableViewCell {
 //                    self.appLevel4.text = "\(player.haloLevel(exp: exp))"
 //                }
 //            })
+            
+            if match.seen == false {
+                notifBadge.isHidden = false
+            } else {
+                notifBadge.isHidden = true
+            }
+            
             let screenSize = UIScreen.main.bounds
             let screenWidth = screenSize.width
             let width = Float(screenWidth)
@@ -667,6 +674,19 @@ class FeedMatchCell: UITableViewCell {
         return image
     }()
     
+    let notifBadge: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.layer.cornerRadius = 13
+        label.layer.masksToBounds = true
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+    
     var challenger1BottomAnchor: NSLayoutConstraint?
     var challenged1BottomAnchor: NSLayoutConstraint?
     var appLevel1Anchor: NSLayoutConstraint?
@@ -918,6 +938,12 @@ class FeedMatchCell: UITableViewCell {
         separatorView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 2).isActive = true
         separatorView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        
+        addSubview(notifBadge)
+        notifBadge.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 5).isActive = true
+        notifBadge.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
+        notifBadge.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        notifBadge.widthAnchor.constraint(equalToConstant: 26).isActive = true
     }
     
     func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {

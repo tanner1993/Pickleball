@@ -37,6 +37,7 @@ class Match2: NSObject {
     var team2_scores: [Int]?
     var style: Int?
     var doubles: Bool?
+    var seen: Bool?
     
     func sendTourneyNotifications(uid: String, tourneyId: String, tourneyYetToViewMatch: [String]) {
         var yetToView = tourneyYetToViewMatch

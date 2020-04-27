@@ -11,10 +11,8 @@ import Firebase
 
 class Play: UIViewController {
     
-    var matchNotif = false
-    var tourneyNotif = false
-    
     var matchIds = [String]()
+    var matchNotifs = [Bool]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,6 +75,16 @@ class Play: UIViewController {
         ref.observe(.childAdded, with: { (snapshot) in
             let matchId = snapshot.key
             self.matchIds.append(matchId)
+            guard let notificationSeen = snapshot.value else {
+                return
+            }
+            
+            let notifNumber = notificationSeen as? Int ?? -1
+            if notifNumber == 1 {
+                self.matchNotifs.append(false)
+            } else {
+                self.matchNotifs.append(true)
+            }
         }, withCancel: nil)
     }
     
@@ -122,6 +130,7 @@ class Play: UIViewController {
         navigationController?.pushViewController(tourneyMy, animated: true)
     }
     
+    
     let tourneySymbol: UIImageView = {
         let bi = UIImageView()
         bi.translatesAutoresizingMaskIntoConstraints = false
@@ -162,6 +171,7 @@ class Play: UIViewController {
             }
         }
         matchesMy.matchIds = matchIds.reversed()
+        matchesMy.matchNotifs = matchNotifs.reversed()
         navigationController?.pushViewController(matchesMy, animated: true)
     }
     

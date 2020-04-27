@@ -93,7 +93,6 @@ class TourneyList: UITableViewController {
 //    }
     
     @objc func handleSearchTourneys() {
-        let layout = UICollectionViewFlowLayout()
         let tourneySearch = TourneySearch()
         tourneySearch.tourneyList = self
         tourneySearch.hidesBottomBarWhenPushed = true
@@ -130,7 +129,7 @@ class TourneyList: UITableViewController {
                     let ageGroup = value["age_group"] as? String ?? "No Age Group"
                     let startDate = value["start_date"] as? Double ?? 0
                     let time = value["time"] as? Double ?? Date().timeIntervalSince1970
-                    let duration = value["duration"] as? Int ?? 0
+                    let endDate = value["duration"] as? Double ?? 0
                     let creator = value["creator"] as? String ?? "No Creator"
                     let state = value["state"] as? String ?? "No State"
                     let county = value["county"] as? String ?? "No State"
@@ -138,6 +137,7 @@ class TourneyList: UITableViewController {
                     let finals1 = value["finals1"] as? Int ?? -1
                     let finals2 = value["finals2"] as? Int ?? -1
                     let winner = value["winner"] as? Int ?? -1
+                    let style = value["style"] as? Int ?? -1
                     let teams = value["teams"]
                     if let turd = teams {
                         tourney.regTeams = turd.count
@@ -162,7 +162,7 @@ class TourneyList: UITableViewController {
                     tourney.age_group = ageGroup
                     tourney.start_date = startDate
                     tourney.time = time
-                    tourney.duration = duration
+                    tourney.end_date = endDate
                     tourney.creator = creator
                     tourney.state = state
                     tourney.county = county
@@ -170,6 +170,7 @@ class TourneyList: UITableViewController {
                     tourney.finals1 = finals1
                     tourney.finals2 = finals2
                     tourney.winner = winner
+                    tourney.style = style
                     self.myTourneys.append(tourney)
                     DispatchQueue.main.async {
                         self.tableView.reloadData()
@@ -264,6 +265,8 @@ class TourneyList: UITableViewController {
             activityIndicatorView.stopAnimating()
             let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! TourneyCell
             cell.tourney = myTourneys[indexPath.item]
+            cell.editButton.addTarget(self, action: #selector(handleEdit), for: .touchUpInside)
+            cell.editButton.tag = indexPath.item
             if indexPath.item % 2 == 0 {
                 cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
             } else {
@@ -272,6 +275,16 @@ class TourneyList: UITableViewController {
             
             return cell
         }
+    }
+    
+    @objc func handleEdit(sender: UIButton) {
+        let tourneyIndex = sender.tag
+        let createTourney = CreateTourney()
+        createTourney.sender = true
+        createTourney.tourneyList = self
+        createTourney.tourneyIndex = tourneyIndex
+        createTourney.tourneyInfo = myTourneys[tourneyIndex]
+        present(createTourney, animated: true, completion: nil)
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -289,7 +302,15 @@ class TourneyList: UITableViewController {
             tourneyStandingsPage.thisTourney = myTourneys[indexPath.row]
             tourneyStandingsPage.tourneyListPage = self
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+            disableNotification(tourneyIndex: indexPath.item)
         }
+    }
+    
+    func disableNotification(tourneyIndex: Int) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        Database.database().reference().child("user_tourneys").child(uid).child(myTourneys[tourneyIndex].id!).setValue(0)
     }
     
     func removeBadge(whichOne: Int) {
@@ -300,18 +321,6 @@ class TourneyList: UITableViewController {
         let yettooooview = myTourneys[whichOne].yetToView!
         myTourneys[whichOne].yetToView?.remove(at: yettooooview.firstIndex(of: uid)!)
         tableView.reloadData()
-        var checker = 0
-        for index in myTourneys {
-            if index.notifBubble == 1 {
-                checker += 1
-            }
-        }
-        if checker == 0 {
-            if let tabItems = self.tabBarController?.tabBar.items {
-                let tabItem = tabItems[1]
-                tabItem.badgeValue = .none
-            }
-        }
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
@@ -343,6 +352,15 @@ class TourneyCell: UITableViewCell {
                 notifBadge.isHidden = false
             } else {
                 notifBadge.isHidden = true
+            }
+            
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
+            if uid == tourney?.creator {
+                editButton.isHidden = false
+            } else {
+                editButton.isHidden = true
             }
             
             let normalSkill = "Skill Level: "
@@ -380,12 +398,20 @@ class TourneyCell: UITableViewCell {
             attributedCounty.append(boldCountyString)
             county.attributedText = attributedCounty
             
-            let normalDuration = "Duration: "
-            let boldDuration = "\(tourney?.duration ?? 0) weeks"
-            let attributedDuration = NSMutableAttributedString(string: normalDuration)
-            let boldDurationString = NSAttributedString(string: boldDuration, attributes: attrb as [NSAttributedString.Key : Any])
-            attributedDuration.append(boldDurationString)
-            duration.attributedText = attributedDuration
+            guard let endTime = tourney?.end_date else {
+                return
+            }
+            let normalTime2 = "End Date: "
+            let calendar2 = Calendar.current
+            let startDater2 = Date(timeIntervalSince1970: endTime)
+            let components2 = calendar2.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater2)
+            let monthInt2 = components2.month!
+            let monthAbb2 = months[monthInt2 - 1].prefix(3)
+            let boldTime2 = "\(monthAbb2). \(components2.day!)"
+            let attributedTime2 = NSMutableAttributedString(string: normalTime2)
+            let boldTimeString2 = NSAttributedString(string: boldTime2, attributes: attrb as [NSAttributedString.Key : Any])
+            attributedTime2.append(boldTimeString2)
+            duration.attributedText = attributedTime2
             
             let normalReg = "Reg. Teams: "
             let boldReg = "\(tourney?.regTeams ?? 0)"
@@ -408,6 +434,15 @@ class TourneyCell: UITableViewCell {
             startDate.attributedText = attributedTime
         }
     }
+    
+    let editButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Edit", for: .normal)
+        button.setTitleColor(.red, for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 16)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     let notifBadge: UILabel = {
         let label = UILabel()
@@ -537,6 +572,12 @@ class TourneyCell: UITableViewCell {
         notifBadge.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
         notifBadge.heightAnchor.constraint(equalToConstant: 28).isActive = true
         notifBadge.widthAnchor.constraint(equalToConstant: 28).isActive = true
+        
+        addSubview(editButton)
+        editButton.rightAnchor.constraint(equalTo: tournamentName.leftAnchor).isActive = true
+        editButton.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
+        editButton.heightAnchor.constraint(equalToConstant: 34).isActive = true
+        editButton.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
         
         addSubview(sexAndType)
         sexAndType.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true

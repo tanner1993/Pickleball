@@ -372,6 +372,15 @@ class Notifications: UITableViewController {
             Database.database().reference().child("user_tourneys").child(uid).child(tourneyId).setValue(0)
             Database.database().reference().child("user_tourneys").child(fromId).child(tourneyId).setValue(1)
             
+            Database.database().reference().child("users").child(fromId).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value {
+                    let playersDeviceId = value as? String ?? "none"
+                    let pusher = PushNotificationHandler()
+                    pusher.setupPushNotification(deviceId: playersDeviceId, message: "You have successfully been registered for a tournament", title: "Registered for Tourney")
+                    //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                }
+            })
+            
             Database.database().reference().child("notifications").child(notificationId).removeValue()
             Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
             Database.database().reference().child("user_notifications").child(fromId).child(notificationId).removeValue()

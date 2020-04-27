@@ -18,7 +18,7 @@ class Tourney: NSObject {
     var age_group: String?
     var start_date: Double?
     var time: Double?
-    var duration: Int?
+    var end_date: Double?
     var creator: String?
     var state: String?
     var county: String?
@@ -29,6 +29,7 @@ class Tourney: NSObject {
     var yetToView: [String]?
     var notifBubble: Int?
     var regTeams: Int?
+    var style: Int?
     
     func removeCantChallenge(team_1_player_1: String, team_1_player_2: String, team_2_player_1: String, team_2_player_2: String, tourneyId: String) {
         let ref = Database.database().reference().child("tourneys").child(tourneyId)

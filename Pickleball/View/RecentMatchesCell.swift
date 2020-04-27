@@ -34,6 +34,20 @@ class RecentMatchesCell: BaseCell {
     
     var teams = [Team]() {
         didSet {
+            
+            switch match!.active {
+            case 0:
+                headerLabel.text = "Pre-Match Confirmation"
+            case 1:
+                headerLabel.text = "Enter Scores"
+            case 2:
+                headerLabel.text = "Confirm Scores"
+            case 3:
+                headerLabel.text = "Match Complete"
+            default:
+                print("")
+            }
+            
             if let seconds = self.match?.time {
                 
                 let dateTime = Date(timeIntervalSince1970: seconds)
@@ -161,6 +175,14 @@ class RecentMatchesCell: BaseCell {
         bi.isUserInteractionEnabled = true
         bi.image = UIImage(named: "tourney_symbol")
         return bi
+    }()
+    
+    let headerLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 24)
+        label.textAlignment = .center
+        return label
     }()
     
     let timeStamp: UILabel = {
@@ -402,7 +424,23 @@ class RecentMatchesCell: BaseCell {
         return view
     }()
     
+    let notifBadge: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.layer.cornerRadius = 13
+        label.layer.masksToBounds = true
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+    
     override func setupViews() {
+        let screenSize = UIScreen.main.bounds
+        let screenWidth = screenSize.width
+        let height = Float(screenWidth / 1.875)
         
         addSubview(timeStamp)
         timeStamp.topAnchor.constraint(equalTo: topAnchor, constant: 1).isActive = true
@@ -410,15 +448,21 @@ class RecentMatchesCell: BaseCell {
         timeStamp.heightAnchor.constraint(equalToConstant: 25).isActive = true
         timeStamp.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
         
+        addSubview(headerLabel)
+        headerLabel.topAnchor.constraint(equalTo: timeStamp.bottomAnchor).isActive = true
+        headerLabel.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        headerLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        headerLabel.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        
         addSubview(whiteBox)
         whiteBox.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         whiteBox.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        whiteBox.heightAnchor.constraint(equalToConstant: frame.height - 26).isActive = true
+        whiteBox.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
         whiteBox.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
         
         whiteBox.addSubview(challengerPlaceholder)
         
-        let challengerPlaceholderLoc = calculateButtonPosition(x: 250, y: 92, w: 476, h: 165, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let challengerPlaceholderLoc = calculateButtonPosition(x: 250, y: 92, w: 476, h: 165, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
 
         challengerPlaceholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(challengerPlaceholderLoc.Y)).isActive = true
         challengerPlaceholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(challengerPlaceholderLoc.X)).isActive = true
@@ -427,7 +471,7 @@ class RecentMatchesCell: BaseCell {
         
         whiteBox.addSubview(challengedPlaceholder)
         
-        let challengedPlaceholderLoc = calculateButtonPosition(x: 250, y: 308, w: 476, h: 165, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let challengedPlaceholderLoc = calculateButtonPosition(x: 250, y: 308, w: 476, h: 165, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         
         challengedPlaceholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(challengedPlaceholderLoc.Y)).isActive = true
         challengedPlaceholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(challengedPlaceholderLoc.X)).isActive = true
@@ -436,7 +480,7 @@ class RecentMatchesCell: BaseCell {
         
         whiteBox.addSubview(timePlaceholder)
         
-        let timePlaceholderLoc = calculateButtonPosition(x: 690, y: 200, w: 105, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let timePlaceholderLoc = calculateButtonPosition(x: 690, y: 200, w: 105, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         
         timePlaceholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(timePlaceholderLoc.Y)).isActive = true
         timePlaceholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(timePlaceholderLoc.X)).isActive = true
@@ -445,7 +489,7 @@ class RecentMatchesCell: BaseCell {
         
         whiteBox.addSubview(timeLeftLabel)
         
-        let timeLeftLabelLoc = calculateButtonPosition(x: 690, y: 200, w: 105, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let timeLeftLabelLoc = calculateButtonPosition(x: 690, y: 200, w: 105, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         
         timeLeftLabel.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(timeLeftLabelLoc.Y)).isActive = true
         timeLeftLabel.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(timeLeftLabelLoc.X)).isActive = true
@@ -454,7 +498,7 @@ class RecentMatchesCell: BaseCell {
         
         whiteBox.addSubview(challenged)
         
-        let challengedLoc = calculateButtonPosition(x: 250, y: 198, w: 350, h: 50, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let challengedLoc = calculateButtonPosition(x: 250, y: 198, w: 350, h: 50, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         
         challenged.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(challengedLoc.Y)).isActive = true
         challenged.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(challengedLoc.X)).isActive = true
@@ -476,7 +520,7 @@ class RecentMatchesCell: BaseCell {
         whiteBox.addSubview(match4Label2)
         whiteBox.addSubview(match5Label2)
         
-        let teamRankLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let teamRankLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         
         whiteBox.addSubview(teamRank1)
         teamRank1.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(teamRankLoc.Y)).isActive = true
@@ -484,7 +528,7 @@ class RecentMatchesCell: BaseCell {
         teamRank1.heightAnchor.constraint(equalToConstant: CGFloat(teamRankLoc.H)).isActive = true
         teamRank1.widthAnchor.constraint(equalToConstant: CGFloat(teamRankLoc.W)).isActive = true
         
-        let teamRankLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let teamRankLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         
         whiteBox.addSubview(teamRank2)
         teamRank2.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(teamRankLoc2.Y)).isActive = true
@@ -513,35 +557,35 @@ class RecentMatchesCell: BaseCell {
         challengedTeam2.bottomAnchor.constraint(equalTo: challengedPlaceholder.bottomAnchor, constant: -5).isActive = true
         
         whiteBox.addSubview(match1Placeholder)
-        let match1PlaceholderLoc = calculateButtonPosition(x: 566, y: 42, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let match1PlaceholderLoc = calculateButtonPosition(x: 566, y: 42, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         match1Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match1PlaceholderLoc.Y)).isActive = true
         match1Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match1PlaceholderLoc.X)).isActive = true
         match1Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match1PlaceholderLoc.H)).isActive = true
         match1Placeholder.widthAnchor.constraint(equalToConstant: CGFloat(match1PlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(match2Placeholder)
-        let match2PlaceholderLoc = calculateButtonPosition(x: 566, y: 120, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let match2PlaceholderLoc = calculateButtonPosition(x: 566, y: 120, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         match2Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match2PlaceholderLoc.Y)).isActive = true
         match2Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match2PlaceholderLoc.X)).isActive = true
         match2Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match2PlaceholderLoc.H)).isActive = true
         match2Placeholder.widthAnchor.constraint(equalToConstant: CGFloat(match2PlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(match3Placeholder)
-        let match3PlaceholderLoc = calculateButtonPosition(x: 566, y: 198, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let match3PlaceholderLoc = calculateButtonPosition(x: 566, y: 198, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         match3Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match3PlaceholderLoc.Y)).isActive = true
         match3Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match3PlaceholderLoc.X)).isActive = true
         match3Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match3PlaceholderLoc.H)).isActive = true
         match3Placeholder.widthAnchor.constraint(equalToConstant: CGFloat(match3PlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(match4Placeholder)
-        let match4PlaceholderLoc = calculateButtonPosition(x: 566, y: 276, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let match4PlaceholderLoc = calculateButtonPosition(x: 566, y: 276, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         match4Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match4PlaceholderLoc.Y)).isActive = true
         match4Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match4PlaceholderLoc.X)).isActive = true
         match4Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match4PlaceholderLoc.H)).isActive = true
         match4Placeholder.widthAnchor.constraint(equalToConstant: CGFloat(match4PlaceholderLoc.W)).isActive = true
         
         whiteBox.addSubview(match5Placeholder)
-        let match5PlaceholderLoc = calculateButtonPosition(x: 566, y: 354, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
+        let match5PlaceholderLoc = calculateButtonPosition(x: 566, y: 354, w: 140, h: 62, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
         match5Placeholder.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(match5PlaceholderLoc.Y)).isActive = true
         match5Placeholder.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(match5PlaceholderLoc.X)).isActive = true
         match5Placeholder.heightAnchor.constraint(equalToConstant: CGFloat(match5PlaceholderLoc.H)).isActive = true
@@ -602,6 +646,12 @@ class RecentMatchesCell: BaseCell {
         separatorView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 2).isActive = true
         separatorView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        
+        addSubview(notifBadge)
+        notifBadge.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 5).isActive = true
+        notifBadge.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
+        notifBadge.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        notifBadge.widthAnchor.constraint(equalToConstant: 26).isActive = true
     }
     
     func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {
