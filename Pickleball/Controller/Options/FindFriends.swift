@@ -26,6 +26,12 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     var teammateId = "none"
     var opp1Id = "none"
     var opp2Id = "none"
+    var teams = [Team]()
+    var tourneyId = "none"
+    var simpleInvite = 0
+    var tourneyOpenInvites = [String]()
+    var tourneyStandings = TourneyStandings()
+    var startTime: Double = 0
     
     var friends = [Player]()
     var almostFriends = [Player]()
@@ -230,8 +236,17 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                 friendNavController.navigationBar.tintColor = .white
                 friendNavController.navigationBar.isTranslucent = false
                 present(friendNavController, animated: true, completion: nil)
+                
             } else if sender == 2 || sender == 3 || sender == 4 {
                 returnPlayerDetails(whichOne: indexPath.item)
+            } else {
+                if tourneyId != "none" {
+                    if simpleInvite == 0 {
+                        sendTourneyInvitation(toId: searchResults[indexPath.item].id ?? "none", deviceId: searchResults[indexPath.item].deviceId ?? "none")
+                    } else {
+                        sendSimpleInvite(toId: searchResults[indexPath.item].id ?? "none", deviceId: searchResults[indexPath.item].deviceId ?? "none")
+                    }
+                }
             }
         } else {
             switch selectedDropDown {
@@ -274,6 +289,145 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         }
         createMatch?.getPlayerDetails()
         dismiss(animated: true, completion: nil)
+    }
+    
+    func handleDismiss(action: UIAlertAction) {
+        if simpleInvite == 0 {
+            tourneyStandings.navigationItem.rightBarButtonItem = nil
+        }
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func sendTourneyInvitation(toId: String, deviceId: String) {
+        let check = checkAlreadyRegistered(toId: toId)
+        if check == false {
+            let alreadyRegistered = UIAlertController(title: "Sorry", message: "This player has already registered for this tourney", preferredStyle: .alert)
+            alreadyRegistered.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alreadyRegistered, animated: true, completion: nil)
+            return
+        }
+        let checkI = checkAlreadyInvited(toId: toId)
+        if checkI == false {
+            let alreadyInvited = UIAlertController(title: "Sorry", message: "This player has already been invited to this tourney", preferredStyle: .alert)
+            alreadyInvited.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alreadyInvited, animated: true, completion: nil)
+            return
+        }
+        let joinInviteConfirmed = UIAlertController(title: "Successfully sent tourney invite", message: "Have your friend check their notifications to accept!", preferredStyle: .alert)
+        joinInviteConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
+        self.present(joinInviteConfirmed, animated: true, completion: nil)
+        let uid = Auth.auth().currentUser!.uid
+        let timeStamp = Int(Date().timeIntervalSince1970)
+        let ref = Database.database().reference().child("notifications")
+        let notificationRef = ref.childByAutoId()
+        let values = ["type": "tourney_invite", "fromId": uid, "toId": toId, "timestamp": timeStamp, "tourneyId": tourneyId] as [String : Any]
+        notificationRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            let notificationsRef = Database.database().reference()
+            let notificationId = notificationRef.key!
+            self.tourneyOpenInvites.append(uid)
+            self.tourneyOpenInvites.append(toId)
+            let childUpdates = ["/\("user_notifications")/\(uid)/\(notificationId)/": 0, "/\("user_notifications")/\(toId)/\(notificationId)/": 1, "/\("tourneys")/\(self.tourneyId)/\("invites")/": self.tourneyOpenInvites] as [String : Any]
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self.present(messageSendFailed, animated: true, completion: nil)
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                
+                print("Crazy data 2 saved!")
+                Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let nameOnInvite = value as? String ?? "none"
+                        let pusher = PushNotificationHandler()
+                        pusher.setupPushNotification(deviceId: deviceId, message: "\(nameOnInvite) wants you to play in a tourney with them", title: "Tourney Invite")
+                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                    }
+                })
+                
+            })
+            
+        })
+    }
+    
+    func sendSimpleInvite(toId: String, deviceId: String) {
+        let check = checkAlreadyRegistered(toId: toId)
+        if check == false {
+            let alreadyRegistered = UIAlertController(title: "No need", message: "This player has already registered for this tourney", preferredStyle: .alert)
+            alreadyRegistered.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alreadyRegistered, animated: true, completion: nil)
+            return
+        }
+        let joinInviteConfirmed = UIAlertController(title: "Successfully sent tourney invite", message: "It's waiting in your friends inbox", preferredStyle: .alert)
+        joinInviteConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
+        self.present(joinInviteConfirmed, animated: true, completion: nil)
+        let uid = Auth.auth().currentUser!.uid
+        let timeStamp = Int(Date().timeIntervalSince1970)
+        let ref = Database.database().reference().child("notifications")
+        let notificationRef = ref.childByAutoId()
+        let values = ["type": "tourney_invite_simple", "fromId": uid, "toId": toId, "timestamp": timeStamp, "tourneyId": tourneyId] as [String : Any]
+        notificationRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            let notificationsRef = Database.database().reference()
+            let notificationId = notificationRef.key!
+            let childUpdates = ["/\("user_notifications")/\(toId)/\(notificationId)/": 1] as [String : Any]
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self.present(messageSendFailed, animated: true, completion: nil)
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                
+                print("Crazy data 2 saved!")
+                Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let nameOnInvite = value as? String ?? "none"
+                        let pusher = PushNotificationHandler()
+                        pusher.setupPushNotification(deviceId: deviceId, message: "\(nameOnInvite) wants you to check out a tourney", title: "Tourney Invite")
+                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                    }
+                })
+                
+            })
+            
+        })
+    }
+    
+    func checkAlreadyRegistered(toId: String) -> Bool {
+        for index in teams {
+            if index.player1 == toId || index.player2 == toId {
+                return false
+            }
+        }
+        return true
+    }
+    
+    func checkAlreadyInvited(toId: String) -> Bool {
+        if tourneyOpenInvites.contains(toId) == true {
+            return false
+        } else {
+            return true
+        }
     }
     
     let whiteContainerView: UIView = {

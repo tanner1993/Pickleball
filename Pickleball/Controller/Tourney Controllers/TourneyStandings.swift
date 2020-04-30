@@ -383,13 +383,15 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     @objc func handleInviteFriends() {
         let layout = UICollectionViewFlowLayout()
-        let friendList = FriendList(collectionViewLayout: layout)
-        friendList.tourneyId = thisTourney.id ?? "none"
-        friendList.tourneyOpenInvites = tourneyOpenInvites
-        friendList.tourneyStandings = self
-        friendList.startTime = thisTourney.start_date ?? 0
-        friendList.simpleInvite = 1
-        navigationController?.present(friendList, animated: true, completion: nil)
+        let playerList = FindFriends(collectionViewLayout: layout)
+        playerList.tourneyId = thisTourney.id ?? "none"
+        playerList.tourneyOpenInvites = tourneyOpenInvites
+        playerList.tourneyStandings = self
+        playerList.startTime = thisTourney.start_date ?? 0
+        playerList.sender = 5
+        playerList.simpleInvite = 1
+        playerList.teams = teams
+        navigationController?.present(playerList, animated: true, completion: nil)
     }
     
     
@@ -448,12 +450,14 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     @objc func handleEnterTourney() {
         let layout = UICollectionViewFlowLayout()
-        let friendList = FriendList(collectionViewLayout: layout)
-        friendList.tourneyId = thisTourney.id ?? "none"
-        friendList.tourneyOpenInvites = tourneyOpenInvites
-        friendList.tourneyStandings = self
-        friendList.startTime = thisTourney.start_date ?? 0
-        navigationController?.present(friendList, animated: true, completion: nil)
+        let playerList = FindFriends(collectionViewLayout: layout)
+        playerList.tourneyId = thisTourney.id ?? "none"
+        playerList.tourneyOpenInvites = tourneyOpenInvites
+        playerList.tourneyStandings = self
+        playerList.startTime = thisTourney.start_date ?? 0
+        playerList.sender = 5
+        playerList.teams = teams
+        navigationController?.present(playerList, animated: true, completion: nil)
         
     }
     

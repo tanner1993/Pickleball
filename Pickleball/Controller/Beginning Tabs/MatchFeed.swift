@@ -108,7 +108,11 @@ class MatchFeed: UITableViewController {
             } else {
                 activityIndicatorView.stopAnimating()
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
-                cell.textLabel?.text = "No News"
+                if sender == 0 {
+                    cell.textLabel?.text = "No News"
+                } else {
+                    cell.textLabel?.text = "No Matches Yet"
+                }
                 cell.textLabel?.textAlignment = .center
                 return cell
             }
