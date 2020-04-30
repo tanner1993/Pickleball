@@ -141,9 +141,35 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         })
         cell.match = match
         cell.teams = teams
+        cell.editButton.addTarget(self, action: #selector(handleDelete), for: .touchUpInside)
+        cell.editButton.tag = indexPath.item
         cell.backgroundColor = UIColor.white
         return cell
     }
+    
+    @objc func handleDelete(sender: UIButton) {
+        let matchToDelete = matches[sender.tag]
+        Database.database().reference().child("tourneys").child(tourneyIdentifier!).child("matches").child(matchToDelete.matchId!).removeValue()
+        matches.remove(at: sender.tag)
+        collectionView.reloadData()
+    }
+    
+//    func handleDeleteConfirmed(action: UIAlertAction) {
+//        let matchToDelete = matches[matchDeletionIndex]
+//        var referencesNeedDeletion = [String]()
+//        if matchToDelete.doubles == true {
+//            referencesNeedDeletion.append(matchToDelete.team_1_player_2!)
+//            referencesNeedDeletion.append(matchToDelete.team_2_player_2!)
+//        }
+//        referencesNeedDeletion.append(matchToDelete.team_1_player_1!)
+//        referencesNeedDeletion.append(matchToDelete.team_2_player_1!)
+//        for index in referencesNeedDeletion {
+//            Database.database().reference().child("user_matches").child(index).child(matchToDelete.matchId!).removeValue()
+//        }
+//        Database.database().reference().child("matches").child(matchToDelete.matchId!).removeValue()
+//        matches.remove(at: matchDeletionIndex)
+//        tableView.reloadData()
+//    }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: frame.width, height: frame.width / 1.875 + 66)

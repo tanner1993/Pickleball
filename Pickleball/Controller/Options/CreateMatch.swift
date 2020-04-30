@@ -100,13 +100,13 @@ class CreateMatch: UIViewController {
     
     @objc func handleSelectPlayer(sender: UIButton) {
         let layout = UICollectionViewFlowLayout()
-        let friendList = FriendList(collectionViewLayout: layout)
-        friendList.whoSent = sender.tag
-        friendList.createMatch = self
-        friendList.teammateId = teammate.id
-        friendList.opp1Id = opponent1.id
-        friendList.opp2Id = opponent2.id
-        present(friendList, animated: true, completion: nil)
+        let playerList = FindFriends(collectionViewLayout: layout)
+        playerList.sender = sender.tag
+        playerList.createMatch = self
+        playerList.teammateId = teammate.id
+        playerList.opp1Id = opponent1.id
+        playerList.opp2Id = opponent2.id
+        present(playerList, animated: true, completion: nil)
     }
     
     @objc func handleCreateMatch() {
@@ -319,7 +319,7 @@ class CreateMatch: UIViewController {
         button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.tag = 1
+        button.tag = 2
         button.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
         return button
     }()
@@ -339,7 +339,7 @@ class CreateMatch: UIViewController {
         button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.tag = 2
+        button.tag = 3
         button.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
         return button
     }()
@@ -359,7 +359,7 @@ class CreateMatch: UIViewController {
         button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.tag = 3
+        button.tag = 4
         button.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
         return button
     }()

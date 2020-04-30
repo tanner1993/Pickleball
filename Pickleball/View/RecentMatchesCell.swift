@@ -35,6 +35,15 @@ class RecentMatchesCell: BaseCell {
     var teams = [Team]() {
         didSet {
             
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
+            if (uid == match?.team_1_player_1 || uid == match?.team_1_player_2) && match?.active == 0 {
+                editButton.isHidden = false
+            } else {
+                editButton.isHidden = true
+            }
+            
             switch match!.active {
             case 0:
                 headerLabel.text = "Pre-Match Confirmation"
@@ -437,6 +446,17 @@ class RecentMatchesCell: BaseCell {
         return label
     }()
     
+    let editButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Delete", for: .normal)
+        button.setTitleColor(.red, for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.titleLabel?.textAlignment = .left
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     override func setupViews() {
         let screenSize = UIScreen.main.bounds
         let screenWidth = screenSize.width
@@ -447,6 +467,12 @@ class RecentMatchesCell: BaseCell {
         timeStamp.leftAnchor.constraint(equalTo: rightAnchor, constant: -275).isActive = true
         timeStamp.heightAnchor.constraint(equalToConstant: 25).isActive = true
         timeStamp.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
+        
+        addSubview(editButton)
+        editButton.leftAnchor.constraint(equalTo: leftAnchor, constant: 2).isActive = true
+        editButton.topAnchor.constraint(equalTo: timeStamp.topAnchor).isActive = true
+        editButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        editButton.widthAnchor.constraint(equalToConstant: 90).isActive = true
         
         addSubview(headerLabel)
         headerLabel.topAnchor.constraint(equalTo: timeStamp.bottomAnchor).isActive = true

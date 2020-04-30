@@ -21,6 +21,10 @@ class Notifications: UITableViewController {
         var idT: String
         var highestRank: Int
     }
+    struct shouldDelete {
+        var should: Bool
+        var idT: String
+    }
     //var invitations = [Invitation]()
     var notifications = [Message]()
     let cellId = "cellId"
@@ -32,6 +36,7 @@ class Notifications: UITableViewController {
     var tourneyPlayers = [tourneyPlayer]()
     var tourneyHighestRanks = [tourneyHighestRank]()
     var tourneyOpenInvites = [String]()
+    var shouldDelete1 = [shouldDelete]()
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -176,6 +181,7 @@ class Notifications: UITableViewController {
                 return cell
             } else if notifications[indexPath.row].message == "tourney_invite" {
                 observeTourneyTeams(tourneyId: notifications[indexPath.row].tourneyId ?? "none")
+                checkIfStillExists(tourneyId: notifications[indexPath.row].tourneyId ?? "none")
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
                 cell.appLevel.isHidden = true
                 cell.friendInvite = notifications[indexPath.row]
@@ -192,7 +198,6 @@ class Notifications: UITableViewController {
                 cell.rejectButton.addTarget(self, action: #selector(rejectTourney), for: .touchUpInside)
                 return cell
             } else if notifications[indexPath.row].message == "tourney_invite_simple" {
-                observeTourneyTeams(tourneyId: notifications[indexPath.row].tourneyId ?? "none")
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
                 cell.appLevel.isHidden = true
                 cell.friendInvite = notifications[indexPath.row]
@@ -206,6 +211,24 @@ class Notifications: UITableViewController {
                 return cell
             }
         }
+    }
+    
+    func checkIfStillExists(tourneyId: String) {
+        let ref = Database.database().reference()
+        
+        ref.child("tourneys").observeSingleEvent(of: .value, with: { (snapshot) in
+            
+            if snapshot.hasChild(tourneyId){
+                
+                print("tourney exists")
+                
+            }else{
+                
+                self.shouldDelete1.append(shouldDelete(should: true, idT: tourneyId))
+            }
+            
+            
+        })
     }
     
     func observeTourneyTeams(tourneyId: String) {
@@ -355,6 +378,14 @@ class Notifications: UITableViewController {
         let whichNotif = sender.tag
         guard let tourneyId = notifications[whichNotif].tourneyId, let fromId = notifications[whichNotif].fromId, let uid = Auth.auth().currentUser?.uid, let notificationId = notifications[whichNotif].id else {
             return
+        }
+        for index in shouldDelete1 {
+            if index.idT == tourneyId && index.should == true {
+                Database.database().reference().child("notifications").child(notificationId).removeValue()
+                Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
+                Database.database().reference().child("user_notifications").child(fromId).child(notificationId).removeValue()
+                return
+            }
         }
         let highestCurrentRank = getHighestCurrentRank(tourneyId: tourneyId)
         print(highestCurrentRank)

@@ -22,11 +22,14 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
     var selectedDropDown = -1
     var buttonsCreated = 0
     var inviteTourneyId = "none"
+    var myCreatedTourneys = false
     
     var tourneyList: TourneyList?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        tableView?.register(TourneyCell.self, forCellReuseIdentifier: cellId)
         
         if inviteTourneyId == "none" {
             setupFilterCollectionView()
@@ -34,11 +37,12 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
             setupViews()
             tableView?.contentInset = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
             tableView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+        } else if inviteTourneyId == "created" {
+            
         } else {
             fetchTourney()
         }
-
-        tableView?.register(TourneyCell.self, forCellReuseIdentifier: cellId)
+        
         tableView?.backgroundColor = .white
         self.tableView.separatorStyle = .none
 
@@ -112,6 +116,17 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
     @objc func handleSearchFilter() {
         searchBar.resignFirstResponder()
         searchResults = tourneys
+        if myCreatedTourneyCheck.isOn {
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
+            searchResults = searchResults.filter({ (tourney) -> Bool in
+                let creator = uid
+                return tourney.creator! == creator
+            })
+            tableView.reloadData()
+            return
+        }
         
         if textFields[0].text! != "Any" {
             searchResults = searchResults.filter({ (tourney) -> Bool in
@@ -312,6 +327,46 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         return view
     }()
     
+    let inputContainer: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        view.layer.cornerRadius = 5
+        view.layer.masksToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let createdTourneysLabel: UILabel = {
+        let fl = UILabel()
+        fl.text = "Created"
+        fl.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        fl.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        fl.adjustsFontSizeToFitWidth = true
+        fl.textAlignment = .center
+        fl.translatesAutoresizingMaskIntoConstraints = false
+        return fl
+    }()
+    
+    let myCreatedTourneyCheck: UISwitch = {
+        let uiSwitch = UISwitch()
+        uiSwitch.translatesAutoresizingMaskIntoConstraints = false
+        uiSwitch.addTarget(self, action: #selector(handleSwitchChanged), for: .valueChanged)
+        return uiSwitch
+    }()
+    
+    @objc func handleSwitchChanged() {
+        searchBar.isHidden = myCreatedTourneyCheck.isOn ? true : false
+        whiteContainerView2.isHidden = myCreatedTourneyCheck.isOn ? true : false
+        whiteContainerView.isHidden = myCreatedTourneyCheck.isOn ? true : false
+        searchButton.isHidden = myCreatedTourneyCheck.isOn ? true : false
+        separatorView.isHidden = myCreatedTourneyCheck.isOn ? true : false
+        filtersLabel.isHidden = myCreatedTourneyCheck.isOn ? true : false
+        inputContainer.isHidden = myCreatedTourneyCheck.isOn ? true : false
+        tableView?.contentInset = myCreatedTourneyCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+        tableView?.scrollIndicatorInsets = myCreatedTourneyCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+        handleSearchFilter()
+    }
+    
 
     let inputsArray = ["Skill Level", "State", "County", "Sex", "Age Group"]
     
@@ -319,8 +374,8 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         
         view.addSubview(searchBar)
         searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        searchBar.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        searchBar.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        searchBar.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        searchBar.widthAnchor.constraint(equalToConstant: view.frame.width / 2 + 25).isActive = true
         searchBar.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         searchBar.delegate = self
@@ -361,6 +416,19 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         separatorView.topAnchor.constraint(equalTo: searchButton.bottomAnchor, constant: 5).isActive = true
         separatorView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        
+        view.addSubview(createdTourneysLabel)
+        createdTourneysLabel.topAnchor.constraint(equalTo: searchBar.topAnchor).isActive = true
+        createdTourneysLabel.leftAnchor.constraint(equalTo: searchBar.rightAnchor, constant: 4).isActive = true
+        createdTourneysLabel.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        createdTourneysLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        view.addSubview(myCreatedTourneyCheck)
+        myCreatedTourneyCheck.topAnchor.constraint(equalTo: searchBar.topAnchor, constant: 9).isActive = true
+        myCreatedTourneyCheck.leftAnchor.constraint(equalTo: createdTourneysLabel.rightAnchor, constant: 1).isActive = true
+//        myCreatedTourneyCheck.widthAnchor.constraint(equalToConstant: 100).isActive = true
+//        myCreatedTourneyCheck.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
         
     }
 
@@ -506,16 +574,8 @@ extension TourneySearch: UISearchBarDelegate {
         
     }
     
+    
     func createInputContainer(topAnchor: UIView, anchorConstant: Int, numberInputs: Int, vertSepDistance: Int, inputs: [String], inputTypes: [Int]) -> UIView {
-        
-        let inputContainer: UIView = {
-            let view = UIView()
-            view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-            view.layer.cornerRadius = 5
-            view.layer.masksToBounds = true
-            view.translatesAutoresizingMaskIntoConstraints = false
-            return view
-        }()
         
         view.addSubview(inputContainer)
         inputContainer.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true

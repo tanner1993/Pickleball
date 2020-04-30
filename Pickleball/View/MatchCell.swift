@@ -130,6 +130,7 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
         })
         cell.match = match
         cell.teams = teams
+        cell.editButton.isHidden = true
         cell.backgroundColor = UIColor.white
         return cell
     }

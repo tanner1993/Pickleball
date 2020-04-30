@@ -35,6 +35,14 @@ class TourneyList: UITableViewController {
         return view
     }()
     
+    func loadUpMyCreatedTourneys(createdTourney: Tourney) {
+        let tourneySearch = TourneySearch()
+        tourneySearch.tourneyList = self
+        tourneySearch.inviteTourneyId = "created"
+        tourneySearch.searchResults.append(createdTourney)
+        navigationController?.pushViewController(tourneySearch, animated: true)
+    }
+    
 //    let localOfficialTourneys: UILabel = {
 //        let label = UILabel()
 //        label.translatesAutoresizingMaskIntoConstraints = false
@@ -95,7 +103,6 @@ class TourneyList: UITableViewController {
     @objc func handleSearchTourneys() {
         let tourneySearch = TourneySearch()
         tourneySearch.tourneyList = self
-        tourneySearch.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(tourneySearch, animated: true)
     }
     

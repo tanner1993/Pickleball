@@ -22,6 +22,7 @@ class MatchFeed: UITableViewController {
     var levelTracker = [String: String]()
     var matchIds = [String]()
     var matchNotifs = [Bool]()
+    var matchDeletionIndex = Int()
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -218,6 +219,9 @@ class MatchFeed: UITableViewController {
                 }
             }
             
+            cell.editButton.addTarget(self, action: #selector(handleDelete), for: .touchUpInside)
+            cell.editButton.tag = indexPath.item
+            
             cell.challengerTeam1.tag = indexPath.item
             cell.challengerTeam1.addTarget(self, action: #selector(self.handleViewPlayer), for: .touchUpInside)
             cell.challengerTeam2.tag = indexPath.item
@@ -231,6 +235,31 @@ class MatchFeed: UITableViewController {
             cell.backgroundColor = UIColor.white
             return cell
         }
+    }
+    
+    @objc func handleDelete(sender: UIButton) {
+        matchDeletionIndex = sender.tag
+        let newalert = UIAlertController(title: "Confirm", message: "Are you sure you want to delete this Match?", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.default, handler: nil))
+        newalert.addAction(UIAlertAction(title: "Yes", style: UIAlertAction.Style.default, handler: handleDeleteConfirmed))
+        self.present(newalert, animated: true, completion: nil)
+    }
+    
+    func handleDeleteConfirmed(action: UIAlertAction) {
+        let matchToDelete = matches[matchDeletionIndex]
+        var referencesNeedDeletion = [String]()
+        if matchToDelete.doubles == true {
+            referencesNeedDeletion.append(matchToDelete.team_1_player_2!)
+            referencesNeedDeletion.append(matchToDelete.team_2_player_2!)
+        }
+        referencesNeedDeletion.append(matchToDelete.team_1_player_1!)
+        referencesNeedDeletion.append(matchToDelete.team_2_player_1!)
+        for index in referencesNeedDeletion {
+            Database.database().reference().child("user_matches").child(index).child(matchToDelete.matchId!).removeValue()
+        }
+        Database.database().reference().child("matches").child(matchToDelete.matchId!).removeValue()
+        matches.remove(at: matchDeletionIndex)
+        tableView.reloadData()
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

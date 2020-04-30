@@ -22,6 +22,13 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     var selectedDropDown = -1
     var buttonsCreated = 0
     var sender = 0
+    var createMatch: CreateMatch?
+    var teammateId = "none"
+    var opp1Id = "none"
+    var opp2Id = "none"
+    
+    var friends = [Player]()
+    var almostFriends = [Player]()
     
     var tourneyList: TourneyList?
     
@@ -30,15 +37,18 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         
         fetchUsers()
         setupViews()
+        if sender > 1 {
+            fetchFriends()
+        }
         
         self.collectionView!.register(FriendListCell.self, forCellWithReuseIdentifier: cellId)
         collectionView?.backgroundColor = .white
         if sender == 0 {
-            collectionView?.contentInset = UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
+            collectionView?.contentInset = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
             collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
         } else {
             collectionView?.contentInset = UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
-            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
         }
         setupFilterCollectionView()
         
@@ -61,7 +71,15 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     @objc func handleSearchFilter() {
         searchBar.resignFirstResponder()
+        
+        if myFriendsCheck.isOn {
+            searchResults = friends
+            collectionView.reloadData()
+            return
+        }
+        
         searchResults = players
+        
         
         if textFields[0].text! != "Any" {
             searchResults = searchResults.filter({ (player) -> Bool in
@@ -95,6 +113,47 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         }
         
         collectionView.reloadData()
+    }
+    
+    func fetchFriends() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let friendsRef = Database.database().reference().child("friends").child(uid)
+        friendsRef.observe(.childAdded, with: {(snapshot) in
+            let friendId = snapshot.key
+            let fullFriend: Bool = snapshot.value! as! Bool
+            let rootRef = Database.database().reference().child("users").child(friendId)
+            rootRef.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value as? NSDictionary {
+                    let player = Player()
+                    let name = value["name"] as? String ?? "No Name"
+                    let username = value["username"] as? String ?? "No Username"
+                    let state = value["state"] as? String ?? "No State"
+                    let county = value["county"] as? String ?? "No county"
+                    let skillLevel = value["skill_level"] as? Float ?? 0.0
+                    let exp = value["exp"] as? Int ?? 0
+                    let haloLevel = player.haloLevel(exp: exp)
+                    let deviceId = value["deviceId"] as? String ?? "none"
+                    player.deviceId = deviceId
+                    player.name = name
+                    player.username = username
+                    player.id = friendId
+                    player.skill_level = skillLevel
+                    player.halo_level = haloLevel
+                    player.state = state
+                    player.county = county
+                    if fullFriend == false {
+                        self.almostFriends.append(player)
+                    } else {
+                        if friendId != self.teammateId && friendId != self.opp1Id && friendId != self.opp2Id {
+                            self.friends.append(player)
+                        }
+                    }
+                    DispatchQueue.main.async { self.collectionView.reloadData() }
+                }
+            })
+        })
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -163,7 +222,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             playerProfile.isFriend = 3
             if sender == 0 {
                 navigationController?.pushViewController(playerProfile, animated: true)
-            } else {
+            } else if sender == 1 {
                 let friendNavController = UINavigationController(rootViewController: playerProfile)
                 //friendList.hidesBottomBarWhenPushed = true
                 playerProfile.findFriendSender = 1
@@ -171,6 +230,8 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                 friendNavController.navigationBar.tintColor = .white
                 friendNavController.navigationBar.isTranslucent = false
                 present(friendNavController, animated: true, completion: nil)
+            } else if sender == 2 || sender == 3 || sender == 4 {
+                returnPlayerDetails(whichOne: indexPath.item)
             }
         } else {
             switch selectedDropDown {
@@ -189,6 +250,30 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             }
             dismissMenu()
         }
+    }
+    
+    func returnPlayerDetails(whichOne: Int) {
+        switch sender {
+        case 2:
+            createMatch?.teammate.id = searchResults[whichOne].id ?? "none"
+            createMatch?.teammate.username = searchResults[whichOne].username ?? "none"
+            createMatch?.teammate.skillLevel = "\(searchResults[whichOne].skill_level ?? 1.0)"
+            createMatch?.teammate.deviceId = searchResults[whichOne].deviceId ?? "none"
+        case 3:
+            createMatch?.opponent1.id = searchResults[whichOne].id ?? "none"
+            createMatch?.opponent1.username = searchResults[whichOne].username ?? "none"
+            createMatch?.opponent1.skillLevel = "\(searchResults[whichOne].skill_level ?? 1.0)"
+            createMatch?.opponent1.deviceId = searchResults[whichOne].deviceId ?? "none"
+        case 4:
+            createMatch?.opponent2.id = searchResults[whichOne].id ?? "none"
+            createMatch?.opponent2.username = searchResults[whichOne].username ?? "none"
+            createMatch?.opponent2.skillLevel = "\(searchResults[whichOne].skill_level ?? 1.0)"
+            createMatch?.opponent2.deviceId = searchResults[whichOne].deviceId ?? "none"
+        default:
+            print("failed")
+        }
+        createMatch?.getPlayerDetails()
+        dismiss(animated: true, completion: nil)
     }
     
     let whiteContainerView: UIView = {
@@ -248,6 +333,46 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(handleReturn), for: .touchUpInside)
         return button
+    }()
+    
+    let myFriendsLabel: UILabel = {
+        let fl = UILabel()
+        fl.text = "My Friends:"
+        fl.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        fl.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        fl.adjustsFontSizeToFitWidth = true
+        fl.textAlignment = .center
+        fl.translatesAutoresizingMaskIntoConstraints = false
+        return fl
+    }()
+    
+    let myFriendsCheck: UISwitch = {
+        let uiSwitch = UISwitch()
+        uiSwitch.translatesAutoresizingMaskIntoConstraints = false
+        uiSwitch.addTarget(self, action: #selector(handleSwitchChanged), for: .valueChanged)
+        return uiSwitch
+    }()
+    
+    @objc func handleSwitchChanged() {
+        searchBar.isHidden = myFriendsCheck.isOn ? true : false
+        whiteContainerView2.isHidden = myFriendsCheck.isOn ? true : false
+        whiteContainerView.isHidden = myFriendsCheck.isOn ? true : false
+        searchButton.isHidden = myFriendsCheck.isOn ? true : false
+        separatorView.isHidden = myFriendsCheck.isOn ? true : false
+        filtersLabel.isHidden = myFriendsCheck.isOn ? true : false
+        inputContainer.isHidden = myFriendsCheck.isOn ? true : false
+        collectionView?.contentInset = myFriendsCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
+        collectionView?.scrollIndicatorInsets = myFriendsCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
+        handleSearchFilter()
+    }
+    
+    let inputContainer: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        view.layer.cornerRadius = 5
+        view.layer.masksToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
     @objc func handleReturn() {
@@ -310,6 +435,18 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         separatorView.topAnchor.constraint(equalTo: searchButton.bottomAnchor, constant: 5).isActive = true
         separatorView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        
+        if sender > 1 {
+            view.addSubview(myFriendsLabel)
+            myFriendsLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+            myFriendsLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -60).isActive = true
+            myFriendsLabel.widthAnchor.constraint(equalToConstant: 110).isActive = true
+            myFriendsLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+            
+            view.addSubview(myFriendsCheck)
+            myFriendsCheck.topAnchor.constraint(equalTo: myFriendsLabel.topAnchor, constant: 5).isActive = true
+            myFriendsCheck.leftAnchor.constraint(equalTo: myFriendsLabel.rightAnchor, constant: 1).isActive = true
+        }
         
     }
     
@@ -426,14 +563,6 @@ extension FindFriends: UISearchBarDelegate {
     
     func createInputContainer(topAnchor: UIView, anchorConstant: Int, numberInputs: Int, vertSepDistance: Int, inputs: [String], inputTypes: [Int]) -> UIView {
         
-        let inputContainer: UIView = {
-            let view = UIView()
-            view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-            view.layer.cornerRadius = 5
-            view.layer.masksToBounds = true
-            view.translatesAutoresizingMaskIntoConstraints = false
-            return view
-        }()
         
         view.addSubview(inputContainer)
         inputContainer.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true

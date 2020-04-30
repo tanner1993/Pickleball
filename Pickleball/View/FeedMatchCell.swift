@@ -85,6 +85,15 @@ class FeedMatchCell: UITableViewCell {
 //                }
 //            })
             
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
+            if uid == match.team_1_player_1 && match.active == 0 {
+                editButton.isHidden = false
+            } else {
+                editButton.isHidden = true
+            }
+            
             if match.seen == false {
                 notifBadge.isHidden = false
             } else {
@@ -343,6 +352,17 @@ class FeedMatchCell: UITableViewCell {
 
         }
     }
+    
+    let editButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Delete", for: .normal)
+        button.setTitleColor(.red, for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.titleLabel?.textAlignment = .left
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     let tourneySymbol: UIImageView = {
         let bi = UIImageView()
@@ -709,6 +729,12 @@ class FeedMatchCell: UITableViewCell {
         headerLabel.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
         headerLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
         headerLabel.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        
+        addSubview(editButton)
+        editButton.leftAnchor.constraint(equalTo: leftAnchor, constant: 2).isActive = true
+        editButton.topAnchor.constraint(equalTo: timeStamp.topAnchor).isActive = true
+        editButton.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        editButton.widthAnchor.constraint(equalToConstant: 90).isActive = true
         
         addSubview(whiteBox)
         whiteBox.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true

@@ -22,6 +22,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
     var tourneyInfo = Tourney()
     var tourneyList: TourneyList?
     var tourneySearch: TourneySearch?
+    var referencesNeedDeletion = [String]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -350,7 +351,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
                 self.tourneySearch?.searchResults[self.tourneyIndex] = tourney
                 self.tourneySearch?.tableView.reloadData()
             } else {
-                
+                self.tourneyList?.loadUpMyCreatedTourneys(createdTourney: tourney)
             }
             
         })
@@ -387,6 +388,78 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         button.addTarget(self, action: #selector(handleReturn), for: .touchUpInside)
         return button
     }()
+    
+    let deleteButton: UIButton = {
+        let button = UIButton(type: .system)
+        //button.backgroundColor = .white
+        button.setTitle("Delete Tournament", for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.titleLabel?.textAlignment = .center
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 17)
+        button.setTitleColor(.red, for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleDelete), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func handleDelete() {
+        referencesNeedDeletion.removeAll()
+        let ref = Database.database().reference().child("tourneys").child(tourneyInfo.id!).child("teams")
+        ref.observe(.childAdded, with: {(snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                let player1Id = value["player1"] as? String ?? "none"
+                let player2Id = value["player2"] as? String ?? "none"
+                self.referencesNeedDeletion.append(player1Id)
+                self.referencesNeedDeletion.append(player2Id)
+            }
+        }, withCancel: nil)
+        let newalert = UIAlertController(title: "Confirm", message: "Are you sure you want to delete this tournament?", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.default, handler: nil))
+        newalert.addAction(UIAlertAction(title: "Yes", style: UIAlertAction.Style.default, handler: deleteConfirmed))
+        self.present(newalert, animated: true, completion: nil)
+    }
+    
+    let whiteCover3: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    let matchDeleted: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = "Tourney has been erased"
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .center
+        return label
+    }()
+    
+
+    @objc func deleteConfirmed(action: UIAlertAction) {
+        deleteButton.isHidden = true
+        self.tourneyList?.myTourneys.remove(at: tourneyIndex)
+        self.tourneyList?.tableView.reloadData()
+        self.tourneySearch?.searchResults.remove(at: tourneyIndex)
+        self.tourneySearch?.tableView.reloadData()
+        view.addSubview(whiteCover3)
+        whiteCover3.topAnchor.constraint(equalTo: backButton.bottomAnchor).isActive = true
+        whiteCover3.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        whiteCover3.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        whiteCover3.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        
+        view.addSubview(matchDeleted)
+        matchDeleted.topAnchor.constraint(equalTo: backButton.bottomAnchor).isActive = true
+        matchDeleted.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        matchDeleted.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        matchDeleted.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        for index in referencesNeedDeletion {
+            Database.database().reference().child("user_tourneys").child(index).child(self.tourneyInfo.id!).removeValue()
+        }
+        Database.database().reference().child("tourneys").child(tourneyInfo.id!).removeValue()
+        self.tourneySearch?.tourneys.removeAll()
+        self.tourneySearch?.fetchTourneys()
+    }
     
     let saveTourney: UIButton = {
         let button = UIButton(type: .system)
@@ -644,6 +717,14 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
         backButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
         backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        if sender {
+            view.addSubview(deleteButton)
+            deleteButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -4).isActive = true
+            deleteButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+            deleteButton.widthAnchor.constraint(equalToConstant: 140).isActive = true
+            deleteButton.heightAnchor.constraint(equalToConstant: 45).isActive = true
+        }
         
         view.addSubview(scrollView)
         scrollView.topAnchor.constraint(equalTo: backButton.bottomAnchor).isActive = true
