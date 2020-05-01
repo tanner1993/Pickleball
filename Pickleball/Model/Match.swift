@@ -210,7 +210,7 @@ class Match2: NSObject {
             return 3
         } else {
             gameWinners.append(winChecker(user: finalTeam1Scores[2], opp: finalTeam2Scores[2]))
-            if gameWinners[3] == 0 {
+            if gameWinners[2] == 0 {
                 team1Wins += 1
             } else {
                 team2Wins += 1

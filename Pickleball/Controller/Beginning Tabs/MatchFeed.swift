@@ -129,8 +129,8 @@ class MatchFeed: UITableViewController {
                 let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
                 player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
                     if let value = snapshot.value as? [String: AnyObject] {
-                        cell.challengerTeam1.setTitle(value["username"] as? String, for: .normal)
-                        self.nameTracker[match.team_1_player_1 ?? "nope"] = value["username"] as? String
+                        cell.challengerTeam1.setTitle(self.getFirstAndLastInitial(name: value["name"] as? String ?? "none"), for: .normal)
+                        self.nameTracker[match.team_1_player_1 ?? "nope"] = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
                         let exp = value["exp"] as? Int ?? 0
                         cell.appLevel.text = "\(self.player.haloLevel(exp: exp))"
                         self.levelTracker[match.team_1_player_1 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
@@ -147,8 +147,8 @@ class MatchFeed: UITableViewController {
                     let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
                     player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
                         if let value = snapshot.value as? [String: AnyObject] {
-                            cell.challengerTeam2.setTitle(value["username"] as? String, for: .normal)
-                            self.nameTracker[match.team_1_player_2 ?? "nope"] = value["username"] as? String
+                            cell.challengerTeam2.setTitle(self.getFirstAndLastInitial(name: value["name"] as? String ?? "none"), for: .normal)
+                            self.nameTracker[match.team_1_player_2 ?? "nope"] = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
                             let exp = value["exp"] as? Int ?? 0
                             cell.appLevel2.text = "\(self.player.haloLevel(exp: exp))"
                             self.levelTracker[match.team_1_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
@@ -167,8 +167,8 @@ class MatchFeed: UITableViewController {
                 let player1ref2 = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope")
                 player1ref2.observeSingleEvent(of: .value, with: {(snapshot) in
                     if let value = snapshot.value as? [String: AnyObject] {
-                        cell.challengedTeam1.setTitle(value["username"] as? String, for: .normal)
-                        self.nameTracker[match.team_2_player_1 ?? "nope"] = value["username"] as? String
+                        cell.challengedTeam1.setTitle(self.getFirstAndLastInitial(name: value["name"] as? String ?? "none"), for: .normal)
+                        self.nameTracker[match.team_2_player_1 ?? "nope"] = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
                         let exp = value["exp"] as? Int ?? 0
                         cell.appLevel3.text = "\(self.player.haloLevel(exp: exp))"
                         self.levelTracker[match.team_2_player_1 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
@@ -186,8 +186,8 @@ class MatchFeed: UITableViewController {
                     let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
                     player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
                         if let value = snapshot.value as? [String: AnyObject] {
-                            cell.challengedTeam2.setTitle(value["username"] as? String, for: .normal)
-                            self.nameTracker[match.team_2_player_2 ?? "nope"] = value["username"] as? String
+                            cell.challengedTeam2.setTitle(self.getFirstAndLastInitial(name: value["name"] as? String ?? "none"), for: .normal)
+                            self.nameTracker[match.team_2_player_2 ?? "nope"] = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
                             let exp = value["exp"] as? Int ?? 0
                             cell.appLevel4.text = "\(self.player.haloLevel(exp: exp))"
                             self.levelTracker[match.team_2_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
@@ -239,6 +239,26 @@ class MatchFeed: UITableViewController {
             cell.backgroundColor = UIColor.white
             return cell
         }
+    }
+    
+    func getFirstAndLastInitial(name: String) -> String {
+        var initials = ""
+        var finalChar = 0
+        for (index, char) in name.enumerated() {
+            if finalChar == 0 {
+                initials.append(char)
+            }
+            if finalChar == 1 {
+                initials.append(char)
+                initials.append(".")
+                break
+            }
+            
+            if char == " " {
+                finalChar = 1
+            }
+        }
+        return initials
     }
     
     @objc func handleDelete(sender: UIButton) {

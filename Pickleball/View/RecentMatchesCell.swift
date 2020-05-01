@@ -35,6 +35,47 @@ class RecentMatchesCell: BaseCell {
     var teams = [Team]() {
         didSet {
             
+            if match?.style == 0 {
+                match2Placeholder.isHidden = true
+                match3Placeholder.isHidden = true
+                match4Placeholder.isHidden = true
+                match5Placeholder.isHidden = true
+                match2Label.isHidden = true
+                match2Label2.isHidden = true
+                match3Label.isHidden = true
+                match3Label2.isHidden = true
+                match4Label.isHidden = true
+                match4Label2.isHidden = true
+                match5Label.isHidden = true
+                match5Label2.isHidden = true
+            } else if match?.style == 1 {
+                match2Placeholder.isHidden = false
+                match3Placeholder.isHidden = false
+                match4Placeholder.isHidden = true
+                match5Placeholder.isHidden = true
+                match2Label.isHidden = false
+                match2Label2.isHidden = false
+                match3Label.isHidden = false
+                match3Label2.isHidden = false
+                match4Label.isHidden = true
+                match4Label2.isHidden = true
+                match5Label.isHidden = true
+                match5Label2.isHidden = true
+            } else {
+                match2Placeholder.isHidden = false
+                match3Placeholder.isHidden = false
+                match4Placeholder.isHidden = false
+                match5Placeholder.isHidden = false
+                match2Label.isHidden = false
+                match2Label2.isHidden = false
+                match3Label.isHidden = false
+                match3Label2.isHidden = false
+                match4Label.isHidden = false
+                match4Label2.isHidden = false
+                match5Label.isHidden = false
+                match5Label2.isHidden = false
+            }
+            
             guard let uid = Auth.auth().currentUser?.uid else {
                 return
             }
@@ -95,12 +136,6 @@ class RecentMatchesCell: BaseCell {
                     bringSubviewToFront(challengerTeam1)
                     bringSubviewToFront(challengerTeam2)
                     bringSubviewToFront(tourneySymbol)
-                    whiteBox.addSubview(tourneySymbol)
-                    let tourneyLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
-                    tourneySymbol.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(tourneyLoc.Y)).isActive = true
-                    tourneySymbol.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(tourneyLoc.X)).isActive = true
-                    tourneySymbol.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.H)).isActive = true
-                    tourneySymbol.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.W)).isActive = true
                 } else if match?.winner == 2 {
                     tourneySymbol.isHidden = true
                     tourneySymbol2.isHidden = false
@@ -109,13 +144,6 @@ class RecentMatchesCell: BaseCell {
                     bringSubviewToFront(challengedTeam1)
                     bringSubviewToFront(challengedTeam2)
                     bringSubviewToFront(tourneySymbol2)
-                    let tourneyLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: Float(frame.height) - 26)
-                    
-                    whiteBox.addSubview(tourneySymbol2)
-                    tourneySymbol2.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(tourneyLoc2.Y)).isActive = true
-                    tourneySymbol2.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(tourneyLoc2.X)).isActive = true
-                    tourneySymbol2.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.H)).isActive = true
-                    tourneySymbol2.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.W)).isActive = true
                 }
             } else {
                 timeStamp.textColor = UIColor.init(r: 170, g: 170, b: 170)
@@ -310,6 +338,7 @@ class RecentMatchesCell: BaseCell {
         label.text = "Teammate 1 & Teammate 2"
         label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .left
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
@@ -319,6 +348,7 @@ class RecentMatchesCell: BaseCell {
         label.text = "Teammate 1 & Teammate 2"
         label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .left
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
@@ -328,6 +358,7 @@ class RecentMatchesCell: BaseCell {
         label.text = "Teammate 1 & Teammate 2"
         label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .left
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
@@ -337,6 +368,7 @@ class RecentMatchesCell: BaseCell {
         label.text = "Teammate 1 & Teammate 2"
         label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .left
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
@@ -678,6 +710,21 @@ class RecentMatchesCell: BaseCell {
         notifBadge.rightAnchor.constraint(equalTo: rightAnchor, constant: -5).isActive = true
         notifBadge.heightAnchor.constraint(equalToConstant: 26).isActive = true
         notifBadge.widthAnchor.constraint(equalToConstant: 26).isActive = true
+        
+        whiteBox.addSubview(tourneySymbol)
+        let tourneyLoc = calculateButtonPosition(x: 90, y: 92, w: 100, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
+        tourneySymbol.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(tourneyLoc.Y)).isActive = true
+        tourneySymbol.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(tourneyLoc.X)).isActive = true
+        tourneySymbol.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.H)).isActive = true
+        tourneySymbol.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc.W)).isActive = true
+        
+        let tourneyLoc2 = calculateButtonPosition(x: 90, y: 308, w: 100, h: 140, wib: 750, hib: 400, wia: Float(frame.width), hia: height)
+        
+        whiteBox.addSubview(tourneySymbol2)
+        tourneySymbol2.centerYAnchor.constraint(equalTo: whiteBox.topAnchor, constant: CGFloat(tourneyLoc2.Y)).isActive = true
+        tourneySymbol2.centerXAnchor.constraint(equalTo: whiteBox.leftAnchor, constant: CGFloat(tourneyLoc2.X)).isActive = true
+        tourneySymbol2.heightAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.H)).isActive = true
+        tourneySymbol2.widthAnchor.constraint(equalToConstant: CGFloat(tourneyLoc2.W)).isActive = true
     }
     
     func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {

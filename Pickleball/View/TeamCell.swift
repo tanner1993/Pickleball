@@ -33,7 +33,7 @@ class TeamCell: FeedCell {
             let player1ref = Database.database().reference().child("users").child(team?.player1 ?? "nope")
             player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    self.player1.text = value["username"] as? String
+                    self.player1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
                 }
             })
             //player1.text = team?.player1Name ?? "nono"
@@ -41,7 +41,7 @@ class TeamCell: FeedCell {
             let player2ref = Database.database().reference().child("users").child(team?.player2 ?? "nope")
             player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    self.player2.text = value["username"] as? String
+                    self.player2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
                 }
             })
             //player1.text = team?.player1
@@ -50,6 +50,26 @@ class TeamCell: FeedCell {
             losses.text = "L: \(team?.losses ?? -1)"
             teamRank.text = "\(team?.rank ?? -1)"
         }
+    }
+    
+    func getFirstAndLastInitial(name: String) -> String {
+        var initials = ""
+        var finalChar = 0
+        for (index, char) in name.enumerated() {
+            if finalChar == 0 {
+                initials.append(char)
+            }
+            if finalChar == 1 {
+                initials.append(char)
+                initials.append(".")
+                break
+            }
+            
+            if char == " " {
+                finalChar = 1
+            }
+        }
+        return initials
     }
     
     let player1: UILabel = {
@@ -61,6 +81,7 @@ class TeamCell: FeedCell {
         label.text = "Teammate 1"
         label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .left
+        label.adjustsFontSizeToFitWidth = true
         return label
     }()
     
@@ -71,6 +92,7 @@ class TeamCell: FeedCell {
         //label.layer.cornerRadius = 24
         //label.layer.masksToBounds = true
         label.text = "Teammate 2"
+        label.adjustsFontSizeToFitWidth = true
         label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .left
         return label

@@ -672,6 +672,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 cell.yetToView = yetToView
                 cell.finals1 = thisTourney.finals1 ?? -1
                 cell.finals2 = thisTourney.finals2 ?? -1
+                cell.tourneyName = thisTourney.name!
                 cell.delegate = self
                 return cell
             } else if indexPath.item == 2 {
@@ -688,6 +689,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             cell.active = thisTourney.active ?? 0
             cell.tourneyIdentifier = thisTourney.id
             cell.style = thisTourney.style!
+            cell.tourneyName = thisTourney.name!
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! ProfileMenuCell
@@ -736,6 +738,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         Database.database().reference().child("tourneys").child(thisTourney.id ?? "none").child("active").setValue(2)
         thisTourney.active = 2
         resetupTitle()
+        setupSemisView()
     }
     
     func resetupTitle() {
@@ -785,11 +788,12 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         guard let uid = Auth.auth().currentUser?.uid, let tourneyId = thisTourney.id else {
             return
         }
+        let userIds = [team_1_player_1, team_1_player_2, team_2_player_1, team_2_player_2]
         
         let timeOfChallenge = Date().timeIntervalSince1970
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches")
         let createMatchRef = ref.childByAutoId()
-        let values = ["active": 1, "team_1_player_1": team_1_player_1, "team_1_player_2": team_1_player_2, "team_2_player_1": team_2_player_1, "team_2_player_2": team_2_player_2, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
+        let values = ["style": thisTourney.style!, "active": 1, "team_1_player_1": team_1_player_1, "team_1_player_2": team_1_player_2, "team_2_player_1": team_2_player_1, "team_2_player_2": team_2_player_2, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
         createMatchRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -797,15 +801,15 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 print("Data could not be saved: \(error).")
                 return
             }
-            guard let matchId = createMatchRef.key else {
-                return
+            
+            for index in userIds {
+                if self.yetToView.contains(index) == false {
+                    self.yetToView.append(index)
+                }
             }
             
-            
-            
-            let notificationId = matchId
             let notificationsRef = Database.database().reference()
-            let childUpdates = ["/\("tourney_notifications")/\(team_1_player_1)/\(tourneyId)/": team_1_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_1_player_2)/\(tourneyId)/": team_1_player_2 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_1)/\(tourneyId)/": team_2_player_1 == uid ? 0 : 1, "/\("tourney_notifications")/\(team_2_player_2)/\(tourneyId)/": team_2_player_2 == uid ? 0 : 1] as [String : Any]
+            let childUpdates = ["/\("user_tourneys")/\(team_1_player_1)/\(self.thisTourney.id!)/": team_1_player_1 == uid ? 0 : 1, "/\("user_tourneys")/\(team_1_player_2)/\(self.thisTourney.id!)/": team_1_player_2 == uid ? 0 : 1, "/\("user_tourneys")/\(team_2_player_1)/\(self.thisTourney.id!)/": team_2_player_1 == uid ? 0 : 1, "/\("user_tourneys")/\(team_2_player_2)/\(self.thisTourney.id!)/": team_2_player_2 == uid ? 0 : 1, "/\("tourneys")/\(self.thisTourney.id!)/\("yet_to_view")/": self.yetToView] as [String : Any]
             notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -815,6 +819,18 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                     self.present(messageSendFailed, animated: true, completion: nil)
                     print("Data could not be saved: \(String(describing: error)).")
                     return
+                }
+                
+                let newMessage = "You have made it to semifinals!"
+                let title = self.thisTourney.name!
+                for index in userIds {
+                    Database.database().reference().child("users").child(index).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
+                        if let value = snapshot.value {
+                            let deviceId = value as? String ?? "none"
+                            let pusher = PushNotificationHandler()
+                            pusher.setupPushNotification(deviceId: deviceId, message: newMessage, title: title)
+                        }
+                    })
                 }
                 
                 print("Crazy data 2 saved!")

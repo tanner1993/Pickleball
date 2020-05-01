@@ -13,6 +13,7 @@ import FirebaseAuth
 class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
     var delegate: FeedCellProtocol?
+    var tourneyName = String()
     var style = Int()
     
     var activityIndicatorView: UIActivityIndicatorView!
@@ -150,6 +151,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
             vc.tourneyId = tourneyId
             vc.active = active
             vc.style = style
+            vc.tourneyName = tourneyName
             self.delegate?.pushNavigation(vc)
             
         }

@@ -41,6 +41,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     var challengedTeamPlayer1Name = [String?]()
     var challengedTeamPlayer2Name = [String?]()
     var userTeamId = ""
+    var tourneyName = String()
     
     var myMatches = [Match2]()
     
@@ -115,28 +116,28 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
         player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengerTeam1.text = value["username"] as? String
+                cell.challengerTeam1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
             }
         })
         
         let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
         player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengerTeam2.text = value["username"] as? String
+                cell.challengerTeam2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
             }
         })
         
         let player1ref2 = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope")
         player1ref2.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengedTeam1.text = value["username"] as? String
+                cell.challengedTeam1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
             }
         })
         
         let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
         player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengedTeam2.text = value["username"] as? String
+                cell.challengedTeam2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
             }
         })
         cell.match = match
@@ -147,11 +148,33 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         return cell
     }
     
+    func getFirstAndLastInitial(name: String) -> String {
+        var initials = ""
+        var finalChar = 0
+        for (index, char) in name.enumerated() {
+            if finalChar == 0 {
+                initials.append(char)
+            }
+            if finalChar == 1 {
+                initials.append(char)
+                initials.append(".")
+                break
+            }
+            
+            if char == " " {
+                finalChar = 1
+            }
+        }
+        return initials
+    }
+    
     @objc func handleDelete(sender: UIButton) {
         let matchToDelete = matches[sender.tag]
         Database.database().reference().child("tourneys").child(tourneyIdentifier!).child("matches").child(matchToDelete.matchId!).removeValue()
         matches.remove(at: sender.tag)
         collectionView.reloadData()
+        let tourneyFunctions = Tourney()
+        tourneyFunctions.removeCantChallenge(team_1_player_1: matchToDelete.team_1_player_1!, team_1_player_2: matchToDelete.team_1_player_2!, team_2_player_1: matchToDelete.team_2_player_1!, team_2_player_2: matchToDelete.team_2_player_2!, tourneyId: tourneyIdentifier!)
     }
     
 //    func handleDeleteConfirmed(action: UIAlertAction) {
@@ -197,6 +220,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
         vc.yetToView = yetToView
         vc.match.style = matches[indexPath.item].style ?? 0
         vc.match.doubles = true
+        vc.tourneyName = tourneyName
         self.delegate?.pushNavigation(vc)
         guard let uid = Auth.auth().currentUser?.uid else {
             return

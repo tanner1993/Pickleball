@@ -89,12 +89,19 @@ class Play: UIViewController {
     }
     
     func setupNavbarTitle() {
+//        let infoImage = UIImage(named: "info")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
+//        let infoButton = UIBarButtonItem(image: infoImage, style: .plain, target: self, action: #selector(handleInfo))
+//        self.navigationItem.rightBarButtonItem = infoButton
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
         titleLabel.text = "Play"
         titleLabel.textColor = .white
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
+    }
+    
+    @objc func handleInfo() {
+        
     }
     
     let tourneyPlayLabel: UIButton = {
@@ -108,6 +115,28 @@ class Play: UIViewController {
         label.titleLabel?.numberOfLines = 2
         label.addTarget(self, action: #selector(enterMyTourneys), for: .touchUpInside)
         return label
+    }()
+    
+    let tourneyInfoLabel: UILabel = {
+        let lb = UILabel()
+        lb.text = "Create and join Ladder style tournaments in your area to connect with even more local Pickleball players"
+        lb.translatesAutoresizingMaskIntoConstraints = false
+        lb.numberOfLines = 3
+        lb.font = UIFont(name: "HelveticaNeue-Light", size: 16)
+        lb.textAlignment = .center
+        lb.textColor = .black
+        return lb
+    }()
+    
+    let matchInfoLabel: UILabel = {
+        let lb = UILabel()
+        lb.text = "Create and play in local matches with pickleball players in your area"
+        lb.translatesAutoresizingMaskIntoConstraints = false
+        lb.numberOfLines = 3
+        lb.font = UIFont(name: "HelveticaNeue-Light", size: 16)
+        lb.textAlignment = .center
+        lb.textColor = .black
+        return lb
     }()
     
     @objc func enterMyTourneys() {
@@ -183,6 +212,12 @@ class Play: UIViewController {
         tourneyPlayLabel.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         tourneyPlayLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor).isActive = true
         
+        view.addSubview(tourneyInfoLabel)
+        tourneyInfoLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        tourneyInfoLabel.heightAnchor.constraint(equalToConstant: 80).isActive = true
+        tourneyInfoLabel.widthAnchor.constraint(equalToConstant: view.frame.width - 24).isActive = true
+        tourneyInfoLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor).isActive = true
+        
         view.addSubview(notifBadge1)
         notifBadge1.widthAnchor.constraint(equalToConstant: 26).isActive = true
         notifBadge1.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 5).isActive = true
@@ -200,6 +235,12 @@ class Play: UIViewController {
         matchPlayLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerYAnchor).isActive = true
         matchPlayLabel.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         matchPlayLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        
+        view.addSubview(matchInfoLabel)
+        matchInfoLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        matchInfoLabel.heightAnchor.constraint(equalToConstant: 80).isActive = true
+        matchInfoLabel.widthAnchor.constraint(equalToConstant: view.frame.width - 24).isActive = true
+        matchInfoLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
         
         view.addSubview(notifBadge2)
         notifBadge2.widthAnchor.constraint(equalToConstant: 26).isActive = true

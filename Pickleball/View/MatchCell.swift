@@ -104,28 +104,28 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
         let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
         player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengerTeam1.text = value["username"] as? String
+                cell.challengerTeam1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
             }
         })
         
         let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
         player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengerTeam2.text = value["username"] as? String
+                cell.challengerTeam2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
             }
         })
         
         let player1ref2 = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope")
         player1ref2.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengedTeam1.text = value["username"] as? String
+                cell.challengedTeam1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
             }
         })
         
         let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
         player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengedTeam2.text = value["username"] as? String
+                cell.challengedTeam2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
             }
         })
         cell.match = match
@@ -133,6 +133,26 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
         cell.editButton.isHidden = true
         cell.backgroundColor = UIColor.white
         return cell
+    }
+    
+    func getFirstAndLastInitial(name: String) -> String {
+        var initials = ""
+        var finalChar = 0
+        for (index, char) in name.enumerated() {
+            if finalChar == 0 {
+                initials.append(char)
+            }
+            if finalChar == 1 {
+                initials.append(char)
+                initials.append(".")
+                break
+            }
+            
+            if char == " " {
+                finalChar = 1
+            }
+        }
+        return initials
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {

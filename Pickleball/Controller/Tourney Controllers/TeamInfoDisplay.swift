@@ -20,6 +20,9 @@ class TeamInfoDisplay: UIViewController {
     var tourneyCantChallenge = [String]()
     var tourneyYetToViewMatch = [String]()
     var style = Int()
+    var player1DeviceId = String()
+    var player2DeviceId = String()
+    var tourneyName = String()
     
     let challengeButton: UIButton = {
         let button = UIButton(type: .system)
@@ -352,8 +355,9 @@ class TeamInfoDisplay: UIViewController {
                 let attrb2 = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 23), NSAttributedString.Key.foregroundColor : UIColor.init(r: 120, g: 207, b: 138)]
                 let boldAppString = NSAttributedString(string: boldApp, attributes: attrb2 as [NSAttributedString.Key : Any])
                 attributedApp.append(boldAppString)
+                self.player1DeviceId = value["deviceId"] as? String ?? "none"
                 self.appLevel.attributedText = attributedApp
-                self.playerName.text = value["username"] as? String ?? "no name"
+                self.playerName.text = value["name"] as? String ?? "no name"
                 self.matchesWon.text = "W: \(value["match_wins"] as? Int ?? 0)"
                 self.matchesLost.text = "L: \(value["match_losses"] as? Int ?? 0)"
                 self.playerInitials.text = self.getInitials(name: self.playerName.text ?? "none")
@@ -400,8 +404,9 @@ class TeamInfoDisplay: UIViewController {
                 let attrb2 = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 23), NSAttributedString.Key.foregroundColor : UIColor.init(r: 120, g: 207, b: 138)]
                 let boldAppString = NSAttributedString(string: boldApp, attributes: attrb2 as [NSAttributedString.Key : Any])
                 attributedApp.append(boldAppString)
+                self.player2DeviceId = value["deviceId"] as? String ?? "none"
                 self.appLevel2.attributedText = attributedApp
-                self.playerName2.text = value["username"] as? String ?? "no name"
+                self.playerName2.text = value["name"] as? String ?? "no name"
                 self.matchesWon2.text = "W: \(value["match_wins"] as? Int ?? 0)"
                 self.matchesLost2.text = "L: \(value["match_losses"] as? Int ?? 0)"
                 self.playerInitials2.text = self.getInitials(name: self.playerName2.text ?? "none")
@@ -698,6 +703,10 @@ class TeamInfoDisplay: UIViewController {
                     
                     print("Crazy data 2 saved!")
                     self.challengeButton.alpha = 0.2
+                    let pusher = PushNotificationHandler()
+                    let newMessage = "You have been challenged"
+                    pusher.setupPushNotification(deviceId: self.player1DeviceId, message: newMessage, title: self.tourneyName)
+                    pusher.setupPushNotification(deviceId: self.player2DeviceId, message: newMessage, title: self.tourneyName)
                     let newalert = UIAlertController(title: "Challenge Made", message: "Check 'My Matches' to view the challenge you made and enter the scores", preferredStyle: UIAlertController.Style.alert)
                     newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
                     self.present(newalert, animated: true, completion: nil)
