@@ -85,8 +85,8 @@ class MatchFeed: UITableViewController {
     
     @objc func handleCreateNewMatch() {
         let createNewMatch = CreateMatch()
-        createNewMatch.hidesBottomBarWhenPushed = true
         createNewMatch.matchFeed = self
+        createNewMatch.modalPresentationStyle = .fullScreen
         navigationController?.present(createNewMatch, animated: true, completion: nil)
     }
     
@@ -244,7 +244,7 @@ class MatchFeed: UITableViewController {
     func getFirstAndLastInitial(name: String) -> String {
         var initials = ""
         var finalChar = 0
-        for (index, char) in name.enumerated() {
+        for char in name {
             if finalChar == 0 {
                 initials.append(char)
             }
@@ -253,7 +253,7 @@ class MatchFeed: UITableViewController {
                 initials.append(".")
                 break
             }
-            
+
             if char == " " {
                 finalChar = 1
             }

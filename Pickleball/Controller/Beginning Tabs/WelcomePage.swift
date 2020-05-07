@@ -53,11 +53,17 @@ class WelcomePage: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         setupViews()
         checkIfUserLoggedIn()
     }
+    let blackView = UIView()
+    let pieBackground: UIView = {
+        let cv = UIView()
+        cv.backgroundColor = .white
+        return cv
+    }()
+    
     
     func setupViews() {
         view.addSubview(loginImageView)
@@ -90,6 +96,7 @@ class WelcomePage: UIViewController {
         UIApplication.shared.applicationIconBadgeNumber = 0
         profilePage.welcomePage = self
         profilePage.tabBar.isTranslucent = false
+        profilePage.modalPresentationStyle = .fullScreen
         present(profilePage, animated: true, completion: nil)
     }
     
@@ -112,6 +119,7 @@ class WelcomePage: UIViewController {
         
         let loginController = LoginPage()
         loginController.welcomePage = self
+        loginController.modalPresentationStyle = .fullScreen
         present(loginController, animated: true, completion: nil)
     }
     

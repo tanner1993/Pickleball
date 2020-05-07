@@ -11,6 +11,7 @@ target 'Pickleball' do
 	pod 'Firebase/Database'
 	pod 'Firebase/Auth'
 	pod 'Firebase/Messaging'
-	pod 'Alamofire', '~> 4.2.0'
+	pod 'Alamofire'
+	pod 'Charts'
 
 end

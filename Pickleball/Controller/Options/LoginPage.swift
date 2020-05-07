@@ -289,7 +289,7 @@ class LoginPage: UIViewController {
         
         Auth.auth().signIn(withEmail: email, password: password, completion: {(user, error) in
             if error != nil {
-                print(error)
+                print(error as Any)
                 let newalert = UIAlertController(title: "Sorry", message: "The email or password you entered is incorrect", preferredStyle: UIAlertController.Style.alert)
                 newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
                 self.present(newalert, animated: true, completion: nil)
@@ -354,7 +354,7 @@ class LoginPage: UIViewController {
         print(username)
         Auth.auth().createUser(withEmail: email, password: password, completion: {(authDataResult: AuthDataResult?, error) in
             if error != nil {
-                print(error)
+                print(error as Any)
                 return
             }
             
@@ -376,6 +376,7 @@ class LoginPage: UIViewController {
                 let editProfile = EditProfile()
                 editProfile.sender = 1
                 editProfile.loginPage = self
+                editProfile.modalPresentationStyle = .fullScreen
                 self.present(editProfile, animated: true, completion: nil)
                 //self.startupPage?.observePlayerProfile()
                 //self.welcomePage?.newUser = 1

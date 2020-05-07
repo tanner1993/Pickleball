@@ -141,6 +141,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     let exp = value["exp"] as? Int ?? 0
                     let haloLevel = player.haloLevel(exp: exp)
                     let deviceId = value["deviceId"] as? String ?? "none"
+                    print(deviceId)
                     player.deviceId = deviceId
                     player.name = name
                     player.username = username
@@ -278,6 +279,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             createMatch?.opponent1.id = searchResults[whichOne].id ?? "none"
             createMatch?.opponent1.username = searchResults[whichOne].username ?? "none"
             createMatch?.opponent1.skillLevel = "\(searchResults[whichOne].skill_level ?? 1.0)"
+            print(searchResults[whichOne].deviceId ?? "none")
             createMatch?.opponent1.deviceId = searchResults[whichOne].deviceId ?? "none"
         case 4:
             createMatch?.opponent2.id = searchResults[whichOne].id ?? "none"
@@ -534,17 +536,25 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     }
     
     func setupViews() {
-        
+        view.addSubview(whiteContainerView2)
         view.addSubview(searchBar)
         if sender == 0 {
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
+            whiteContainerView2.topAnchor.constraint(equalTo: searchBar.topAnchor, constant: 0).isActive = true
+            whiteContainerView2.heightAnchor.constraint(equalToConstant: 281).isActive = true
         } else {
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 50).isActive = true
             view.addSubview(backButton)
             backButton.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true
-            backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+            if #available(iOS 13.0, *) {
+                backButton.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            } else {
+                backButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+            }
             backButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
             backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+            whiteContainerView2.topAnchor.constraint(equalTo: backButton.topAnchor, constant: 0).isActive = true
+            whiteContainerView2.heightAnchor.constraint(equalToConstant: 331).isActive = true
         }
         searchBar.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         searchBar.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
@@ -552,11 +562,8 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         
         searchBar.delegate = self
         
-        view.addSubview(whiteContainerView2)
-        whiteContainerView2.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 0).isActive = true
         whiteContainerView2.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         whiteContainerView2.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
-        whiteContainerView2.heightAnchor.constraint(equalToConstant: 231).isActive = true
         
         view.addSubview(whiteContainerView)
         whiteContainerView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 0).isActive = true
@@ -592,7 +599,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         
         if sender > 1 {
             view.addSubview(myFriendsLabel)
-            myFriendsLabel.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+            myFriendsLabel.topAnchor.constraint(equalTo: backButton.topAnchor).isActive = true
             myFriendsLabel.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -60).isActive = true
             myFriendsLabel.widthAnchor.constraint(equalToConstant: 110).isActive = true
             myFriendsLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
@@ -625,6 +632,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     let haloLevel = player.haloLevel(exp: exp)
                     let state = value["state"] as? String ?? "No State"
                     let county = value["county"] as? String ?? "No County"
+                    let deviceId = value["deviceId"] as? String ?? "none"
                     player.name = name
                     player.username = username
                     player.id = child.key
@@ -632,6 +640,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     player.halo_level = haloLevel
                     player.state = state
                     player.county = county
+                    player.deviceId = deviceId
                     
                     if player.id != Auth.auth().currentUser?.uid {
                         self.players.append(player)

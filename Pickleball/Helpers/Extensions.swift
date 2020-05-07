@@ -21,7 +21,7 @@ class PushNotificationHandler: NSObject {
         headers = ["Content-Type":"application/json", "Authorization":"key=\(AppDelegate.ServerKey)"]
         let notification = ["to":"\(toDeviceId)", "notification":["body":message,"title":title,"badge":1,"sound":"default"]] as [String:Any]
         
-        Alamofire.request(AppDelegate.Notification_URL as URLConvertible, method: .post as HTTPMethod, parameters: notification, encoding: JSONEncoding.default, headers: headers).responseJSON(completionHandler: {(response) in
+        AF.request(AppDelegate.Notification_URL as URLConvertible, method: .post as HTTPMethod, parameters: notification, encoding: JSONEncoding.default, headers: headers).responseJSON(completionHandler: {(response) in
             print(response)
         })
     }
@@ -87,4 +87,5 @@ extension String {
         let Test = NSPredicate(format:"SELF MATCHES %@", RegEx)
         return Test.evaluate(with: self)
     }
+
 }

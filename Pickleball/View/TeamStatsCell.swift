@@ -60,14 +60,14 @@ class TeamStatsCell: UITableViewCell {
             let player1ref = Database.database().reference().child("users").child(team.player1 ?? "nope")
             player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    self.teamName1.text = value["username"] as? String
+                    self.teamName1.text = value["name"] as? String
                 }
             })
             
             let player2ref = Database.database().reference().child("users").child(team.player2 ?? "nope")
             player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    self.teamName2.text = value["username"] as? String
+                    self.teamName2.text = value["name"] as? String
                 }
             })
         }

@@ -225,7 +225,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let player1ref = Database.database().reference().child("users").child(player1)
         player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                self.player1s[which - 1].text = value["username"] as? String
+                self.player1s[which - 1].text = value["name"] as? String
                 if self.thisTourney.active == 3 {
                     self.player1s[4].text = self.thisTourney.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
                 } else if self.thisTourney.active == 4 {
@@ -256,7 +256,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let player2ref = Database.database().reference().child("users").child(player2)
         player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                self.player2s[which - 1].text = value["username"] as? String
+                self.player2s[which - 1].text = value["name"] as? String
                 if self.thisTourney.active == 3 {
                     self.player2s[4].text = self.thisTourney.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
                 } else if self.thisTourney.active == 4 {

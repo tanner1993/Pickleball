@@ -381,10 +381,12 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         searchBar.delegate = self
         
         view.addSubview(whiteContainerView2)
-        whiteContainerView2.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 0).isActive = true
+        whiteContainerView2.topAnchor.constraint(equalTo: searchBar.topAnchor, constant: 0).isActive = true
         whiteContainerView2.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         whiteContainerView2.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
-        whiteContainerView2.heightAnchor.constraint(equalToConstant: 231).isActive = true
+        whiteContainerView2.heightAnchor.constraint(equalToConstant: 281).isActive = true
+        
+        view.bringSubviewToFront(searchBar)
         
         view.addSubview(whiteContainerView)
         whiteContainerView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 0).isActive = true

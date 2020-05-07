@@ -10,6 +10,7 @@ import UIKit
 import FirebaseAuth
 import Firebase
 import Alamofire
+import Charts
 
 class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
@@ -32,6 +33,14 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
 //
 //        activityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
 //    }
+    
+    let pieChart: PieChartView = {
+        let bi = PieChartView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
     
     let backgroundImage: UIImageView = {
         let bi = UIImageView()
@@ -72,6 +81,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     let haloLevel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = ""
         label.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
         label.textColor = UIColor.init(r: 120, g: 207, b: 138)
         label.textAlignment = .center
@@ -80,6 +90,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     let haloLevelTitle: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         label.textAlignment = .center
@@ -170,7 +181,6 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     }
     
     @objc func handleViewTourneys() {
-        let layout = UICollectionViewFlowLayout()
         let tourneyListPage = TourneyList()
         navigationController?.pushViewController(tourneyListPage, animated: true)
     }
@@ -401,6 +411,206 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
 //        })
 //    }
     
+    func updateLevel() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let userRef = Database.database().reference().child("users").child(uid).child("exp")
+        userRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            guard let exp = snapshot.value else {
+                return
+            }
+            let expValue = exp as? Int ?? -1
+            let haloValue = self.player.haloLevel(exp: expValue)
+            if self.haloLevel.text! != "\(haloValue)" {
+                self.setChart(exp: expValue)
+                self.haloLevel.text = "\(haloValue)"
+            }
+            if self.haloLevelTitle.text! != self.player.levelTitle(level: haloValue) {
+                self.haloLevelTitle.text = self.player.levelTitle(level: haloValue)
+            }
+        })
+    }
+        
+    
+    func checkLevelUp() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let userRef = Database.database().reference().child("users").child(uid).child("oldLevel")
+        userRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            guard let oldLevel = snapshot.value else {
+                return
+            }
+            let oldLevelValue = oldLevel as? Int ?? -1
+            if oldLevelValue != 0 && oldLevelValue != -1 {
+                self.handleLevelUp(oldLevel: oldLevelValue)
+            } else {
+                self.updateLevel()
+            }
+        })
+    }
+    
+    func handleLevelUp(oldLevel: Int) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let userRef = Database.database().reference().child("users").child(uid).child("exp")
+        userRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            guard let exp = snapshot.value else {
+                return
+            }
+            let expValue = exp as? Int ?? -1
+            let haloValue = self.player.haloLevel(exp: expValue)
+            if haloValue > oldLevel {
+                self.haloLevelTitle2.text = "You moved up from level \(oldLevel) to level \(haloValue)!"
+                if self.player.levelTitle(level: oldLevel) != self.player.levelTitle(level: haloValue) {
+                    self.haloLevelTitle3.text = "You graduated from '\(self.player.levelTitle(level: oldLevel))' to '\(self.player.levelTitle(level: haloValue))'"
+                } else {
+                    self.haloLevelTitle3.text = "You're currently '\(self.player.levelTitle(level: haloValue))'"
+                }
+                self.openMenu2(newExp: expValue, newLevel: haloValue)
+            }
+            Database.database().reference().child("users").child(uid).child("oldLevel").setValue(0)
+        })
+    }
+    
+    let pieBackground2: UIView = {
+        let cv = UIView()
+        cv.backgroundColor = .white
+        cv.layer.cornerRadius = 10
+        cv.layer.masksToBounds = true
+        return cv
+    }()
+    
+    let haloLevel2: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let levelUpLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Level Up!"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 50)
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let haloLevelTitle2: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        label.text = "You leveled up!"
+        label.numberOfLines = 2
+        label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
+        return label
+    }()
+    
+    let haloLevelTitle3: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let pieBackroundHeight2 = 440
+    
+    let pieChart2: PieChartView = {
+        let bi = PieChartView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
+    
+    func openMenu2(newExp: Int, newLevel: Int) {
+        let bounds = self.player.findExpBounds(exp: newExp)
+        let startExp = bounds[0]
+        let endExp = bounds[1]
+        
+        let currentExp = PieChartDataEntry(value: Double(newExp - startExp), label: nil)
+        let goalExp = PieChartDataEntry(value: Double(endExp - newExp), label: nil)
+        let chartDataSet = PieChartDataSet(entries: [currentExp, goalExp], label: nil)
+        chartDataSet.drawValuesEnabled = false
+        
+        let chartData = PieChartData(dataSet: chartDataSet)
+        let colors = [UIColor.init(r: 120, g: 207, b: 138), UIColor.white]
+        chartDataSet.colors = colors
+        
+        pieChart2.data = chartData
+        pieChart2.legend.enabled = false
+        pieChart2.holeRadiusPercent = 0.93
+        pieChart2.transparentCircleColor = UIColor.init(r: 120, g: 207, b: 138)
+        pieChart2.transparentCircleRadiusPercent = 0.94
+           if let window = UIApplication.shared.keyWindow {
+               blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+               blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu2)))
+               window.addSubview(blackView)
+               window.addSubview(pieBackground2)
+               pieBackground2.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(pieBackroundHeight2))
+               blackView.frame = window.frame
+               blackView.alpha = 0
+               
+               UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                   self.blackView.alpha = 1
+                self.pieBackground2.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.pieBackroundHeight2 + 140), width: window.frame.width - 48, height: CGFloat(self.pieBackroundHeight2))
+               }, completion: nil)
+            
+            pieBackground2.addSubview(pieChart2)
+            pieChart2.heightAnchor.constraint(equalToConstant: 230).isActive = true
+            pieChart2.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
+            pieChart2.widthAnchor.constraint(equalToConstant: 230).isActive = true
+            pieChart2.centerYAnchor.constraint(equalTo: pieBackground2.centerYAnchor).isActive = true
+            
+            haloLevel2.text = "\(newLevel)"
+            pieBackground2.addSubview(haloLevel2)
+            haloLevel2.heightAnchor.constraint(equalToConstant: 150).isActive = true
+            haloLevel2.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
+            haloLevel2.widthAnchor.constraint(equalToConstant: 150).isActive = true
+            haloLevel2.centerYAnchor.constraint(equalTo: pieBackground2.centerYAnchor).isActive = true
+            
+            pieBackground2.addSubview(haloLevelTitle2)
+            haloLevelTitle2.heightAnchor.constraint(equalToConstant: 60).isActive = true
+            haloLevelTitle2.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
+            haloLevelTitle2.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
+            haloLevelTitle2.bottomAnchor.constraint(equalTo: pieChart2.topAnchor, constant: 15).isActive = true
+            
+            pieBackground2.addSubview(levelUpLabel)
+            levelUpLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
+            levelUpLabel.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
+            levelUpLabel.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
+            levelUpLabel.bottomAnchor.constraint(equalTo: haloLevelTitle2.topAnchor, constant: 0).isActive = true
+            
+            pieBackground2.addSubview(haloLevelTitle3)
+            haloLevelTitle3.heightAnchor.constraint(equalToConstant: 80).isActive = true
+            haloLevelTitle3.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
+            haloLevelTitle3.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
+            haloLevelTitle3.topAnchor.constraint(equalTo: pieChart2.bottomAnchor, constant: -15).isActive = true
+           }
+       }
+       
+       @objc func dismissMenu2() {
+           UIView.animate(withDuration: 0.5, animations: {
+               self.blackView.alpha = 0
+               if let window = UIApplication.shared.keyWindow {
+                self.pieBackground2.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(self.pieBackroundHeight2))
+               }
+           })
+       }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        checkLevelUp()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         activityView.startAnimating()
@@ -553,8 +763,9 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 self.skillLevelLabel.attributedText = attributedSkill
                 
                 let exp = value["exp"] as? Int ?? 0
+                self.setChart(exp: exp)
                 self.haloLevel.text = "\(self.player.haloLevel(exp: exp))"
-                self.haloLevelTitle.text = "App Level"
+                self.haloLevelTitle.text = self.player.levelTitle(level: self.player.haloLevel(exp: exp))
                 self.playerName.text = value["name"] as? String ?? "no name"
                 let state = value["state"] as? String ?? "no state"
                 let username = value["username"] as? String ?? "no name"
@@ -582,6 +793,24 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 }
             }
         }, withCancel: nil)
+    }
+    
+    func setChart(exp: Int) {
+            
+            
+            let bounds = self.player.findExpBounds(exp: exp)
+            let startExp = bounds[0]
+            let endExp = bounds[1]
+            
+            let currentExp = PieChartDataEntry(value: Double(exp - startExp), label: nil)
+            let goalExp = PieChartDataEntry(value: Double(endExp - exp), label: nil)
+            let chartDataSet = PieChartDataSet(entries: [currentExp, goalExp], label: nil)
+            chartDataSet.drawValuesEnabled = false
+            
+            let chartData = PieChartData(dataSet: chartDataSet)
+            let colors = [UIColor.init(r: 120, g: 207, b: 138), UIColor.white]
+            chartDataSet.colors = colors
+            self.pieChart.data = chartData
     }
     
     func uploadDeviceId(deviceId: String) {
@@ -635,6 +864,26 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         return sv
     }()
     
+    func setupPieChart() {
+        let currentExp = PieChartDataEntry(value: 3, label: nil)
+        let goalExp = PieChartDataEntry(value: 150, label: nil)
+        let chartDataSet = PieChartDataSet(entries: [currentExp, goalExp], label: nil)
+        chartDataSet.drawValuesEnabled = false
+        let chartData = PieChartData(dataSet: chartDataSet)
+        let colors = [UIColor.init(r: 120, g: 207, b: 138), UIColor.white]
+        chartDataSet.colors = colors
+        pieChart.data = chartData
+        pieChart.legend.enabled = false
+        pieChart.holeRadiusPercent = 0.93
+        pieChart.transparentCircleColor = UIColor.init(r: 120, g: 207, b: 138)
+        pieChart.transparentCircleRadiusPercent = 0.94
+        backgroundImage.addSubview(pieChart)
+        pieChart.heightAnchor.constraint(equalToConstant: 230).isActive = true
+        pieChart.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        pieChart.widthAnchor.constraint(equalToConstant: 230).isActive = true
+        pieChart.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 269 / 2).isActive = true
+    }
+    
     func setupViews() {
         scrollView.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         let Width = Float(view.frame.width)
@@ -660,6 +909,8 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
 //        skillLevel.heightAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.H)).isActive = true
 //        skillLevel.widthAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.W)).isActive = true
         
+        setupPieChart()
+        
         backgroundImage.addSubview(skillLevelLabel)
         let skillLevelLabelLoc = calculateButtonPosition(x: 540, y: 485, w: 400, h: 55, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
         
@@ -676,13 +927,13 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         haloLevel.heightAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.H)).isActive = true
         haloLevel.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.W)).isActive = true
         
-//        view.addSubview(haloLevelTitle)
-//        let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
-//
-//        haloLevelTitle.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelTitleLoc.Y)).isActive = true
-//        haloLevelTitle.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelTitleLoc.X)).isActive = true
-//        haloLevelTitle.heightAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.H)).isActive = true
-//        haloLevelTitle.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelTitleLoc.W)).isActive = true
+        view.addSubview(haloLevelTitle)
+        //let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
+
+        haloLevelTitle.topAnchor.constraint(equalTo: haloLevel.bottomAnchor, constant: 2).isActive = true
+        haloLevelTitle.centerXAnchor.constraint(equalTo: backgroundImage.centerXAnchor).isActive = true
+        haloLevelTitle.heightAnchor.constraint(equalToConstant: 25).isActive = true
+        haloLevelTitle.widthAnchor.constraint(equalToConstant: 125).isActive = true
         
         backgroundImage.addSubview(playerName)
         let playerNameLoc = calculateButtonPosition(x: 375, y: 40, w: 705, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)

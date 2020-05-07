@@ -109,6 +109,7 @@ class TourneyList: UITableViewController {
     @objc func handleCreateNewTourney() {
         let createTourney = CreateTourney()
         createTourney.tourneyList = self
+        createTourney.modalPresentationStyle = .fullScreen
         present(createTourney, animated: true, completion: nil)
     }
     
@@ -436,7 +437,7 @@ class TourneyCell: UITableViewCell {
             let monthInt = components.month!
             let monthAbb = months[monthInt - 1].prefix(3)
             let boldTime = "\(monthAbb). \(components.day!)"
-            let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb)
+            let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb as [NSAttributedString.Key : Any])
             attributedTime.append(boldTimeString)
             startDate.attributedText = attributedTime
         }

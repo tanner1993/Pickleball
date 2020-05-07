@@ -138,7 +138,7 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
     func getFirstAndLastInitial(name: String) -> String {
         var initials = ""
         var finalChar = 0
-        for (index, char) in name.enumerated() {
+        for char in name {
             if finalChar == 0 {
                 initials.append(char)
             }

@@ -106,7 +106,7 @@ class RecentMatchesCell: BaseCell {
                 let dateFormatter = DateFormatter()
                 if days == "week" {
                     dateFormatter.dateFormat = "MM/dd/yy"
-                    self.timeStamp.text = dateFormatter.string(from: dateTime)
+                    self.timeStamp.text = "Match completed: \(dateFormatter.string(from: dateTime))"
                 } else {
                     dateFormatter.dateFormat = "hh:mm a"
                     if self.match?.active == 0 {

@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import Charts
 
 class MatchView: UIViewController {
     var match = Match2()
@@ -44,6 +45,8 @@ class MatchView: UIViewController {
     var whichItem = Int()
     var matchFeed: MatchFeed?
     var tourneyName = String()
+    let tourneyFun = Tourney()
+    let blackView = UIView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -167,45 +170,17 @@ class MatchView: UIViewController {
     }
     
     func fetchMatch() {
-        let matchReference = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
-        
-        matchReference.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? NSDictionary {
-                let matchT = Match2()
-                let active = value["active"] as? Int ?? 0
-                let submitter = value["submitter"] as? Int ?? 0
-                let winner = value["winner"] as? Int ?? 0
-                let style = value["style"] as? Int ?? 0
-                let team_1_player_1 = value["team_1_player_1"] as? String ?? "Player not found"
-                let team_1_player_2 = value["team_1_player_2"] as? String ?? "Player not found"
-                let team_2_player_1 = value["team_2_player_1"] as? String ?? "Player not found"
-                let team_2_player_2 = value["team_2_player_2"] as? String ?? "Player not found"
-                let idList = [team_1_player_1, team_1_player_2, team_2_player_1, team_2_player_2]
-                self.checkUser(player1: team_1_player_1, player2: team_1_player_2, player3: team_2_player_1, player4: team_2_player_2)
-                self.getPlayerNames(idList: idList)
-                let team1_scores = value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
-                let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
-                let time = value["time"] as? Double ?? Date().timeIntervalSince1970
-                let forfeit = value["forfeit"] as? Int ?? 0
-                self.setupCorrectBottom(active: active, submitter: submitter, confirmers: team1_scores, team2: team2_scores, idList: idList, startTime: time, forfeit: forfeit)
-                matchT.active = active
-                matchT.winner = winner
-                matchT.submitter = submitter
-                matchT.team_1_player_1 = team_1_player_1
-                matchT.team_1_player_2 = team_1_player_2
-                matchT.team_2_player_1 = team_2_player_1
-                matchT.team_2_player_2 = team_2_player_2
-                matchT.team1_scores = team1_scores
-                matchT.team2_scores = team2_scores
-                matchT.matchId = self.matchId
-                matchT.time = time
-                matchT.forfeit = forfeit
-                matchT.style = style
-                matchT.doubles = team_1_player_2 == "Player not found" ? false : true
-                self.match = matchT
+        tourneyFun.fetchMatch(tourneyId: tourneyId, matchId: matchId, completion: { (result) in
+            guard let matchResult = result else {
+                print("failed to get rresult")
+                return
             }
-            
-        }, withCancel: nil)
+            self.match = matchResult
+            let idList = [matchResult.team_1_player_1!, matchResult.team_1_player_2!, matchResult.team_2_player_1!, matchResult.team_2_player_2!]
+            self.checkUser(player1: matchResult.team_1_player_1!, player2: matchResult.team_1_player_2!, player3: matchResult.team_2_player_1!, player4: matchResult.team_2_player_2!)
+            self.getPlayerNames(idList: idList)
+            self.setupCorrectBottom(active: matchResult.active!, submitter: matchResult.submitter!, confirmers: matchResult.team1_scores!, team2: matchResult.team2_scores!, idList: idList, startTime: matchResult.time!, forfeit: matchResult.forfeit!)
+        })
     }
     
     @objc func handleTimeExpired(action: UIAlertAction) {
@@ -484,60 +459,12 @@ class MatchView: UIViewController {
                 winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
             }
         }
-//                if match.active == 0 {
-//        
-//                    view.addSubview(confirmMatchScoresImage)
-//                    confirmMatchScoresImage.image = UIImage(named: "confirm_match_scores")
-//                    confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-//                    confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-//                    confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-//                    confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
-//        
-//                    view.addSubview(confirmMatchScores)
-//                    confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-//                    confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X))
-//                    confirmMatchScoresCenterXAnchor?.isActive = true
-//                    confirmMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-//                    confirmMatchScoresWidthAnchor = confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W))
-//                    confirmMatchScoresWidthAnchor?.isActive = true
-//                    print(confirmMatchScoresLoc.W)
-//                } else if match.active == 1 && match.submitter == userTeam?.teamId {
-//                    confirmMatchScoresImage.image = UIImage(named: "waiting_confirm")
-//                    view.addSubview(confirmMatchScoresImage)
-//                    confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-//                    confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-//                    confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-//                    confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
-//                } else if match.active == 1 && match.submitter == oppTeam?.teamId {
-//                    confirmMatchScoresImage.image = UIImage(named: "reject_confirm")
-//                    view.addSubview(confirmMatchScoresImage)
-//                    confirmMatchScoresImage.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-//                    confirmMatchScoresImage.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
-//                    confirmMatchScoresImage.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-//                    confirmMatchScoresImage.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
-//    
-//                    view.addSubview(confirmMatchScores)
-//                    //confirmMatchScores.backgroundColor = .yellow
-//                    confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-//                    confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X + (confirmMatchScoresLoc.W / 4)))
-//                    confirmMatchScoresCenterXAnchor?.isActive = true
-//                    confirmMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-//                    confirmMatchScoresWidthAnchor = confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W / 2))
-//                    confirmMatchScoresWidthAnchor?.isActive = true
-//    
-//                    view.addSubview(rejectMatchScores)
-//                    //rejectMatchScores.backgroundColor = .red
-//                    rejectMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
-//                    rejectMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X - (confirmMatchScoresLoc.W / 4))).isActive = true
-//                    rejectMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
-//                    rejectMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W / 2)).isActive = true
-//                }
     }
     
     func getFirstAndLastInitial(name: String) -> String {
         var initials = ""
         var finalChar = 0
-        for (index, char) in name.enumerated() {
+        for char in name {
             if finalChar == 0 {
                 initials.append(char)
             }
@@ -555,90 +482,84 @@ class MatchView: UIViewController {
     }
     
     func getPlayerNames(idList: [String]) {
-        let user1NameRef = Database.database().reference().child("users").child(idList[0])
-        user1NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                let exp = value["exp"] as? Int
-                let playerLevel = self.player.haloLevel(exp: exp!)
-                self.userPlayer1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-                self.userPlayer1Skill.text = "\(value["skill_level"] as? Float ?? 0)"
-                self.userPlayer1Level.text = "\(playerLevel)"
-                let playerExp = value["exp"] as? Int
-                self.team1_P1_Exp = playerExp!
-                self.team1_P1_Lev = self.player.haloLevel(exp: playerExp!)
-                if self.match.active == 3 && self.match.winner == 1 {
-                    if self.winnerConfirmed.text!.count > 5 {
-                        self.winnerConfirmed.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none") + " and " + self.winnerConfirmed.text!
-                    } else {
-                        self.winnerConfirmed.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none") + self.winnerConfirmed.text!
-                    }
+        
+        player.getPlayerNameAndSkill(playerId: idList[0], completion: { (result) in
+            guard let playerResult = result else {
+                print("failed to get result")
+                return
+            }
+            self.userPlayer1.text = playerResult.name!
+            self.userPlayer1Skill.text = "\(playerResult.skill_level!)"
+            self.userPlayer1Level.text = "\(playerResult.halo_level!)"
+            self.team1_P1_Exp = playerResult.exp!
+            self.team1_P1_Lev = playerResult.halo_level!
+            if self.match.active == 3 && self.match.winner == 1 {
+                if self.winnerConfirmed.text!.count > 5 {
+                    self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
+                } else {
+                    self.winnerConfirmed.text = playerResult.name! + self.winnerConfirmed.text!
                 }
             }
         })
-        if match.doubles == true {
-            let user2NameRef = Database.database().reference().child("users").child(idList[1])
-            user2NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
-                if let value = snapshot.value as? [String: AnyObject] {
-                    let exp = value["exp"] as? Int
-                    let playerLevel = self.player.haloLevel(exp: exp!)
-                    self.userPlayer2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-                    self.userPlayer2Skill.text = "\(value["skill_level"] as? Float ?? 0)"
-                    self.userPlayer2Level.text = "\(playerLevel)"
-                    let playerExp = value["exp"] as? Int
-                    self.team1_P2_Exp = playerExp!
-                    self.team1_P2_Lev = self.player.haloLevel(exp: playerExp!)
-                    if self.match.active == 3 && self.match.winner == 1 {
-                        if self.winnerConfirmed.text!.count > 5 {
-                            self.winnerConfirmed.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none") + " and " + self.winnerConfirmed.text!
-                        } else {
-                            self.winnerConfirmed.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none") + self.winnerConfirmed.text!
-                        }
+        
+        player.getPlayerNameAndSkill(playerId: idList[2], completion: { (result) in
+            guard let playerResult = result else {
+                print("failed to get result")
+                return
+            }
+            self.oppPlayer1.text = playerResult.name!
+            self.oppPlayer1Skill.text = "\(playerResult.skill_level!)"
+            self.oppPlayer1Level.text = "\(playerResult.halo_level!)"
+            self.team2_P1_Exp = playerResult.exp!
+            self.team2_P1_Lev = playerResult.halo_level!
+            if self.match.active == 3 && self.match.winner == 2 {
+                if self.winnerConfirmed.text!.count > 5 {
+                    self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
+                } else {
+                    self.winnerConfirmed.text = playerResult.name! + self.winnerConfirmed.text!
+                }
+            }
+        })
+        
+        if match.doubles! {
+            player.getPlayerNameAndSkill(playerId: idList[1], completion: { (result) in
+                guard let playerResult = result else {
+                    print("failed to get result")
+                    return
+                }
+                self.userPlayer2.text = playerResult.name!
+                self.userPlayer2Skill.text = "\(playerResult.skill_level!)"
+                self.userPlayer2Level.text = "\(playerResult.halo_level!)"
+                self.team1_P2_Exp = playerResult.exp!
+                self.team1_P2_Lev = playerResult.halo_level!
+                if self.match.active == 3 && self.match.winner == 1 {
+                    if self.winnerConfirmed.text!.count > 5 {
+                        self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
+                    } else {
+                        self.winnerConfirmed.text = playerResult.name! + self.winnerConfirmed.text!
                     }
                 }
             })
             
-            let opp2NameRef = Database.database().reference().child("users").child(idList[3])
-            opp2NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
-                if let value = snapshot.value as? [String: AnyObject] {
-                    let exp = value["exp"] as? Int
-                    let playerLevel = self.player.haloLevel(exp: exp!)
-                    self.oppPlayer2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-                    self.oppPlayer2Skill.text = "\(value["skill_level"] as? Float ?? 0)"
-                    self.oppPlayer2Level.text = "\(playerLevel)"
-                    let playerExp = value["exp"] as? Int
-                    self.team2_P2_Exp = playerExp!
-                    self.team2_P2_Lev = self.player.haloLevel(exp: playerExp!)
-                    if self.match.active == 3 && self.match.winner == 2 {
-                        if self.winnerConfirmed.text!.count > 5 {
-                            self.winnerConfirmed.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none") + " and " + self.winnerConfirmed.text!
-                        } else {
-                            self.winnerConfirmed.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none") + self.winnerConfirmed.text!
-                        }
+            player.getPlayerNameAndSkill(playerId: idList[3], completion: { (result) in
+                guard let playerResult = result else {
+                    print("failed to get result")
+                    return
+                }
+                self.oppPlayer2.text = playerResult.name!
+                self.oppPlayer2Skill.text = "\(playerResult.skill_level!)"
+                self.oppPlayer2Level.text = "\(playerResult.halo_level!)"
+                self.team2_P2_Exp = playerResult.exp!
+                self.team2_P2_Lev = playerResult.halo_level!
+                if self.match.active == 3 && self.match.winner == 2 {
+                    if self.winnerConfirmed.text!.count > 5 {
+                        self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
+                    } else {
+                        self.winnerConfirmed.text = playerResult.name! + self.winnerConfirmed.text!
                     }
                 }
             })
         }
-        
-        let opp1NameRef = Database.database().reference().child("users").child(idList[2])
-        opp1NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                let exp = value["exp"] as? Int
-                let playerLevel = self.player.haloLevel(exp: exp!)
-                self.oppPlayer1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-                self.oppPlayer1Skill.text = "\(value["skill_level"] as? Float ?? 0)"
-                self.oppPlayer1Level.text = "\(playerLevel)"
-                let playerExp = value["exp"] as? Int
-                self.team2_P1_Exp = playerExp!
-                self.team2_P1_Lev = self.player.haloLevel(exp: playerExp!)
-                if self.match.active == 3 && self.match.winner == 2 {
-                    if self.winnerConfirmed.text!.count > 5 {
-                        self.winnerConfirmed.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none") + " and " + self.winnerConfirmed.text!
-                    } else {
-                        self.winnerConfirmed.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none") + self.winnerConfirmed.text!
-                    }
-                }
-            }
-        })
         
     }
     
@@ -907,7 +828,7 @@ class MatchView: UIViewController {
     let winnerConfirmed: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = " win!"
+        label.text = " won!"
         label.numberOfLines = 2
         label.font = UIFont(name: "HelveticaNeue", size: 25)
         label.textAlignment = .center
@@ -1497,6 +1418,7 @@ class MatchView: UIViewController {
             }
         } else {
             matchReady = 1
+            confirmCheck3.isHidden = false
         }
         if matchReady == 0 {
             confirmMatchScores.isHidden = true
@@ -1633,11 +1555,11 @@ class MatchView: UIViewController {
                 
                 if self.tourneyId == "none" {
                     if self.match.doubles == true {
-                        uid != self.match.team_1_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
-                        uid != self.match.team_2_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
+                        uid != self.match.team_1_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
+                        uid != self.match.team_2_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
                     }
-                    uid != self.match.team_1_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
-                    uid != self.match.team_2_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
+                    uid != self.match.team_1_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
+                    uid != self.match.team_2_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
                 } else {
                     self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
                 }
@@ -1737,23 +1659,30 @@ class MatchView: UIViewController {
             }
             if self.tourneyId == "none" {
                 if self.match.doubles == true {
-                    uid != self.match.team_1_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
-                    uid != self.match.team_2_player_2 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
+                    uid != self.match.team_1_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
+                    uid != self.match.team_2_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
                 }
-                uid != self.match.team_1_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
-                uid != self.match.team_2_player_1 ? Database.database().reference().child("user_notifications").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
+                uid != self.match.team_1_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
+                uid != self.match.team_2_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
             }
             self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.userPlayer1.text ?? "none", userPlayer2: self.userPlayer2.text ?? "none", oppPlayer1: self.oppPlayer1.text ?? "none", oppPlayer2: self.oppPlayer2.text ?? "none", message: "confirmed the match scores", title: "Match Scores Confirmed")
             
             
         })
-        let newalert = UIAlertController(title: "Match Complete", message: self.match.winner == 1 ? "\(userPlayer1.text!) and \(userPlayer2.text!) win!" : "\(oppPlayer1.text!) and \(oppPlayer2.text!) win!", preferredStyle: UIAlertController.Style.alert)
-        newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
-        self.present(newalert, animated: true, completion: nil)
         confirmMatchScores.isHidden = true
         rejectMatchScores.isHidden = true
         view.addSubview(winnerConfirmed)
-        winnerConfirmed.text = match.winner == 1 ? "\(userPlayer1.text!) & \(userPlayer2.text!) win!" : "\(oppPlayer1.text!) & \(oppPlayer2.text!) win!"
+        if match.doubles == true {
+            let newalert = UIAlertController(title: "Match Complete", message: self.match.winner == 1 ? "\(userPlayer1.text!) and \(userPlayer2.text!) win!" : "\(oppPlayer1.text!) and \(oppPlayer2.text!) win!", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
+            self.present(newalert, animated: true, completion: nil)
+            winnerConfirmed.text = match.winner == 1 ? "\(userPlayer1.text!) & \(userPlayer2.text!) win!" : "\(oppPlayer1.text!) & \(oppPlayer2.text!) win!"
+        } else {
+            let newalert = UIAlertController(title: "Match Complete", message: self.match.winner == 1 ? "\(userPlayer1.text!) wins!" : "\(oppPlayer1.text!) wins!", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
+            self.present(newalert, animated: true, completion: nil)
+            winnerConfirmed.text = match.winner == 1 ? "\(userPlayer1.text!) wins!" : "\(oppPlayer1.text!) wins!"
+        }
         winnerConfirmed.numberOfLines = 2
         winnerConfirmed.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
         winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
@@ -1882,8 +1811,8 @@ class MatchView: UIViewController {
         let effectedIndices = reorganizeTeams()
         
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")
-        let valuesTeam1 = ["rank": teams[team1Index].rank, "wins": match.winner == 1 ? team1.wins! + 1 : team1.wins!, "losses": match.winner == 2 ? team1.losses! + 1 : team1.losses!, "player1": team1.player1, "player2": team1.player2] as [String : Any]
-        let valuesTeam2 = ["rank": teams[team2Index].rank, "wins": match.winner == 2 ? team2.wins! + 1 : team2.wins!, "losses": match.winner == 1 ? team2.losses! + 1 : team2.losses!, "player1": team2.player1, "player2": team2.player2] as [String : Any]
+        let valuesTeam1 = ["rank": teams[team1Index].rank!, "wins": match.winner == 1 ? team1.wins! + 1 : team1.wins!, "losses": match.winner == 2 ? team1.losses! + 1 : team1.losses!, "player1": team1.player1!, "player2": team1.player2!] as [String : Any]
+        let valuesTeam2 = ["rank": teams[team2Index].rank!, "wins": match.winner == 2 ? team2.wins! + 1 : team2.wins!, "losses": match.winner == 1 ? team2.losses! + 1 : team2.losses!, "player1": team2.player1!, "player2": team2.player2!] as [String : Any]
         var childUpdates = ["/\(team1.teamId ?? "none")/": valuesTeam1, "/\(team2.teamId ?? "none")/": valuesTeam2]
         if effectedIndices.count == 1 {
             let valuesEffected1 = ["rank": teams[effectedIndices[0]].rank as Any, "wins": teams[effectedIndices[0]].wins as Any, "losses": teams[effectedIndices[0]].losses as Any, "player1": teams[effectedIndices[0]].player1 as Any, "player2": teams[effectedIndices[0]].player2 as Any] as [String : Any]
@@ -1974,15 +1903,12 @@ class MatchView: UIViewController {
         let timeOfChallenge = Date().timeIntervalSince1970
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("matches")
         let createMatchRef = ref.childByAutoId()
-        let values = ["style": match.style!, "active": 1, "team_1_player_1": team1st.player1, "team_1_player_2": team1st.player2, "team_2_player_1": team2nd.player1, "team_2_player_2": team2nd.player2, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
+        let values = ["style": match.style!, "active": 1, "team_1_player_1": team1st.player1!, "team_1_player_2": team1st.player2!, "team_2_player_1": team2nd.player1!, "team_2_player_2": team2nd.player2!, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
         createMatchRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
             if let error = error {
                 print("Data could not be saved: \(error).")
-                return
-            }
-            guard let matchId = createMatchRef.key else {
                 return
             }
             let userIds = [team1st.player1!, team1st.player2!, team2nd.player1!, team2nd.player2!]
@@ -1993,7 +1919,7 @@ class MatchView: UIViewController {
             }
             
             let notificationsRef = Database.database().reference()
-            let childUpdates = ["/\("user_tourneys")/\(team1st.player1)/\(self.tourneyId)/": team1st.player1 == uid ? 0 : 1, "/\("user_tourneys")/\(team1st.player2)/\(self.tourneyId)/": team1st.player2 == uid ? 0 : 1, "/\("user_tourneys")/\(team2nd.player1)/\(self.tourneyId)/": team2nd.player1 == uid ? 0 : 1, "/\("user_tourneys")/\(team2nd.player2)/\(self.tourneyId)/": team2nd.player2 == uid ? 0 : 1, "/\("tourneys")/\(self.tourneyId)/\("yet_to_view")/": self.yetToView] as [String : Any]
+            let childUpdates = ["/\("user_tourneys")/\(team1st.player1!)/\(self.tourneyId)/": team1st.player1 == uid ? 0 : 1, "/\("user_tourneys")/\(team1st.player2!)/\(self.tourneyId)/": team1st.player2 == uid ? 0 : 1, "/\("user_tourneys")/\(team2nd.player1!)/\(self.tourneyId)/": team2nd.player1 == uid ? 0 : 1, "/\("user_tourneys")/\(team2nd.player2!)/\(self.tourneyId)/": team2nd.player2 == uid ? 0 : 1, "/\("tourneys")/\(self.tourneyId)/\("yet_to_view")/": self.yetToView] as [String : Any]
             notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
 
@@ -2050,14 +1976,31 @@ class MatchView: UIViewController {
     }
     
     func updateExperience() {
-        let team1Level = Int((team1_P1_Lev + team1_P2_Lev)/2)
-        let team2Level = Int((team2_P1_Lev + team2_P2_Lev)/2)
+        let team1Level = match.doubles == true ? Int((team1_P1_Lev + team1_P2_Lev)/2) : team1_P1_Lev
+        let team2Level = match.doubles == true ? Int((team2_P1_Lev + team2_P2_Lev)/2) : team2_P1_Lev
         let winningTeam = match.winner!
         let levelDifference = abs(team1Level - team2Level)
-        let team1ChangeExp = team1Level - team2Level >= 0 ? calculateChangeExperienceHigher(levelDiff: levelDifference, winOrLose: winningTeam == 1 ? true : false) : calculateChangeExperienceLower(levelDiff: levelDifference, winOrLose: winningTeam == 1 ? true : false)
-        let team2ChangeExp = team2Level - team1Level >= 0 ? calculateChangeExperienceHigher(levelDiff: levelDifference, winOrLose: winningTeam == 2 ? true : false) : calculateChangeExperienceLower(levelDiff: levelDifference, winOrLose: winningTeam == 2 ? true : false)
+        let team1ChangeExpFlat = team1Level - team2Level >= 0 ? calculateChangeExperienceHigher(levelDiff: levelDifference, winOrLose: winningTeam == 1 ? true : false) : calculateChangeExperienceLower(levelDiff: levelDifference, winOrLose: winningTeam == 1 ? true : false)
+        let team2ChangeExpFlat = team2Level - team1Level >= 0 ? calculateChangeExperienceHigher(levelDiff: levelDifference, winOrLose: winningTeam == 2 ? true : false) : calculateChangeExperienceLower(levelDiff: levelDifference, winOrLose: winningTeam == 2 ? true : false)
+        var team1ChangeExp = Int()
+        var team2ChangeExp = Int()
+        if match.style == 0 {
+            team1ChangeExp = team1ChangeExpFlat * 1/2
+            team2ChangeExp = team2ChangeExpFlat * 1/2
+        } else if match.style == 1 {
+            team1ChangeExp = team1ChangeExpFlat
+            team2ChangeExp = team2ChangeExpFlat
+        } else {
+            team1ChangeExp = team1ChangeExpFlat * 3/2
+            team2ChangeExp = team2ChangeExpFlat * 3/2
+        }
+        if match.doubles == true {
+            levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team1_P2_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp, team2_P2_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!])
+        } else {
+            levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_2_player_1!])
+        }
         let usersRef = Database.database().reference().child("users")
-        let childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any]
+        let childUpdates = match.doubles == true ? ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any] : ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
         usersRef.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -2074,6 +2017,175 @@ class MatchView: UIViewController {
             
         })
     }
+    
+    func levelUpDisplay(previousLev: [Int], newExp: [Int], players: [String]) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        for (index, element) in players.enumerated() {
+            let newLevel = player.haloLevel(exp: newExp[index])
+            
+            if (newLevel - previousLev[index]) > 0 {
+                uid == element ? openMenu(newExp: newExp[index], newLevel: newLevel, oldLevel: previousLev[index]) : uploadLevelUp(oldLevel: previousLev[index], player: element)
+            }
+        }
+    }
+    
+    
+    func uploadLevelUp(oldLevel: Int, player: String) {
+        Database.database().reference().child("users").child(player).child("oldLevel").setValue(oldLevel)
+    }
+    
+    let pieBackground: UIView = {
+        let cv = UIView()
+        cv.backgroundColor = .white
+        cv.layer.cornerRadius = 10
+        cv.layer.masksToBounds = true
+        return cv
+    }()
+    
+    let haloLevel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let haloLevelTitle: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        label.text = "You leveled up!"
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let levelUpLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Level Up!"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 50)
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let haloLevelTitle3: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let pieBackroundHeight = 440
+    
+    let pieChart: PieChartView = {
+        let bi = PieChartView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
+    
+    func openMenu(newExp: Int, newLevel: Int, oldLevel: Int) {
+        self.haloLevelTitle.text = "You moved up from level \(oldLevel) to level \(newLevel)!"
+        if self.player.levelTitle(level: oldLevel) != self.player.levelTitle(level: newLevel) {
+            self.haloLevelTitle3.text = "You graduated from '\(self.player.levelTitle(level: oldLevel))' to '\(self.player.levelTitle(level: newLevel))'"
+        } else {
+            self.haloLevelTitle3.text = "You're currently '\(self.player.levelTitle(level: newLevel))'"
+        }
+        let bounds = self.player.findExpBounds(exp: newExp)
+        let startExp = bounds[0]
+        let endExp = bounds[1]
+        
+        let currentExp = PieChartDataEntry(value: Double(newExp - startExp), label: nil)
+        let goalExp = PieChartDataEntry(value: Double(endExp - newExp), label: nil)
+        let chartDataSet = PieChartDataSet(entries: [currentExp, goalExp], label: nil)
+        chartDataSet.drawValuesEnabled = false
+        
+        let chartData = PieChartData(dataSet: chartDataSet)
+        let colors = [UIColor.init(r: 120, g: 207, b: 138), UIColor.white]
+        chartDataSet.colors = colors
+        
+        pieChart.data = chartData
+        pieChart.legend.enabled = false
+        pieChart.holeRadiusPercent = 0.93
+        pieChart.transparentCircleColor = UIColor.init(r: 120, g: 207, b: 138)
+        pieChart.transparentCircleRadiusPercent = 0.94
+           if let window = UIApplication.shared.keyWindow {
+               blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+               blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu)))
+               window.addSubview(blackView)
+               window.addSubview(pieBackground)
+               pieBackground.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(pieBackroundHeight))
+               blackView.frame = window.frame
+               blackView.alpha = 0
+               
+               UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                   self.blackView.alpha = 1
+                self.pieBackground.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.pieBackroundHeight + 140), width: window.frame.width - 48, height: CGFloat(self.pieBackroundHeight))
+               }, completion: nil)
+            
+            pieBackground.addSubview(pieChart)
+            pieChart.heightAnchor.constraint(equalToConstant: 230).isActive = true
+            pieChart.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            pieChart.widthAnchor.constraint(equalToConstant: 230).isActive = true
+            pieChart.centerYAnchor.constraint(equalTo: pieBackground.centerYAnchor).isActive = true
+            
+            let whichPlayerAmI = match.whichPlayerAmI()
+            switch whichPlayerAmI {
+            case 0:
+                userPlayer1Level.text = "\(newLevel)"
+            case 1:
+                userPlayer2Level.text = "\(newLevel)"
+            case 2:
+                oppPlayer1Level.text = "\(newLevel)"
+            case 3:
+                oppPlayer2Level.text = "\(newLevel)"
+            default:
+                print("none")
+            }
+            
+            haloLevel.text = "\(newLevel)"
+            pieBackground.addSubview(haloLevel)
+            haloLevel.heightAnchor.constraint(equalToConstant: 150).isActive = true
+            haloLevel.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            haloLevel.widthAnchor.constraint(equalToConstant: 150).isActive = true
+            haloLevel.centerYAnchor.constraint(equalTo: pieBackground.centerYAnchor).isActive = true
+            
+            pieBackground.addSubview(haloLevelTitle)
+            haloLevelTitle.heightAnchor.constraint(equalToConstant: 60).isActive = true
+            haloLevelTitle.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            haloLevelTitle.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
+            haloLevelTitle.bottomAnchor.constraint(equalTo: pieChart.topAnchor, constant: 15).isActive = true
+            
+            pieBackground.addSubview(levelUpLabel)
+            levelUpLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
+            levelUpLabel.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            levelUpLabel.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
+            levelUpLabel.bottomAnchor.constraint(equalTo: haloLevelTitle.topAnchor, constant: 0).isActive = true
+            
+            pieBackground.addSubview(haloLevelTitle3)
+            haloLevelTitle3.heightAnchor.constraint(equalToConstant: 80).isActive = true
+            haloLevelTitle3.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            haloLevelTitle3.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
+            haloLevelTitle3.topAnchor.constraint(equalTo: pieChart.bottomAnchor, constant: -15).isActive = true
+           }
+       }
+       
+       @objc func dismissMenu() {
+           UIView.animate(withDuration: 0.5, animations: {
+               self.blackView.alpha = 0
+               if let window = UIApplication.shared.keyWindow {
+                self.pieBackground.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(self.pieBackroundHeight))
+               }
+           })
+       }
     
     func calculateChangeExperienceHigher(levelDiff: Int, winOrLose: Bool) -> Int {
         if winOrLose == true {

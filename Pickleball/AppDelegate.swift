@@ -16,7 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     let gcmMessageIDKey = "gcm.message_id"
     static var DeviceId = String()
     static let Notification_URL = "https://fcm.googleapis.com/fcm/send"
-    static let ServerKey = "AAAAZaWdeC4:APA91bG0zE-5QuhhFmOVreAFFOG_1_RXgladp2MhUUb0f5hCJucXRZM2DtXEzRw3RuIAOgSYF1r0E9IN9WHDHzAmhQK07CYn1bjJUP1clGdK06ff8C6mFepCH7IcWzOMMqF5-v8jKtAM"
+    static let ServerKey = "AAAA0nB3PiU:APA91bFsypFik4XEn2c2Ie7ecEKu6IJDFJAPzaZXMvx1RwEWlkT_fs-tuOkLcOJ_7KhiVKYe--bq21-6vzzn9TQOhPUbem_eZbcUec5cAGMUfe_JNAtxp9VYZAL63-UTs6Lx7udi3ulw"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         application.registerForRemoteNotifications()

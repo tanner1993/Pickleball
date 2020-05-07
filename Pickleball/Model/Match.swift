@@ -9,19 +9,6 @@
 import UIKit
 import Firebase
 
-class Match: NSObject {
-    var winner: String?
-    var time: Double?
-    var submitter: String?
-    var active: Int?
-    var challengerTeamId: String?
-    var challengedTeamId: String?
-    var matchId: String?
-    var tourneyId: String?
-    var challengerScores: [Int]?
-    var challengedScores: [Int]?
-}
-
 class Match2: NSObject {
     var winner: Int?
     var submitter: Int?
@@ -38,6 +25,24 @@ class Match2: NSObject {
     var style: Int?
     var doubles: Bool?
     var seen: Bool?
+    
+    func whichPlayerAmI() -> Int {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return 0
+        }
+        switch uid {
+        case team_1_player_1:
+            return 0
+        case team_1_player_2:
+            return 1
+        case team_2_player_1:
+            return 2
+        case team_2_player_2:
+            return 3
+        default:
+            return 0
+        }
+    }
     
     func sendTourneyNotifications(uid: String, tourneyId: String, tourneyYetToViewMatch: [String]) {
         var yetToView = tourneyYetToViewMatch
