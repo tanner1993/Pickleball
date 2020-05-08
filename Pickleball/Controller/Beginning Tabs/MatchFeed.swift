@@ -294,6 +294,7 @@ class MatchFeed: UITableViewController {
                 matchDisplay.match = matches[indexPath.item]
                 matchDisplay.whichItem = indexPath.item
                 matchDisplay.matchFeed = self
+                matchDisplay.matchViewOrganizer.match = matches[indexPath.item]
                 navigationController?.pushViewController(matchDisplay, animated: true)
                 if matches[indexPath.item].seen == false {
                     disableNotification(matchIndex: indexPath.item)

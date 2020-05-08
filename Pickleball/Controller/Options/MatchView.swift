@@ -47,11 +47,13 @@ class MatchView: UIViewController {
     var tourneyName = String()
     let tourneyFun = Tourney()
     let blackView = UIView()
+    var matchViewOrganizer = MatchViewOrganizer()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        setupViews()
+        view = matchViewOrganizer
+        //setupViews()
         if tourneyId != "none" {
             fetchMatch()
         } else {
