@@ -21,6 +21,17 @@ class MatchViewOrganizer: UIView {
     }
     
     var backgroundImageCenterYAnchor: NSLayoutConstraint?
+    var confirmMatchScoresWidthAnchor: NSLayoutConstraint?
+    var confirmMatchScoresCenterXAnchor: NSLayoutConstraint?
+    var rejectMatchScoresWidthAnchor: NSLayoutConstraint?
+    var rejectMatchScoresCenterXAnchor: NSLayoutConstraint?
+    var whiteCover2HeightAnchor: NSLayoutConstraint?
+    var whiteCover2CenterYAnchor: NSLayoutConstraint?
+    
+    var confirmCheck1CenterYAnchor: NSLayoutConstraint?
+    var confirmCheck3CenterYAnchor: NSLayoutConstraint?
+    var userPlayer1CenterYAnchor: NSLayoutConstraint?
+    var oppPlayer1CenterYAnchor: NSLayoutConstraint?
     var match = Match2()
     
     
@@ -287,6 +298,7 @@ class MatchViewOrganizer: UIView {
             label.numberOfLines = 2
             label.font = UIFont(name: "HelveticaNeue", size: 25)
             label.textAlignment = .center
+            label.isHidden = true
             return label
         }()
         
@@ -294,6 +306,7 @@ class MatchViewOrganizer: UIView {
             let label = UILabel()
             label.translatesAutoresizingMaskIntoConstraints = false
             label.text = "The challenged team forfeited!"
+            label.isHidden = true
             label.numberOfLines = 2
             label.font = UIFont(name: "HelveticaNeue", size: 25)
             label.textAlignment = .center
@@ -346,22 +359,6 @@ class MatchViewOrganizer: UIView {
             return view
         }()
         
-        let whiteCover3: UIView = {
-            let view = UIView()
-            view.backgroundColor = .white
-            view.translatesAutoresizingMaskIntoConstraints = false
-            return view
-        }()
-        
-        let matchDeleted: UILabel = {
-            let label = UILabel()
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.text = "Match has been erased"
-            label.font = UIFont(name: "HelveticaNeue", size: 25)
-            label.textAlignment = .center
-            return label
-        }()
-        
         let matchStyleLabel: UILabel = {
             let label = UILabel()
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -371,7 +368,7 @@ class MatchViewOrganizer: UIView {
         }()
     
     func setupViews() {
-        
+        backgroundColor = .white
         if frame.width < 375 {
             matchStatusLabel.font = UIFont(name: "HelveticaNeue", size: 20)
         }
@@ -395,13 +392,13 @@ class MatchViewOrganizer: UIView {
         matchStyleLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(matchStyleLabelLoc.X)).isActive = true
         matchStyleLabel.heightAnchor.constraint(equalToConstant: CGFloat(matchStyleLabelLoc.H)).isActive = true
         matchStyleLabel.widthAnchor.constraint(equalToConstant: CGFloat(matchStyleLabelLoc.W)).isActive = true
-        if match.style == 0 {
-            matchStyleLabel.text = "Single Match"
-        } else if match.style == 1 {
-            matchStyleLabel.text = "Best 2 out of 3"
-        } else {
-            matchStyleLabel.text = "Best 3 out of 5"
-        }
+//        if match.style == 0 {
+//            matchStyleLabel.text = "Single Match"
+//        } else if match.style == 1 {
+//            matchStyleLabel.text = "Best 2 out of 3"
+//        } else {
+//            matchStyleLabel.text = "Best 3 out of 5"
+//        }
         
         let whiteCoverLoc = calculateButtonPosition(x: 479.5, y: 832, w: 275, h: 331, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
         addSubview(whiteCover)
@@ -410,192 +407,186 @@ class MatchViewOrganizer: UIView {
         whiteCover.heightAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc.H)).isActive = true
         whiteCover.widthAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc.W)).isActive = true
         
-        if match.style == 0 {
-            let whiteCoverLoc2 = calculateButtonPosition(x: 375, y: 865, w: 487, h: 275, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(whiteCover2)
-            whiteCover2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(whiteCoverLoc2.Y)).isActive = true
-            whiteCover2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(whiteCoverLoc2.X)).isActive = true
-            whiteCover2.heightAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.H)).isActive = true
-            whiteCover2.widthAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.W)).isActive = true
-        } else if match.style == 1 {
-            let whiteCoverLoc2 = calculateButtonPosition(x: 375, y: 935, w: 487, h: 150, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(whiteCover2)
-            whiteCover2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(whiteCoverLoc2.Y)).isActive = true
-            whiteCover2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(whiteCoverLoc2.X)).isActive = true
-            whiteCover2.heightAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.H)).isActive = true
-            whiteCover2.widthAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.W)).isActive = true
-        }
+        let whiteCoverLoc2 = calculateButtonPosition(x: 375, y: 865, w: 487, h: 275, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        addSubview(whiteCover2)
+        whiteCover2CenterYAnchor = whiteCover2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(whiteCoverLoc2.Y))
+        whiteCover2CenterYAnchor?.isActive = true
+        whiteCover2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(whiteCoverLoc2.X)).isActive = true
+        whiteCover2HeightAnchor = whiteCover2.heightAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.H))
+        whiteCover2HeightAnchor?.isActive = true
+        whiteCover2.widthAnchor.constraint(equalToConstant: CGFloat(whiteCoverLoc2.W)).isActive = true
+            
+        let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 75, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        addSubview(userPlayer1)
+        userPlayer1CenterYAnchor = userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y))
+        userPlayer1CenterYAnchor?.isActive = true
+        userPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer1Loc.X)).isActive = true
+        userPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+        userPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.W)).isActive = true
         
-        if match.doubles == true {
+        addSubview(userPlayer1Skill)
+        userPlayer1Skill.centerYAnchor.constraint(equalTo: userPlayer1.centerYAnchor).isActive = true
+        userPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+        userPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+        userPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+        
+        addSubview(userPlayer1Level)
+        userPlayer1Level.centerYAnchor.constraint(equalTo: userPlayer1.centerYAnchor).isActive = true
+        userPlayer1Level.leftAnchor.constraint(equalTo: userPlayer1Skill.rightAnchor, constant: 40).isActive = true
+        userPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+        userPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+        
+        let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 381, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        
+        addSubview(oppPlayer1)
+        oppPlayer1CenterYAnchor = oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y))
+        oppPlayer1CenterYAnchor?.isActive = true
+        oppPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer1Loc.X)).isActive = true
+        oppPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+        oppPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.W)).isActive = true
+        
+        addSubview(oppPlayer1Skill)
+        oppPlayer1Skill.centerYAnchor.constraint(equalTo: oppPlayer1.centerYAnchor).isActive = true
+        oppPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+        oppPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+        oppPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+        
+        addSubview(oppPlayer1Level)
+        oppPlayer1Level.centerYAnchor.constraint(equalTo: oppPlayer1.centerYAnchor).isActive = true
+        oppPlayer1Level.leftAnchor.constraint(equalTo: oppPlayer1Skill.rightAnchor, constant: 40).isActive = true
+        oppPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+        oppPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+        
+        let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 77, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        addSubview(confirmCheck1)
+        confirmCheck1CenterYAnchor = confirmCheck1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck1Loc.Y))
+        confirmCheck1CenterYAnchor?.isActive = true
+        confirmCheck1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
+        confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
+        confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
+        
+        let confirmCheck2Loc = calculateButtonPosition(x: 666, y: 163, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        addSubview(confirmCheck2)
+        confirmCheck2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck2Loc.Y)).isActive = true
+        confirmCheck2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck2Loc.X)).isActive = true
+        confirmCheck2.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck2Loc.H)).isActive = true
+        confirmCheck2.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck2Loc.W)).isActive = true
+        
+        let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 383, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        addSubview(confirmCheck3)
+        confirmCheck3CenterYAnchor = confirmCheck3.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck3Loc.Y))
+        confirmCheck3CenterYAnchor?.isActive = true
+        confirmCheck3.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck3Loc.X)).isActive = true
+        confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.H)).isActive = true
+        confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.W)).isActive = true
+        
+        let confirmCheck4Loc = calculateButtonPosition(x: 666, y: 469, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        addSubview(confirmCheck4)
+        confirmCheck4.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck4Loc.Y)).isActive = true
+        confirmCheck4.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck4Loc.X)).isActive = true
+        confirmCheck4.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck4Loc.H)).isActive = true
+        confirmCheck4.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck4Loc.W)).isActive = true
+        
+        let userPlayer2Loc = calculateButtonPosition(x: 211.5, y: 165, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        
+        addSubview(userPlayer2)
+        userPlayer2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer2Loc.Y)).isActive = true
+        userPlayer2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer2Loc.X)).isActive = true
+        userPlayer2.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
+        userPlayer2.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.W)).isActive = true
+        
+        addSubview(userPlayer2Skill)
+        userPlayer2Skill.centerYAnchor.constraint(equalTo: userPlayer2.centerYAnchor).isActive = true
+        userPlayer2Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+        userPlayer2Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
+        userPlayer2Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+        
+        addSubview(userPlayer2Level)
+        userPlayer2Level.centerYAnchor.constraint(equalTo: userPlayer2.centerYAnchor).isActive = true
+        userPlayer2Level.leftAnchor.constraint(equalTo: userPlayer2Skill.rightAnchor, constant: 40).isActive = true
+        userPlayer2Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
+        userPlayer2Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+        
+        let oppPlayer2Loc = calculateButtonPosition(x: 211.5, y: 471, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+        
+        addSubview(oppPlayer2)
+        oppPlayer2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer2Loc.Y)).isActive = true
+        oppPlayer2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer2Loc.X)).isActive = true
+        oppPlayer2.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
+        oppPlayer2.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.W)).isActive = true
+        
+        addSubview(oppPlayer2Skill)
+        oppPlayer2Skill.centerYAnchor.constraint(equalTo: oppPlayer2.centerYAnchor).isActive = true
+        oppPlayer2Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+        oppPlayer2Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
+        oppPlayer2Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+        
+        addSubview(oppPlayer2Level)
+        oppPlayer2Level.centerYAnchor.constraint(equalTo: oppPlayer2.centerYAnchor).isActive = true
+        oppPlayer2Level.leftAnchor.constraint(equalTo: oppPlayer2Skill.rightAnchor, constant: 40).isActive = true
+        oppPlayer2Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
+        oppPlayer2Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
             
-            let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 75, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(userPlayer1)
-            userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-            userPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer1Loc.X)).isActive = true
-            userPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-            userPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.W)).isActive = true
-            
-            addSubview(userPlayer1Skill)
-            userPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-            userPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
-            userPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-            userPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            addSubview(userPlayer1Level)
-            userPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-            userPlayer1Level.leftAnchor.constraint(equalTo: userPlayer1Skill.rightAnchor, constant: 40).isActive = true
-            userPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-            userPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 381, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            
-            addSubview(oppPlayer1)
-            oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-            oppPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer1Loc.X)).isActive = true
-            oppPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-            oppPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.W)).isActive = true
-            
-            addSubview(oppPlayer1Skill)
-            oppPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-            oppPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
-            oppPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-            oppPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            addSubview(oppPlayer1Level)
-            oppPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-            oppPlayer1Level.leftAnchor.constraint(equalTo: oppPlayer1Skill.rightAnchor, constant: 40).isActive = true
-            oppPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-            oppPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 77, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(confirmCheck1)
-            confirmCheck1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck1Loc.Y)).isActive = true
-            confirmCheck1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
-            confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
-            confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
-            
-            let confirmCheck2Loc = calculateButtonPosition(x: 666, y: 163, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(confirmCheck2)
-            confirmCheck2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck2Loc.Y)).isActive = true
-            confirmCheck2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck2Loc.X)).isActive = true
-            confirmCheck2.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck2Loc.H)).isActive = true
-            confirmCheck2.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck2Loc.W)).isActive = true
-            
-            let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 383, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(confirmCheck3)
-            confirmCheck3.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck3Loc.Y)).isActive = true
-            confirmCheck3.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck3Loc.X)).isActive = true
-            confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.H)).isActive = true
-            confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.W)).isActive = true
-            
-            let confirmCheck4Loc = calculateButtonPosition(x: 666, y: 469, w: 74, h: 74, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(confirmCheck4)
-            confirmCheck4.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck4Loc.Y)).isActive = true
-            confirmCheck4.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck4Loc.X)).isActive = true
-            confirmCheck4.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck4Loc.H)).isActive = true
-            confirmCheck4.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck4Loc.W)).isActive = true
-            
-            let userPlayer2Loc = calculateButtonPosition(x: 211.5, y: 165, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            
-            addSubview(userPlayer2)
-            userPlayer2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer2Loc.Y)).isActive = true
-            userPlayer2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer2Loc.X)).isActive = true
-            userPlayer2.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
-            userPlayer2.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.W)).isActive = true
-            
-            addSubview(userPlayer2Skill)
-            userPlayer2Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer2Loc.Y)).isActive = true
-            userPlayer2Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
-            userPlayer2Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
-            userPlayer2Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            addSubview(userPlayer2Level)
-            userPlayer2Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer2Loc.Y)).isActive = true
-            userPlayer2Level.leftAnchor.constraint(equalTo: userPlayer2Skill.rightAnchor, constant: 40).isActive = true
-            userPlayer2Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
-            userPlayer2Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            let oppPlayer2Loc = calculateButtonPosition(x: 211.5, y: 471, w: 327, h: 85, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            
-            addSubview(oppPlayer2)
-            oppPlayer2.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer2Loc.Y)).isActive = true
-            oppPlayer2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer2Loc.X)).isActive = true
-            oppPlayer2.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
-            oppPlayer2.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.W)).isActive = true
-            
-            addSubview(oppPlayer2Skill)
-            oppPlayer2Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer2Loc.Y)).isActive = true
-            oppPlayer2Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
-            oppPlayer2Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
-            oppPlayer2Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            addSubview(oppPlayer2Level)
-            oppPlayer2Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer2Loc.Y)).isActive = true
-            oppPlayer2Level.leftAnchor.constraint(equalTo: oppPlayer2Skill.rightAnchor, constant: 40).isActive = true
-            oppPlayer2Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
-            oppPlayer2Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-        } else {
-            
-            userPlayer1.font = UIFont(name: "HelveticaNeue-Light", size: 30)
-            oppPlayer1.font = UIFont(name: "HelveticaNeue-Light", size: 30)
-            userPlayer1Skill.font = UIFont(name: "HelveticaNeue", size: 30)
-            oppPlayer1Skill.font = UIFont(name: "HelveticaNeue", size: 30)
-            userPlayer1Level.font = UIFont(name: "HelveticaNeue", size: 30)
-            oppPlayer1Level.font = UIFont(name: "HelveticaNeue", size: 30)
-            
-            let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 122, w: 90, h: 90, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(confirmCheck1)
-            confirmCheck1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck1Loc.Y)).isActive = true
-            confirmCheck1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
-            confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
-            confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
-            
-            let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 428, w: 90, h: 90, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(confirmCheck3)
-            confirmCheck3.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck3Loc.Y)).isActive = true
-            confirmCheck3.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck3Loc.X)).isActive = true
-            confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.H)).isActive = true
-            confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.W)).isActive = true
-            
-            let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 120, w: 327, h: 160, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            addSubview(userPlayer1)
-            userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-            userPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer1Loc.X)).isActive = true
-            userPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-            userPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.W)).isActive = true
-            
-            addSubview(userPlayer1Skill)
-            userPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-            userPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
-            userPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-            userPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            addSubview(userPlayer1Level)
-            userPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
-            userPlayer1Level.leftAnchor.constraint(equalTo: userPlayer1Skill.rightAnchor, constant: 40).isActive = true
-            userPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
-            userPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 426, w: 327, h: 160, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
-            
-            addSubview(oppPlayer1)
-            oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-            oppPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer1Loc.X)).isActive = true
-            oppPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-            oppPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.W)).isActive = true
-            
-            addSubview(oppPlayer1Skill)
-            oppPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-            oppPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
-            oppPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-            oppPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-            
-            addSubview(oppPlayer1Level)
-            oppPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
-            oppPlayer1Level.leftAnchor.constraint(equalTo: oppPlayer1Skill.rightAnchor, constant: 40).isActive = true
-            oppPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
-            oppPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
-        }
+//            userPlayer1.font = UIFont(name: "HelveticaNeue-Light", size: 30)
+//            oppPlayer1.font = UIFont(name: "HelveticaNeue-Light", size: 30)
+//            userPlayer1Skill.font = UIFont(name: "HelveticaNeue", size: 30)
+//            oppPlayer1Skill.font = UIFont(name: "HelveticaNeue", size: 30)
+//            userPlayer1Level.font = UIFont(name: "HelveticaNeue", size: 30)
+//            oppPlayer1Level.font = UIFont(name: "HelveticaNeue", size: 30)
+//
+//            let confirmCheck1Loc = calculateButtonPosition(x: 666, y: 122, w: 90, h: 90, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+//            addSubview(confirmCheck1)
+//            confirmCheck1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck1Loc.Y)).isActive = true
+//            confirmCheck1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck1Loc.X)).isActive = true
+//            confirmCheck1.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
+//            confirmCheck1.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
+//
+//            let confirmCheck3Loc = calculateButtonPosition(x: 666, y: 428, w: 90, h: 90, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+//            addSubview(confirmCheck3)
+//            confirmCheck3.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmCheck3Loc.Y)).isActive = true
+//            confirmCheck3.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmCheck3Loc.X)).isActive = true
+//            confirmCheck3.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.H)).isActive = true
+//            confirmCheck3.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck3Loc.W)).isActive = true
+//
+//            let userPlayer1Loc = calculateButtonPosition(x: 211.5, y: 120, w: 327, h: 160, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+//            addSubview(userPlayer1)
+//            userPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+//            userPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer1Loc.X)).isActive = true
+//            userPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+//            userPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.W)).isActive = true
+//
+//            addSubview(userPlayer1Skill)
+//            userPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+//            userPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+//            userPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+//            userPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+//
+//            addSubview(userPlayer1Level)
+//            userPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer1Loc.Y)).isActive = true
+//            userPlayer1Level.leftAnchor.constraint(equalTo: userPlayer1Skill.rightAnchor, constant: 40).isActive = true
+//            userPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer1Loc.H)).isActive = true
+//            userPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+//
+//            let oppPlayer1Loc = calculateButtonPosition(x: 211.5, y: 426, w: 327, h: 160, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
+//
+//            addSubview(oppPlayer1)
+//            oppPlayer1.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+//            oppPlayer1.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer1Loc.X)).isActive = true
+//            oppPlayer1.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+//            oppPlayer1.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.W)).isActive = true
+//
+//            addSubview(oppPlayer1Skill)
+//            oppPlayer1Skill.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+//            oppPlayer1Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
+//            oppPlayer1Skill.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+//            oppPlayer1Skill.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+//
+//            addSubview(oppPlayer1Level)
+//            oppPlayer1Level.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer1Loc.Y)).isActive = true
+//            oppPlayer1Level.leftAnchor.constraint(equalTo: oppPlayer1Skill.rightAnchor, constant: 40).isActive = true
+//            oppPlayer1Level.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer1Loc.H)).isActive = true
+//            oppPlayer1Level.widthAnchor.constraint(equalToConstant: CGFloat(50)).isActive = true
+//        }
         
         
         let game1UserScoreLoc = calculateButtonPosition(x: 407.52, y: 698, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
@@ -614,7 +605,7 @@ class MatchViewOrganizer: UIView {
         game1OppScore.heightAnchor.constraint(equalToConstant: CGFloat(game1OppScoreLoc.H)).isActive = true
         game1OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game1OppScoreLoc.W)).isActive = true
         
-        if match.style! >= 1 {
+      //  if match.style! >= 1 {
             let game2UserScoreLoc = calculateButtonPosition(x: 407.52, y: 763, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
             
             addSubview(game2UserScore)
@@ -646,8 +637,8 @@ class MatchViewOrganizer: UIView {
             game3OppScore.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(game3OppScoreLoc.X)).isActive = true
             game3OppScore.heightAnchor.constraint(equalToConstant: CGFloat(game3OppScoreLoc.H)).isActive = true
             game3OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game3OppScoreLoc.W)).isActive = true
-        }
-        if match.style! >= 2 {
+      //  }
+      //  if match.style! >= 2 {
             let game4UserScoreLoc = calculateButtonPosition(x: 407.52, y: 893, w: 115, h: 55, wib: 750, hib: matchInfoDisplayHeightBefore, wia: Float(frame.width), hia: matchInfoDisplayHeightAfter)
             
             addSubview(game4UserScore)
@@ -679,8 +670,41 @@ class MatchViewOrganizer: UIView {
             game5OppScore.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(game5OppScoreLoc.X)).isActive = true
             game5OppScore.heightAnchor.constraint(equalToConstant: CGFloat(game5OppScoreLoc.H)).isActive = true
             game5OppScore.widthAnchor.constraint(equalToConstant: CGFloat(game5OppScoreLoc.W)).isActive = true
-        }
+        //}
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(frame.width), hia: Float(frame.width) / 0.644)
+        addSubview(winnerConfirmed)
+        winnerConfirmed.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+        winnerConfirmed.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+        winnerConfirmed.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+        winnerConfirmed.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
         
+        addSubview(confirmMatchScores)
+        confirmMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+        confirmMatchScoresCenterXAnchor = confirmMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X + (confirmMatchScoresLoc.W / 4)))
+        confirmMatchScoresCenterXAnchor?.isActive = true
+        confirmMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+        confirmMatchScoresWidthAnchor = confirmMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W / 2))
+        confirmMatchScoresWidthAnchor?.isActive = true
+        
+        addSubview(rejectMatchScores)
+        rejectMatchScores.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+        rejectMatchScoresCenterXAnchor = rejectMatchScores.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X - (confirmMatchScoresLoc.W / 4)))
+        rejectMatchScoresCenterXAnchor?.isActive = true
+        rejectMatchScores.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+        rejectMatchScoresWidthAnchor = rejectMatchScores.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W / 2))
+        rejectMatchScoresWidthAnchor?.isActive = true
+        
+        addSubview(matchStatusLabel)
+        matchStatusLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+        matchStatusLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+        matchStatusLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+        matchStatusLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
+        
+        addSubview(forfeitLabel)
+        forfeitLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(confirmMatchScoresLoc.Y)).isActive = true
+        forfeitLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(confirmMatchScoresLoc.X)).isActive = true
+        forfeitLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
+        forfeitLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
         
     }
     

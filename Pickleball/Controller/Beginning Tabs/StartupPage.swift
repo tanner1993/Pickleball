@@ -608,7 +608,9 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
        }
     
     override func viewDidAppear(_ animated: Bool) {
-        checkLevelUp()
+        if playerId == "none" {
+            checkLevelUp()
+        }
     }
     
     override func viewDidLoad() {

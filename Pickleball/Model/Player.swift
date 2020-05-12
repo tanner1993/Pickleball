@@ -235,4 +235,160 @@ extension Player {
             return [0,100]
         }
     }
+    
+    func calculateChangeExperienceHigher(levelDiff: Int, winOrLose: Bool) -> Int {
+        if winOrLose == true {
+            switch levelDiff {
+            case 0:
+                return 100
+            case 1:
+                return 92
+            case 2:
+                return 85
+            case 3:
+                return 79
+            case 4:
+                return 74
+            case 5:
+                return 70
+            case 6:
+                return 66
+            case 7:
+                return 63
+            case 8:
+                return 60
+            case 9:
+                return 58
+            case 10:
+                return 56
+            case 11:
+                return 50
+            case 12:
+                return 40
+            case 13:
+                return 30
+            case 14:
+                return 20
+            case 15:
+                return 15
+            default:
+                return 10
+            }
+        } else {
+            switch levelDiff {
+            case 0:
+                return -100
+            case 1:
+                return -108
+            case 2:
+                return -115
+            case 3:
+                return -121
+            case 4:
+                return -126
+            case 5:
+                return -130
+            case 6:
+                return -134
+            case 7:
+                return -137
+            case 8:
+                return -140
+            case 9:
+                return -142
+            case 10:
+                return -144
+            case 11:
+                return -146
+            case 12:
+                return -147
+            case 13:
+                return -148
+            case 14:
+                return -149
+            case 15:
+                return -150
+            default:
+                return -155
+            }
+        }
+    }
+    
+    func calculateChangeExperienceLower(levelDiff: Int, winOrLose: Bool) -> Int {
+        if winOrLose == true {
+            switch levelDiff {
+            case 0:
+                return 100
+            case 1:
+                return 108
+            case 2:
+                return 115
+            case 3:
+                return 121
+            case 4:
+                return 126
+            case 5:
+                return 130
+            case 6:
+                return 134
+            case 7:
+                return 137
+            case 8:
+                return 140
+            case 9:
+                return 142
+            case 10:
+                return 144
+            case 11:
+                return 146
+            case 12:
+                return 147
+            case 13:
+                return 148
+            case 14:
+                return 149
+            case 15:
+                return 150
+            default:
+                return 155
+            }
+        } else {
+            switch levelDiff {
+            case 0:
+                return -100
+            case 1:
+                return -92
+            case 2:
+                return -85
+            case 3:
+                return -79
+            case 4:
+                return -74
+            case 5:
+                return -70
+            case 6:
+                return -66
+            case 7:
+                return -63
+            case 8:
+                return -60
+            case 9:
+                return -58
+            case 10:
+                return -56
+            case 11:
+                return -50
+            case 12:
+                return -40
+            case 13:
+                return -30
+            case 14:
+                return -20
+            case 15:
+                return -15
+            default:
+                return -10
+            }
+        }
+    }
 }
