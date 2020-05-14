@@ -1046,11 +1046,11 @@ class MatchView: UIViewController {
     func updatePlayerStats() {
         updateExperience()
         if match.doubles == true {
-            player.updatePlayerStats(playerId: match.team_1_player_2!, winner: match.winner!)
-            player.updatePlayerStats(playerId: match.team_2_player_2!, winner: match.winner!)
+            player.updatePlayerStats(playerId: match.team_1_player_2!, winner: match.winner!, userIsTeam1: true)
+            player.updatePlayerStats(playerId: match.team_2_player_2!, winner: match.winner!, userIsTeam1: false)
         }
-        player.updatePlayerStats(playerId: match.team_1_player_1!, winner: match.winner!)
-        player.updatePlayerStats(playerId: match.team_2_player_1!, winner: match.winner!)
+        player.updatePlayerStats(playerId: match.team_1_player_1!, winner: match.winner!, userIsTeam1: true)
+        player.updatePlayerStats(playerId: match.team_2_player_1!, winner: match.winner!, userIsTeam1: false)
     }
     
     @objc func resetupviews(action: UIAlertAction) {

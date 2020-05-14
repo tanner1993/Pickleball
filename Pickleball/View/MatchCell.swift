@@ -37,6 +37,7 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
     }
     
     var myMatches = [Match2]()
+    var nameTracker = [String: String]()
     
     var tourneyIdentifier: String?
     

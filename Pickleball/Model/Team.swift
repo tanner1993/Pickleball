@@ -36,3 +36,16 @@ class Team: NSObject {
         })
     }
 }
+
+class TeamObject: NSObject {
+    var teamEntry: [String: Team2]?
+}
+
+class Team2: NSObject {
+    var player1: String?
+    var player2: String?
+    var wins: Int?
+    var losses: Int?
+    var rank: Int?
+
+}

@@ -30,6 +30,7 @@ class Tourney: NSObject {
     var notifBubble: Int?
     var regTeams: Int?
     var style: Int?
+    var teams: [Team]?
     
     func removeCantChallenge(team_1_player_1: String, team_1_player_2: String, team_2_player_1: String, team_2_player_2: String, tourneyId: String) {
         let ref = Database.database().reference().child("tourneys").child(tourneyId)
@@ -44,6 +45,35 @@ class Tourney: NSObject {
                     Database.database().reference().child("tourneys").child(tourneyId).child("cant_challenge").setValue(tourneyCantChallenge)
                 }
             }
+        }, withCancel: nil)
+    }
+    
+    func observeTourneyTeams(tourneyId: String, completion: @escaping ([Team]?) -> ()) {
+        var teams = [Team]()
+        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams").queryOrdered(byChild: "rank")
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            if let value = snapshot.value as? [String: AnyObject] {
+                for index in value {
+                    let team = Team()
+                    let player1Id = index.value["player1"] as? String ?? "Player not found"
+                    let player2Id = index.value["player2"] as? String ?? "Player not found"
+                    let rank = index.value["rank"] as? Int ?? 100
+                    let wins = index.value["wins"] as? Int ?? -1
+                    let losses = index.value["losses"] as? Int ?? -1
+                    team.player2 = player2Id
+                    team.player1 = player1Id
+                    team.rank = rank
+                    team.wins = wins
+                    team.losses = losses
+                    team.teamId = index.key
+                    teams.append(team)
+                }
+                let sortedTeams = teams.sorted { p1, p2 in
+                    return (p1.rank!) < (p2.rank!)
+                }
+                completion(sortedTeams)
+            }
+
         }, withCancel: nil)
     }
     

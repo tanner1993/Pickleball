@@ -127,7 +127,7 @@ class TourneyList: UITableViewController {
             let rootRef = Database.database().reference()
             let query = rootRef.child("tourneys").child(tourneyId)
             query.observeSingleEvent(of: .value, with: { (snapshot) in
-                print(snapshot)
+                //print(snapshot)
                 if let value = snapshot.value as? [String: AnyObject] {
                     let tourney = Tourney()
                     let name = value["name"] as? String ?? "No Name"
@@ -146,12 +146,26 @@ class TourneyList: UITableViewController {
                     let finals2 = value["finals2"] as? Int ?? -1
                     let winner = value["winner"] as? Int ?? -1
                     let style = value["style"] as? Int ?? -1
-                    let teams = value["teams"]
-                    if let turd = teams {
-                        tourney.regTeams = turd.count
-                    } else {
-                        tourney.regTeams = 0
+                    if let teams = value["teams"] as? [String: AnyObject] {
+                        var teams3 = [Team]()
+                        for index in teams {
+                            let team = Team()
+                            let player1Id = index.value["player1"] as? String ?? "Player not found"
+                            let player2Id = index.value["player2"] as? String ?? "Player not found"
+                            let rank = index.value["rank"] as? Int ?? 100
+                            let wins = index.value["wins"] as? Int ?? -1
+                            let losses = index.value["losses"] as? Int ?? -1
+                            team.player2 = player2Id
+                            team.player1 = player1Id
+                            team.rank = rank
+                            team.wins = wins
+                            team.losses = losses
+                            team.teamId = index.key
+                            teams3.append(team)
+                        }
+                        tourney.teams = teams3
                     }
+                    
                     if let tourneyYetToView = value["yet_to_view"] as? [String] {
                         guard let uid = Auth.auth().currentUser?.uid else {
                             return
@@ -265,7 +279,8 @@ class TourneyList: UITableViewController {
             } else {
                 activityIndicatorView.stopAnimating()
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
-                cell.textLabel?.text = "No Tourneys"
+                cell.textLabel?.text = "You are not registered for any tournaments yet.\nUse the search button in the top right corner\nto find tournaments being hosted in your area"
+                cell.textLabel?.numberOfLines = 3
                 cell.textLabel?.textAlignment = .center
                 return cell
             }
@@ -308,6 +323,11 @@ class TourneyList: UITableViewController {
             tourneyStandingsPage.hidesBottomBarWhenPushed = true
             tourneyStandingsPage.tourneyListIndex = indexPath.row
             tourneyStandingsPage.thisTourney = myTourneys[indexPath.row]
+            let teams = myTourneys[indexPath.row].teams ?? [Team]()
+            let sortedTeams = teams.sorted { p1, p2 in
+                return (p1.rank!) < (p2.rank!)
+            }
+            tourneyStandingsPage.teams = sortedTeams
             tourneyStandingsPage.tourneyListPage = self
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
             disableNotification(tourneyIndex: indexPath.item)

@@ -15,6 +15,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     var delegate: FeedCellProtocol?
     var tourneyName = String()
     var style = Int()
+    var nameTracker = [String: String]()
     
     var activityIndicatorView: UIActivityIndicatorView!
     
@@ -109,10 +110,56 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
                 //cell.backgroundColor = UIColor.white
                 cell.backgroundImage.image = UIImage(named: "team_cell_bg2")
             }
+            
+            if nameTracker[cell.team?.player1 ?? "nope"] == nil {
+                let player1ref = Database.database().reference().child("users").child(cell.team?.player1 ?? "nope").child("name")
+                player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let playerName = value as? String ?? "noName"
+                        cell.player1.text = self.getFirstAndLastInitial(name: playerName)
+                        self.nameTracker[cell.team?.player1 ?? "nope"] = self.getFirstAndLastInitial(name: playerName)
+                    }
+                })
+            } else {
+                cell.player1.text = nameTracker[cell.team?.player1 ?? "nope"]
+            }
+            
+            if nameTracker[cell.team?.player1 ?? "nope"] == nil {
+                let player2ref = Database.database().reference().child("users").child(cell.team?.player2 ?? "nope").child("name")
+                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let playerName = value as? String ?? "noName"
+                        cell.player2.text = self.getFirstAndLastInitial(name: playerName)
+                        self.nameTracker[cell.team?.player2 ?? "nope"] = self.getFirstAndLastInitial(name: playerName)
+                    }
+                })
+            } else {
+                cell.player2.text = nameTracker[cell.team?.player2 ?? "nope"]
+            }
+            
             return cell
         }
     }
     
+    func getFirstAndLastInitial(name: String) -> String {
+        var initials = ""
+        var finalChar = 0
+        for char in name {
+            if finalChar == 0 {
+                initials.append(char)
+            }
+            if finalChar == 1 {
+                initials.append(char)
+                initials.append(".")
+                break
+            }
+            
+            if char == " " {
+                finalChar = 1
+            }
+        }
+        return initials
+    }
     
     @objc func handleChallengeInvitation(sender: UIButton) {
         cellTag = sender.tag

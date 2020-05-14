@@ -30,13 +30,18 @@ class Player: NSObject {
     var friend: Int?
     var deviceId: String?
     
-    func updatePlayerStats(playerId: String, winner: Int) {
+    func updatePlayerStats(playerId: String, winner: Int, userIsTeam1: Bool) {
         let user1NameRef = Database.database().reference().child("users").child(playerId)
         user1NameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 let playerWins = value["match_wins"] as? Int
                 let playerLosses = value["match_losses"] as? Int
-                let childUpdates = ["/\("match_wins")/": winner == 1 ? playerWins! + 1 : playerWins!, "/\("match_losses")/": winner == 1 ? playerLosses! : playerLosses! + 1] as [String : Any]
+                var childUpdates = [String: Any]()
+                if userIsTeam1 {
+                    childUpdates = ["/\("match_wins")/": winner == 1 ? playerWins! + 1 : playerWins!, "/\("match_losses")/": winner == 1 ? playerLosses! : playerLosses! + 1] as [String : Any]
+                } else {
+                    childUpdates = ["/\("match_wins")/": winner == 2 ? playerWins! + 1 : playerWins!, "/\("match_losses")/": winner == 2 ? playerLosses! : playerLosses! + 1] as [String : Any]
+                }
                 user1NameRef.updateChildValues(childUpdates, withCompletionBlock: {
                     (error:Error?, ref:DatabaseReference) in
                     

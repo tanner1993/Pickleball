@@ -13,6 +13,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     
     var delegate: FeedCellProtocol?
     var userIsChallenger = 0
+    var nameTracker = [String: String]()
     
     var matches = [Match2]() {
         didSet {
@@ -112,33 +113,60 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
                 cell.teamRank2.text = "\(index.rank ?? 0)"
             }
         }
-        let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
-        player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengerTeam1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-            }
-        })
         
-        let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
-        player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengerTeam2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-            }
-        })
+        if nameTracker[match.team_1_player_1 ?? "nope"] == nil {
+            let playerref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope").child("name")
+            playerref.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value {
+                    let playerName = value as? String ?? "noName"
+                    cell.challengerTeam1.text = self.getFirstAndLastInitial(name: playerName)
+                    self.nameTracker[match.team_1_player_1 ?? "nope"] = self.getFirstAndLastInitial(name: playerName)
+                }
+            })
+        } else {
+            cell.challengerTeam1.text = nameTracker[match.team_1_player_1 ?? "nope"]
+        }
         
-        let player1ref2 = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope")
-        player1ref2.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengedTeam1.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-            }
-        })
+        if nameTracker[match.team_1_player_2 ?? "nope"] == nil {
+            let playerref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope").child("name")
+            playerref.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value {
+                    let playerName = value as? String ?? "noName"
+                    cell.challengerTeam2.text = self.getFirstAndLastInitial(name: playerName)
+                    self.nameTracker[match.team_1_player_2 ?? "nope"] = self.getFirstAndLastInitial(name: playerName)
+                }
+            })
+        } else {
+            cell.challengerTeam2.text = nameTracker[match.team_1_player_2 ?? "nope"]
+        }
         
-        let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
-        player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
-            if let value = snapshot.value as? [String: AnyObject] {
-                cell.challengedTeam2.text = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-            }
-        })
+        if nameTracker[match.team_2_player_1 ?? "nope"] == nil {
+            let playerref = Database.database().reference().child("users").child(match.team_2_player_1 ?? "nope").child("name")
+            playerref.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value {
+                    let playerName = value as? String ?? "noName"
+                    cell.challengedTeam1.text = self.getFirstAndLastInitial(name: playerName)
+                    self.nameTracker[match.team_2_player_1 ?? "nope"] = self.getFirstAndLastInitial(name: playerName)
+                }
+            })
+        } else {
+            cell.challengedTeam1.text = nameTracker[match.team_2_player_1 ?? "nope"]
+        }
+        
+        
+        if nameTracker[match.team_2_player_2 ?? "nope"] == nil {
+            let playerref = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope").child("name")
+            playerref.observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value {
+                    let playerName = value as? String ?? "noName"
+                    cell.challengedTeam2.text = self.getFirstAndLastInitial(name: playerName)
+                    self.nameTracker[match.team_2_player_2 ?? "nope"] = self.getFirstAndLastInitial(name: playerName)
+                }
+            })
+        } else {
+            cell.challengedTeam2.text = nameTracker[match.team_2_player_2 ?? "nope"]
+        }
+        
         cell.match = match
         cell.teams = teams
         cell.editButton.addTarget(self, action: #selector(handleDelete), for: .touchUpInside)

@@ -51,7 +51,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             }
         }
         observeTourneyInfo()
-        observeTourneyTeams()
+        //observeTourneyTeams()
         //observeMyTourneyMatches()
         observeAllTourneyMatches()
         makeBubble()
@@ -185,40 +185,33 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         guard let tourneyId = thisTourney.id , let active = thisTourney.active else {
             return
         }
-        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams").queryOrdered(byChild: "rank")
-        ref.observe(.childAdded, with: { (snapshot) in
-            if let value = snapshot.value as? NSDictionary {
-                let team = Team()
-                let player1Id = value["player1"] as? String ?? "Player not found"
-                let player2Id = value["player2"] as? String ?? "Player not found"
-                let rank = value["rank"] as? Int ?? 100
-                let wins = value["wins"] as? Int ?? -1
-                let losses = value["losses"] as? Int ?? -1
-                team.player2 = player2Id
-                team.player1 = player1Id
-                team.rank = rank
-                team.wins = wins
-                team.losses = losses
-                if active >= 2 {
-                    switch rank {
-                    case 1:
-                        self.getNamesAndWins(which: 1, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
-                    case 2:
-                        self.getNamesAndWins(which: 3, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
-                    case 3:
-                        self.getNamesAndWins(which: 4, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
-                    case 4:
-                        self.getNamesAndWins(which: 2, player1: player1Id, player2: player2Id, winsf: wins, lossesf: losses)
-                    default:
-                        print("not top 4")
-                    }
-                }
-                team.teamId = snapshot.key
-                self.teams.append(team)
-                DispatchQueue.main.async { self.collectionView.reloadData() }
+        thisTourney.observeTourneyTeams(tourneyId: tourneyId, completion:{ (result) in
+            guard let teamResults = result else {
+                print("failed to get rresult")
+                return
             }
-            
-        }, withCancel: nil)
+            self.teams = teamResults
+            self.collectionView.reloadData()
+        })
+    }
+    
+    func fillInNamesFinals() {
+        for index in 0...3 {
+            var whichTeam = Int()
+            switch index {
+            case 0:
+                whichTeam = 1
+            case 1:
+                whichTeam = 3
+            case 2:
+                whichTeam = 4
+            case 3:
+                whichTeam = 2
+            default:
+                whichTeam = 0
+            }
+            getNamesAndWins(which: whichTeam, player1: teams[index].player1 ?? "none", player2: teams[index].player2 ?? "none", winsf: teams[index].wins ?? 0, lossesf: teams[index].losses ?? 0)
+        }
     }
     
     func getNamesAndWins(which: Int, player1: String, player2: String, winsf: Int, lossesf: Int) {
@@ -399,16 +392,13 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     @objc func handleRefreshList() {
         let currentItem = collectionView.indexPathsForVisibleItems[0].item
         if currentItem == 0 {
-            teams.removeAll()
             observeTourneyTeams()
         } else if currentItem == 1 {
-            teams.removeAll()
             matches.removeAll()
             allMatches.removeAll()
             observeTourneyTeams()
             observeAllTourneyMatches()
         } else if currentItem == 2 {
-            teams.removeAll()
             matches.removeAll()
             allMatches.removeAll()
             observeTourneyTeams()
@@ -441,7 +431,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         thisTourney.finals1 = finals1
         thisTourney.finals2 = finals2
         thisTourney.winner = winner
-        changeViews()
+        changeViews(howMuch: true)
     }
     
     @objc func handleReturn() {
@@ -737,6 +727,14 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     func handleImSure(action: UIAlertAction) {
         Database.database().reference().child("tourneys").child(thisTourney.id ?? "none").child("active").setValue(2)
         thisTourney.active = 2
+        for element in allMatches {
+            if element.active != 3 {
+                let matchToDelete = element
+                Database.database().reference().child("tourneys").child(thisTourney.id ?? "none").child("matches").child(matchToDelete.matchId!).removeValue()
+                let tourneyFunctions = Tourney()
+                tourneyFunctions.removeCantChallenge(team_1_player_1: matchToDelete.team_1_player_1!, team_1_player_2: matchToDelete.team_1_player_2!, team_2_player_1: matchToDelete.team_2_player_1!, team_2_player_2: matchToDelete.team_2_player_2!, tourneyId: thisTourney.id ?? "none")
+            }
+        }
         resetupTitle()
         setupSemisView()
     }
@@ -961,7 +959,8 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             tourneySymbols[index - 1].widthAnchor.constraint(equalToConstant: CGFloat(tourneySymbolLoc.W)).isActive = true
             
         }
-        changeViews()
+        fillInNamesFinals()
+        changeViews(howMuch: false)
     }
     
     let playerLabelWidth: Float = 350
@@ -990,9 +989,89 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         return (X, Y, W, H)
     }
     
-    func changeViews() {
+    func changeViews(howMuch: Bool) {
         guard let active = thisTourney.active else {
             return
+        }
+        if howMuch {
+            if self.thisTourney.active == 3 {
+                self.player1s[4].text = self.thisTourney.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
+            } else if self.thisTourney.active == 4 {
+                self.player1s[5].text = self.thisTourney.finals2 == 2 ? self.player1s[2].text : self.player1s[3].text
+            } else if self.thisTourney.active == 5 || self.thisTourney.active == 6 {
+                self.player1s[4].text = self.thisTourney.finals1 == 1 ? self.player1s[0].text : self.player1s[1].text
+                self.player1s[5].text = self.thisTourney.finals2 == 2 ? self.player1s[2].text : self.player1s[3].text
+            }
+            if self.thisTourney.active == 6 {
+                var correctTeam = 0
+                switch self.thisTourney.winner {
+                case 1:
+                    correctTeam = 1
+                case 2:
+                    correctTeam = 3
+                case 3:
+                    correctTeam = 4
+                case 4:
+                    correctTeam = 2
+                default:
+                    print("failed correct")
+                }
+                self.player1s[6].text = self.player1s[correctTeam - 1].text
+            }
+            if self.thisTourney.active == 3 {
+                self.player2s[4].text = self.thisTourney.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
+            } else if self.thisTourney.active == 4 {
+                self.player2s[5].text = self.thisTourney.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
+            } else if self.thisTourney.active == 5 || self.thisTourney.active == 6 {
+                self.player2s[4].text = self.thisTourney.finals1 == 1 ? self.player2s[0].text : self.player2s[1].text
+                self.player2s[5].text = self.thisTourney.finals2 == 2 ? self.player2s[2].text : self.player2s[3].text
+            }
+            if self.thisTourney.active == 6 {
+                var correctTeam = 0
+                switch self.thisTourney.winner {
+                case 1:
+                    correctTeam = 1
+                case 2:
+                    correctTeam = 3
+                case 3:
+                    correctTeam = 4
+                case 4:
+                    correctTeam = 2
+                default:
+                    print("failed correct")
+                }
+                self.player2s[6].text = self.player2s[correctTeam - 1].text
+            }
+            
+            if self.thisTourney.active == 3 {
+                self.wins[4].text = self.thisTourney.finals1 == 1 ? self.wins[0].text : self.wins[1].text
+                self.losses[4].text = self.thisTourney.finals1 == 1 ? self.losses[0].text : self.losses[1].text
+            } else if self.thisTourney.active == 4 {
+                self.wins[5].text = self.thisTourney.finals2 == 2 ? self.wins[2].text : self.wins[3].text
+                self.losses[5].text = self.thisTourney.finals2 == 2 ? self.losses[2].text : self.losses[3].text
+            } else if self.thisTourney.active == 5 || self.thisTourney.active == 6 {
+                self.wins[4].text = self.thisTourney.finals1 == 1 ? self.wins[0].text : self.wins[1].text
+                self.losses[4].text = self.thisTourney.finals1 == 1 ? self.losses[0].text : self.losses[1].text
+                self.wins[5].text = self.thisTourney.finals2 == 2 ? self.wins[2].text : self.wins[3].text
+                self.losses[5].text = self.thisTourney.finals2 == 2 ? self.losses[2].text : self.losses[3].text
+            }
+            if self.thisTourney.active == 6 {
+                var correctTeam = 0
+                switch self.thisTourney.winner {
+                case 1:
+                    correctTeam = 1
+                case 2:
+                    correctTeam = 3
+                case 3:
+                    correctTeam = 4
+                case 4:
+                    correctTeam = 2
+                default:
+                    print("failed correct")
+                }
+                self.wins[6].text = self.wins[correctTeam - 1].text
+                self.losses[6].text = self.losses[correctTeam - 1].text
+            }
         }
         if active == 3 {
             tourneySymbols[0].isHidden = false
