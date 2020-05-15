@@ -164,6 +164,7 @@ class TourneyList: UITableViewController {
                             teams3.append(team)
                         }
                         tourney.teams = teams3
+                        tourney.regTeams = teams3.count
                     }
                     
                     if let tourneyYetToView = value["yet_to_view"] as? [String] {
@@ -507,7 +508,6 @@ class TourneyCell: UITableViewCell {
     let skillLevel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "3.5\nLadder"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         label.textAlignment = .left
         return label
@@ -516,7 +516,6 @@ class TourneyCell: UITableViewCell {
     let type: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "3.5\nLadder"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         label.textAlignment = .left
         return label
@@ -525,7 +524,7 @@ class TourneyCell: UITableViewCell {
     let startDate: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Start Date\nJanuary 15"
+        label.adjustsFontSizeToFitWidth = true
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         label.textAlignment = .left
         return label
@@ -534,7 +533,6 @@ class TourneyCell: UITableViewCell {
     let state: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Start Date\nJanuary 15"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         label.textAlignment = .left
         return label
@@ -543,7 +541,6 @@ class TourneyCell: UITableViewCell {
     let county: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Start Date\nJanuary 15"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         label.textAlignment = .left
         return label
@@ -552,7 +549,7 @@ class TourneyCell: UITableViewCell {
     let duration: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Start Date\nJanuary 15"
+        label.adjustsFontSizeToFitWidth = true
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         label.textAlignment = .left
         return label
@@ -561,7 +558,6 @@ class TourneyCell: UITableViewCell {
     let registered: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Start Date\nJanuary 15"
         label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
         label.textAlignment = .left
         return label

@@ -79,11 +79,25 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 let finals2 = value["finals2"] as? Int ?? -1
                 let winner = value["winner"] as? Int ?? -1
                 let style = value["style"] as? Int ?? -1
-                let teams = value["teams"]
-                if let turd = teams {
-                    tourney.regTeams = turd.count
-                } else {
-                    tourney.regTeams = 0
+                if let teams = value["teams"] as? [String: AnyObject] {
+                    var teams3 = [Team]()
+                    for index in teams {
+                        let team = Team()
+                        let player1Id = index.value["player1"] as? String ?? "Player not found"
+                        let player2Id = index.value["player2"] as? String ?? "Player not found"
+                        let rank = index.value["rank"] as? Int ?? 100
+                        let wins = index.value["wins"] as? Int ?? -1
+                        let losses = index.value["losses"] as? Int ?? -1
+                        team.player2 = player2Id
+                        team.player1 = player1Id
+                        team.rank = rank
+                        team.wins = wins
+                        team.losses = losses
+                        team.teamId = index.key
+                        teams3.append(team)
+                    }
+                    tourney.teams = teams3
+                    tourney.regTeams = teams3.count
                 }
                 if let tourneyYetToView = value["yet_to_view"] as? [String] {
                     tourney.yetToView = tourneyYetToView
@@ -254,6 +268,11 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
         tourneyStandingsPage.hidesBottomBarWhenPushed = true
         tourneyStandingsPage.thisTourney = searchResults[indexPath.row]
+        let teams = searchResults[indexPath.row].teams ?? [Team]()
+        let sortedTeams = teams.sorted { p1, p2 in
+            return (p1.rank!) < (p2.rank!)
+        }
+        tourneyStandingsPage.teams = sortedTeams
         navigationController?.pushViewController(tourneyStandingsPage, animated: true)
     }
     
@@ -465,11 +484,25 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 let finals2 = value["finals2"] as? Int ?? -1
                 let winner = value["winner"] as? Int ?? -1
                 let style = value["style"] as? Int ?? -1
-                let teams = value["teams"]
-                if let turd = teams {
-                    tourney.regTeams = turd.count
-                } else {
-                    tourney.regTeams = 0
+                if let teams = value["teams"] as? [String: AnyObject] {
+                    var teams3 = [Team]()
+                    for index in teams {
+                        let team = Team()
+                        let player1Id = index.value["player1"] as? String ?? "Player not found"
+                        let player2Id = index.value["player2"] as? String ?? "Player not found"
+                        let rank = index.value["rank"] as? Int ?? 100
+                        let wins = index.value["wins"] as? Int ?? -1
+                        let losses = index.value["losses"] as? Int ?? -1
+                        team.player2 = player2Id
+                        team.player1 = player1Id
+                        team.rank = rank
+                        team.wins = wins
+                        team.losses = losses
+                        team.teamId = index.key
+                        teams3.append(team)
+                    }
+                    tourney.teams = teams3
+                    tourney.regTeams = teams3.count
                 }
                 if let tourneyYetToView = value["yet_to_view"] as? [String] {
                     tourney.yetToView = tourneyYetToView
