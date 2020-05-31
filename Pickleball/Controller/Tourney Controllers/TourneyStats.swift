@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import FBSDKShareKit
+import Firebase
 
 class TourneyStats: UITableViewController {
 
@@ -21,6 +23,37 @@ class TourneyStats: UITableViewController {
         tableView.register(TeamStatsCell.self, forCellReuseIdentifier: cellId)
         tableView?.backgroundColor = .white
         self.tableView.separatorStyle = .none
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            if AccessToken.isCurrentAccessTokenActive {
+                self.setupShareButton()
+            }
+        }
+    }
+    
+    let shareButton = FBShareButton(frame: CGRect(x: (UIApplication.shared.keyWindow?.frame.width)! / 2, y: 0, width: 40, height: 30))
+    
+    func setupShareButton() {
+        self.navigationItem.titleView = shareButton
+        let shareContent = SharePhoto()
+        let playerRow = findPlayerRow()
+        let indexPath = IndexPath(row: playerRow, section: 0)
+        shareContent.image = tableView.cellForRow(at: indexPath)?.takeScreenshot()
+        shareContent.isUserGenerated = true
+        let sharePhotoContent = SharePhotoContent()
+        sharePhotoContent.photos = [shareContent]
+        shareButton.shareContent = sharePhotoContent
+    }
+    
+    func findPlayerRow() -> Int {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return 0
+        }
+        for (index, element) in teams.enumerated() {
+            if element.player1 == uid || element.player2 == uid {
+                return index
+            }
+        }
+        return 0
     }
     
     func reorganizeTeamRanks() {

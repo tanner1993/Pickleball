@@ -31,7 +31,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     let cellId = "cellId"
     let rmCellId = "rmCellId"
     let mmCellId = "mmCellId"
-    let threeSectionTitles = ["Overall", "My Matches", "Recent Matches"]
+    let threeSectionTitles = ["Standings", "My Matches", "Recent Matches"]
     var notificationSentYou = 0
     var tourneyOpenInvites = [String]()
     let blackView = UIView()
@@ -51,8 +51,6 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
             }
         }
         observeTourneyInfo()
-        //observeTourneyTeams()
-        //observeMyTourneyMatches()
         observeAllTourneyMatches()
         makeBubble()
         
@@ -182,7 +180,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     
     func observeTourneyTeams() {
         
-        guard let tourneyId = thisTourney.id , let active = thisTourney.active else {
+        guard let tourneyId = thisTourney.id else {
             return
         }
         thisTourney.observeTourneyTeams(tourneyId: tourneyId, completion:{ (result) in
@@ -367,7 +365,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         if tourneyOpenInvites.contains(uid) != true {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .plain, target: self, action: #selector(handleEnterTourney))
         } else if tourneyOpenInvites.contains(uid) && thisTourney.active ?? 1 == 0 {
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite Friends", style: .plain, target: self, action: #selector(handleInviteFriends))
+            
         }
         if thisTourney.active ?? 1 > 0 {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(handleRefreshList))
@@ -442,6 +440,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
         let layout = UICollectionViewFlowLayout()
         let playerList = FindFriends(collectionViewLayout: layout)
         playerList.tourneyId = thisTourney.id ?? "none"
+        playerList.tourneyName = thisTourney.name ?? "none"
         playerList.tourneyOpenInvites = tourneyOpenInvites
         playerList.tourneyStandings = self
         playerList.startTime = thisTourney.start_date ?? 0
@@ -456,56 +455,21 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     private func setupTitle() {
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        
-        if thisTourney.active == 0 {
-            let normalTime = "\(thisTourney.name ?? "none")\nReg. ends: "
-            let attributedTime = NSMutableAttributedString(string: normalTime)
-            let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 14), NSAttributedString.Key.foregroundColor : UIColor.white]
-            let calendar = Calendar.current
-            let startDater = Date(timeIntervalSince1970: thisTourney.start_date ?? 0)
-            let components = calendar.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater)
-            let monthInt = components.month!
-            let monthAbb = months[monthInt - 1].prefix(3)
-            let boldTime = "\(monthAbb). \(components.day!)"
-            let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb as [NSAttributedString.Key : Any])
-            attributedTime.append(boldTimeString)
-            titleLabel.attributedText = attributedTime
-        } else if thisTourney.active == 1 {
-            let normalTime = "\(thisTourney.name ?? "none")\nLadder ends: "
-            let attributedTime = NSMutableAttributedString(string: normalTime)
-            let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 14), NSAttributedString.Key.foregroundColor : UIColor.white]
-            let calendar = Calendar.current
-            let startDater = Date(timeIntervalSince1970: thisTourney.end_date ?? 0)
-            let components = calendar.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater)
-            let monthInt = components.month!
-            let monthAbb = months[monthInt - 1].prefix(3)
-            let boldTime = "\(monthAbb). \(components.day!)"
-            let boldTimeString = NSAttributedString(string: boldTime, attributes: attrb as [NSAttributedString.Key : Any])
-            attributedTime.append(boldTimeString)
-            titleLabel.attributedText = attributedTime
-        } else if thisTourney.active ?? 1 > 1 && thisTourney.active ?? 1 < 5 {
-            titleLabel.text = "\(thisTourney.name ?? "none")\n(semifinal)"
-        } else if thisTourney.active == 5 {
-            titleLabel.text = "\(thisTourney.name ?? "none")\n(final)"
-        } else if thisTourney.active == 6 {
-            titleLabel.text = "\(thisTourney.name ?? "none")\n(completed)"
-        }
+        titleLabel.text = "\(thisTourney.name ?? "none")\nClick here for more info"
         titleLabel.textColor = .white
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 2
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        if thisTourney.creator == uid && thisTourney.active ?? 3 < 2 {
-            setupFilterCollectionView()
-            let labelTap = UITapGestureRecognizer(target: self, action: #selector(handleDropDownFinish))
-            titleLabel.addGestureRecognizer(labelTap)
-            titleLabel.isUserInteractionEnabled = true
-        } else {
-            titleLabel.isUserInteractionEnabled = false
-        }
+        let labelTap = UITapGestureRecognizer(target: self, action: #selector(handleShowTourneyInfo))
+        titleLabel.addGestureRecognizer(labelTap)
+        titleLabel.isUserInteractionEnabled = true
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 14)
         navigationItem.titleView = titleLabel
+    }
+    
+    @objc func handleShowTourneyInfo() {
+        let tourneyInfo = TourneyInfo()
+        tourneyInfo.tourney = thisTourney
+        navigationController?.present(tourneyInfo, animated: true, completion: nil)
     }
     
     let filterCollectionView: UICollectionView = {
@@ -663,6 +627,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 cell.finals1 = thisTourney.finals1 ?? -1
                 cell.finals2 = thisTourney.finals2 ?? -1
                 cell.tourneyName = thisTourney.name!
+                cell.daysToPlay = thisTourney.daysToPlay ?? 3
                 cell.delegate = self
                 return cell
             } else if indexPath.item == 2 {
@@ -670,6 +635,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
                 cell.tourneyIdentifier = thisTourney.id
                 cell.matches = allMatches
                 cell.teams = teams
+                cell.daysToPlay = thisTourney.daysToPlay ?? 3
                 cell.active = thisTourney.active ?? 0
                 return cell
             }

@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import FBSDKShareKit
 
 class MatchViewOrganizer: UIView {
     
@@ -367,6 +368,7 @@ class MatchViewOrganizer: UIView {
             return label
         }()
     
+    
     func setupViews() {
         backgroundColor = .white
         if frame.width < 375 {
@@ -706,6 +708,85 @@ class MatchViewOrganizer: UIView {
         forfeitLabel.heightAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.H)).isActive = true
         forfeitLabel.widthAnchor.constraint(equalToConstant: CGFloat(confirmMatchScoresLoc.W)).isActive = true
         
+        addSubview(shareFriendsLabel)
+        shareFriendsLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
+        shareFriendsLabel.centerYAnchor.constraint(equalTo: matchStyleLabel.centerYAnchor).isActive = true
+        shareFriendsLabel.rightAnchor.constraint(equalTo: matchStyleLabel.centerXAnchor, constant: 8).isActive = true
+        shareFriendsLabel.heightAnchor.constraint(equalTo: matchStyleLabel.heightAnchor).isActive = true
+        addSubview(loadImageButton)
+        loadImageButton.leftAnchor.constraint(equalTo: shareFriendsLabel.rightAnchor, constant: 6).isActive = true
+        loadImageButton.centerYAnchor.constraint(equalTo: matchStyleLabel.centerYAnchor).isActive = true
+        loadImageButton.widthAnchor.constraint(equalToConstant: 45).isActive = true
+        loadImageButton.heightAnchor.constraint(equalTo: matchStyleLabel.heightAnchor, constant: -12).isActive = true
+        addSubview(cantLoadImageButton)
+        cantLoadImageButton.leftAnchor.constraint(equalTo: shareFriendsLabel.rightAnchor, constant: 6).isActive = true
+        cantLoadImageButton.centerYAnchor.constraint(equalTo: matchStyleLabel.centerYAnchor).isActive = true
+        cantLoadImageButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        cantLoadImageButton.heightAnchor.constraint(equalTo: matchStyleLabel.heightAnchor, constant: -12).isActive = true
+        addSubview(shareButton)
+        shareButton.translatesAutoresizingMaskIntoConstraints = false
+        shareButton.leftAnchor.constraint(equalTo: loadImageButton.rightAnchor, constant: 4).isActive = true
+        shareButton.centerYAnchor.constraint(equalTo: matchStyleLabel.centerYAnchor).isActive = true
+        shareButton.isHidden = true
+    }
+    
+    let shareButton = FBShareButton()
+    
+    let shareFriendsLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Share this match on Facebook:"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue", size: 15)
+        label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
+        label.isHidden = true
+        return label
+    }()
+    
+    let loadImageButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        button.setTitleColor(.white, for: .normal)
+        button.setTitle("Load", for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 15)
+        button.titleLabel?.textAlignment = .center
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(loadImage), for: .touchUpInside)
+        button.isHidden = true
+        button.layer.cornerRadius = 3
+        button.layer.masksToBounds = true
+        return button
+    }()
+    
+    let cantLoadImageButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        button.setTitleColor(.white, for: .normal)
+        button.setTitle("Cant Share to FB", for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 15)
+        button.titleLabel?.textAlignment = .center
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.isHidden = true
+        button.layer.cornerRadius = 3
+        button.layer.masksToBounds = true
+        return button
+    }()
+    
+    @objc func loadImage() {
+            matchStyleLabel.isHidden = false
+            shareFriendsLabel.isHidden = true
+            loadImageButton.isHidden = true
+            shareButton.isHidden = true
+            let shareContent = SharePhoto()
+            shareContent.image = takeScreenshot()
+            shareContent.isUserGenerated = true
+            let sharePhotoContent = SharePhotoContent()
+            sharePhotoContent.photos = [shareContent]
+            shareButton.shareContent = sharePhotoContent
+            matchStyleLabel.isHidden = true
+            shareFriendsLabel.isHidden = false
+            loadImageButton.isHidden = true
+            shareButton.isHidden = false
     }
     
     func calculateButtonPosition(x: Float, y: Float, w: Float, h: Float, wib: Float, hib: Float, wia: Float, hia: Float) -> (X: Float, Y: Float, W: Float, H: Float) {

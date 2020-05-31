@@ -48,7 +48,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
 
     }
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    @objc func resignResponders() {
         searchBar.resignFirstResponder()
         for index in textFields {
             index.resignFirstResponder()
@@ -79,6 +79,10 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 let finals2 = value["finals2"] as? Int ?? -1
                 let winner = value["winner"] as? Int ?? -1
                 let style = value["style"] as? Int ?? -1
+                let daysToPlay = value["daysToPlay"] as? Int ?? -1
+                let publicBool = value["public"] as? Bool ?? true
+                tourney.daysToPlay = daysToPlay
+                tourney.publicBool = publicBool
                 if let teams = value["teams"] as? [String: AnyObject] {
                     var teams3 = [Team]()
                     for index in teams {
@@ -130,17 +134,17 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
     @objc func handleSearchFilter() {
         searchBar.resignFirstResponder()
         searchResults = tourneys
-        if myCreatedTourneyCheck.isOn {
-            guard let uid = Auth.auth().currentUser?.uid else {
-                return
-            }
-            searchResults = searchResults.filter({ (tourney) -> Bool in
-                let creator = uid
-                return tourney.creator! == creator
-            })
-            tableView.reloadData()
-            return
-        }
+//        if myCreatedTourneyCheck.isOn {
+//            guard let uid = Auth.auth().currentUser?.uid else {
+//                return
+//            }
+//            searchResults = searchResults.filter({ (tourney) -> Bool in
+//                let creator = uid
+//                return tourney.creator! == creator
+//            })
+//            tableView.reloadData()
+//            return
+//        }
         
         if textFields[0].text! != "Any" {
             searchResults = searchResults.filter({ (tourney) -> Bool in
@@ -190,7 +194,15 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         }
         cell.editButton.addTarget(self, action: #selector(handleEdit), for: .touchUpInside)
         cell.editButton.tag = indexPath.item
+        cell.blueInfoSquare.addTarget(self, action: #selector(handleShowTourneyInfo), for: .touchUpInside)
+        cell.blueInfoSquare.tag = indexPath.item
         return cell
+    }
+    
+    @objc func handleShowTourneyInfo(sender: UIButton) {
+        let tourneyInfo = TourneyInfo()
+        tourneyInfo.tourney = searchResults[sender.tag]
+        navigationController?.present(tourneyInfo, animated: true, completion: nil)
     }
     
     @objc func handleEdit(sender: UIButton) {
@@ -204,7 +216,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 175
+        return 200
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -301,13 +313,6 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
        // }
     }
     
-    let whiteContainerView: UIView = {
-        let wc = UIView()
-        wc.translatesAutoresizingMaskIntoConstraints = false
-        wc.backgroundColor = .white
-        return wc
-    }()
-    
     let whiteContainerView2: UIView = {
         let wc = UIView()
         wc.translatesAutoresizingMaskIntoConstraints = false
@@ -323,13 +328,16 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         fl.font = UIFont(name: "AmericanTypewriter-Bold", size: 24)
         fl.textAlignment = .center
         fl.translatesAutoresizingMaskIntoConstraints = false
+//        fl.isUserInteractionEnabled = true
+//        let labelTap = UITapGestureRecognizer(target: self, action: #selector(resignResponders))
+//        fl.addGestureRecognizer(labelTap)
         return fl
     }()
     
     let searchButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-        button.setTitle("Search Tourneys", for: .normal)
+        button.setTitle("Filter Tourneys", for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 5
@@ -355,36 +363,36 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         return view
     }()
     
-    let createdTourneysLabel: UILabel = {
-        let fl = UILabel()
-        fl.text = "Created"
-        fl.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        fl.font = UIFont(name: "HelveticaNeue-Light", size: 18)
-        fl.adjustsFontSizeToFitWidth = true
-        fl.textAlignment = .center
-        fl.translatesAutoresizingMaskIntoConstraints = false
-        return fl
-    }()
+//    let createdTourneysLabel: UILabel = {
+//        let fl = UILabel()
+//        fl.text = "Created"
+//        fl.textColor = UIColor.init(r: 88, g: 148, b: 200)
+//        fl.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+//        fl.adjustsFontSizeToFitWidth = true
+//        fl.textAlignment = .center
+//        fl.translatesAutoresizingMaskIntoConstraints = false
+//        return fl
+//    }()
+//
+//    let myCreatedTourneyCheck: UISwitch = {
+//        let uiSwitch = UISwitch()
+//        uiSwitch.translatesAutoresizingMaskIntoConstraints = false
+//        uiSwitch.addTarget(self, action: #selector(handleSwitchChanged), for: .valueChanged)
+//        return uiSwitch
+//    }()
     
-    let myCreatedTourneyCheck: UISwitch = {
-        let uiSwitch = UISwitch()
-        uiSwitch.translatesAutoresizingMaskIntoConstraints = false
-        uiSwitch.addTarget(self, action: #selector(handleSwitchChanged), for: .valueChanged)
-        return uiSwitch
-    }()
-    
-    @objc func handleSwitchChanged() {
-        searchBar.isHidden = myCreatedTourneyCheck.isOn ? true : false
-        whiteContainerView2.isHidden = myCreatedTourneyCheck.isOn ? true : false
-        whiteContainerView.isHidden = myCreatedTourneyCheck.isOn ? true : false
-        searchButton.isHidden = myCreatedTourneyCheck.isOn ? true : false
-        separatorView.isHidden = myCreatedTourneyCheck.isOn ? true : false
-        filtersLabel.isHidden = myCreatedTourneyCheck.isOn ? true : false
-        inputContainer.isHidden = myCreatedTourneyCheck.isOn ? true : false
-        tableView?.contentInset = myCreatedTourneyCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
-        tableView?.scrollIndicatorInsets = myCreatedTourneyCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
-        handleSearchFilter()
-    }
+//    @objc func handleSwitchChanged() {
+//        searchBar.isHidden = myCreatedTourneyCheck.isOn ? true : false
+//        whiteContainerView2.isHidden = myCreatedTourneyCheck.isOn ? true : false
+//        whiteContainerView.isHidden = myCreatedTourneyCheck.isOn ? true : false
+//        searchButton.isHidden = myCreatedTourneyCheck.isOn ? true : false
+//        separatorView.isHidden = myCreatedTourneyCheck.isOn ? true : false
+//        filtersLabel.isHidden = myCreatedTourneyCheck.isOn ? true : false
+//        inputContainer.isHidden = myCreatedTourneyCheck.isOn ? true : false
+//        tableView?.contentInset = myCreatedTourneyCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+//        tableView?.scrollIndicatorInsets = myCreatedTourneyCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 281, left: 0, bottom: 0, right: 0)
+//        handleSearchFilter()
+//    }
     
 
     let inputsArray = ["Skill Level", "State", "County", "Sex", "Age Group"]
@@ -394,7 +402,7 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         view.addSubview(searchBar)
         searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
         searchBar.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        searchBar.widthAnchor.constraint(equalToConstant: view.frame.width / 2 + 25).isActive = true
+        searchBar.widthAnchor.constraint(equalToConstant: view.frame.width - 8).isActive = true
         searchBar.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         searchBar.delegate = self
@@ -407,19 +415,13 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         
         view.bringSubviewToFront(searchBar)
         
-        view.addSubview(whiteContainerView)
-        whiteContainerView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 0).isActive = true
-        whiteContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        whiteContainerView.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
-        whiteContainerView.heightAnchor.constraint(equalToConstant: 35).isActive = true
-        
-        whiteContainerView.addSubview(filtersLabel)
+        whiteContainerView2.addSubview(filtersLabel)
         filtersLabel.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 4).isActive = true
         filtersLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         filtersLabel.widthAnchor.constraint(equalToConstant: view.frame.width / 2).isActive = true
         filtersLabel.heightAnchor.constraint(equalToConstant: 30).isActive = true
         
-        let inputBox = createInputContainer(topAnchor: whiteContainerView, anchorConstant: 0, numberInputs: 5, vertSepDistance: 150, inputs: inputsArray, inputTypes: [1, 1, 1, 1, 1])
+        let inputBox = createInputContainer(topAnchor: filtersLabel, anchorConstant: 0, numberInputs: 5, vertSepDistance: 150, inputs: inputsArray, inputTypes: [1, 1, 1, 1, 1])
         textFields[0].text = "Any"
         textFields[1].text = "Any"
         textFields[2].text = "Any"
@@ -438,15 +440,15 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         separatorView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
         
-        view.addSubview(createdTourneysLabel)
-        createdTourneysLabel.topAnchor.constraint(equalTo: searchBar.topAnchor).isActive = true
-        createdTourneysLabel.leftAnchor.constraint(equalTo: searchBar.rightAnchor, constant: 4).isActive = true
-        createdTourneysLabel.widthAnchor.constraint(equalToConstant: 80).isActive = true
-        createdTourneysLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
-        
-        view.addSubview(myCreatedTourneyCheck)
-        myCreatedTourneyCheck.topAnchor.constraint(equalTo: searchBar.topAnchor, constant: 9).isActive = true
-        myCreatedTourneyCheck.leftAnchor.constraint(equalTo: createdTourneysLabel.rightAnchor, constant: 1).isActive = true
+//        view.addSubview(createdTourneysLabel)
+//        createdTourneysLabel.topAnchor.constraint(equalTo: searchBar.topAnchor).isActive = true
+//        createdTourneysLabel.leftAnchor.constraint(equalTo: searchBar.rightAnchor, constant: 4).isActive = true
+//        createdTourneysLabel.widthAnchor.constraint(equalToConstant: 80).isActive = true
+//        createdTourneysLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//
+//        view.addSubview(myCreatedTourneyCheck)
+//        myCreatedTourneyCheck.topAnchor.constraint(equalTo: searchBar.topAnchor, constant: 9).isActive = true
+//        myCreatedTourneyCheck.leftAnchor.constraint(equalTo: createdTourneysLabel.rightAnchor, constant: 1).isActive = true
 //        myCreatedTourneyCheck.widthAnchor.constraint(equalToConstant: 100).isActive = true
 //        myCreatedTourneyCheck.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
@@ -457,9 +459,18 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
         let sb = UISearchBar()
         sb.placeholder = "Name of tourney"
         sb.translatesAutoresizingMaskIntoConstraints = false
+        sb.showsCancelButton = true
         return sb
     }()
     
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+        searchBar.text = nil
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
     
     func fetchTourneys() {
         let rootRef = Database.database().reference()
@@ -484,6 +495,10 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 let finals2 = value["finals2"] as? Int ?? -1
                 let winner = value["winner"] as? Int ?? -1
                 let style = value["style"] as? Int ?? -1
+                let daysToPlay = value["daysToPlay"] as? Int ?? -1
+                let publicBool = value["public"] as? Bool ?? true
+                tourney.daysToPlay = daysToPlay
+                tourney.publicBool = publicBool
                 if let teams = value["teams"] as? [String: AnyObject] {
                     var teams3 = [Team]()
                     for index in teams {
@@ -525,7 +540,9 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 tourney.finals2 = finals2
                 tourney.winner = winner
                 tourney.style = style
-                self.tourneys.append(tourney)
+                if publicBool {
+                    self.tourneys.append(tourney)
+                }
                 
                 DispatchQueue.main.async { self.tableView.reloadData() }
             }

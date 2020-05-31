@@ -22,15 +22,16 @@ class CreateMatch: UIViewController {
     
     struct player {
         var id: String
-        var username: String
+        var name: String
         var skillLevel: String
         var deviceId: String
     }
-    
+    var opponentChallenge = false
     var matchFeed: MatchFeed?
-    var teammate = player(id: "none", username: "none", skillLevel: "none", deviceId: "none")
-    var opponent1 = player(id: "none", username: "none", skillLevel: "none", deviceId: "none")
-    var opponent2 = player(id: "none", username: "none", skillLevel: "none", deviceId: "none")
+    var teammate = player(id: "none", name: "none", skillLevel: "none", deviceId: "none")
+    var opponent1 = player(id: "none", name: "none", skillLevel: "none", deviceId: "none")
+    var opponent2 = player(id: "none", name: "none", skillLevel: "none", deviceId: "none")
+    var startupPage: StartupPage?
     
     let cancelButton: UIButton = {
         let button = UIButton(type: .system)
@@ -55,15 +56,15 @@ class CreateMatch: UIViewController {
     
     func getPlayerDetails() {
         if teammate.id != "none" {
-            teammateLabel.text = teammate.username
+            teammateLabel.text = teammate.name
             selectTeammateButton.setTitle("", for: .normal)
         }
         if opponent1.id != "none" {
-            opponentLabel1.text = opponent1.username
+            opponentLabel1.text = opponent1.name
             selectOpponentButton1.setTitle("", for: .normal)
         }
         if opponent2.id != "none" {
-            opponentLabel2.text = opponent2.username
+            opponentLabel2.text = opponent2.name
             selectOpponentButton2.setTitle("", for: .normal)
         }
     }
@@ -125,7 +126,7 @@ class CreateMatch: UIViewController {
                 return
             }
         }
-        let createMatchConfirmed = UIAlertController(title: "Successfully created the match", message: "Check your matches to see it", preferredStyle: .alert)
+        let createMatchConfirmed = UIAlertController(title: "Successfully created the match", message: "Check 'My Matches' in the 'PLAY' tab to see it", preferredStyle: .alert)
         createMatchConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
         self.present(createMatchConfirmed, animated: true, completion: nil)
         let uid = Auth.auth().currentUser!.uid
@@ -213,6 +214,7 @@ class CreateMatch: UIViewController {
                     matchT.team_2_player_2 = "Player not found"
                 }
                 self.matchFeed?.matches.insert(matchT, at: 0)
+                self.startupPage?.createdMatch = matchT
                 self.matchFeed?.tableView.reloadData()
                 
                 
@@ -223,6 +225,7 @@ class CreateMatch: UIViewController {
     
     func handleDismiss(action: UIAlertAction) {
         dismiss(animated: true, completion: nil)
+        startupPage?.popStartup()
     }
 
     override func viewDidLoad() {
@@ -460,7 +463,7 @@ class CreateMatch: UIViewController {
         let userNameRef = Database.database().reference().child("users").child(uid)
         userNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
-                self.stopActivityIndicator(username: (value["username"] as? String) ?? "")
+                self.stopActivityIndicator(username: (value["name"] as? String) ?? "")
             }
         })
         userNameLabel.isHidden = true
@@ -559,5 +562,9 @@ class CreateMatch: UIViewController {
         opponentLabel2.topAnchor.constraint(equalTo: selectOpponentButton1.bottomAnchor).isActive = true
         opponentLabel2.rightAnchor.constraint(equalTo: inputsContainerViewTeam2.rightAnchor).isActive = true
         opponentLabel2.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        if singlesDoublesControl.selectedSegmentIndex == 0 {
+            handleDoublesChange()
+        }
     }
 }

@@ -29,6 +29,182 @@ class Player: NSObject {
     var sex: String?
     var friend: Int?
     var deviceId: String?
+    var challenge: Bool?
+    
+    
+    func getUserFirstAndLastName(fullName: String) -> String {
+        var firstName = String()
+        var lastName = String()
+        var nextName = 0
+        for char in fullName {
+            if char != " " {
+                if nextName == 0 {
+                    firstName.append(char)
+                } else {
+                    lastName.append(char)
+                }
+            } else {
+                lastName.removeAll()
+                nextName += 1
+            }
+        }
+        return firstName + " " + lastName
+    }
+    
+    func findLocalPlayers(county: String, completion: @escaping ([Player]?) -> ()) {
+        var players = [Player]()
+        let rootRef = Database.database().reference()
+        let query = rootRef.child("users").queryOrdered(byChild: "county").queryEqual(toValue: county)
+        query.observe(.value) { (snapshot) in
+            for child in snapshot.children.allObjects as! [DataSnapshot] {
+                if let value = child.value as? NSDictionary {
+                    let player = Player()
+                    let name = value["name"] as? String ?? "No Name"
+                    let username = value["username"] as? String ?? "No Username"
+                    let skillLevel = value["skill_level"] as? Float ?? 0.0
+                    let exp = value["exp"] as? Int ?? 0
+                    let haloLevel = player.haloLevel(exp: exp)
+                    let state = value["state"] as? String ?? "No State"
+                    let county = value["county"] as? String ?? "No County"
+                    let deviceId = value["deviceId"] as? String ?? "none"
+                    let sex = value["sex"] as? String ?? "none"
+                    let birthdate = value["birthdate"] as? Double ?? 0
+                    let ageGroup = player.getAgeGroup(birthdate: birthdate)
+                    let matchesWon1 = value["match_wins"] as? Int ?? 0
+                    let matchesLost1 = value["match_losses"] as? Int ?? 0
+                    let court = value["court"] as? String ?? "none"
+                    let challenge = value["challenge"] as? Bool ?? false
+                    player.name = name
+                    player.username = username
+                    player.id = child.key
+                    player.skill_level = skillLevel
+                    player.halo_level = haloLevel
+                    player.state = state
+                    player.county = county
+                    player.deviceId = deviceId
+                    player.sex = sex
+                    player.age_group = ageGroup
+                    player.match_wins = matchesWon1
+                    player.match_losses = matchesLost1
+                    player.court = court
+
+                    if player.id != Auth.auth().currentUser?.uid && challenge {
+                        players.append(player)
+                    }
+                }
+            }
+            let sortedPlayers = players.sorted { p1, p2 in
+                return (p1.halo_level!) > (p2.halo_level!)
+            }
+            completion(sortedPlayers)
+        }
+    }
+    
+    func getAgeGroup(birthdate: Double) -> String {
+        let now = Double((Date().timeIntervalSince1970))
+        let yearsOld = (now - birthdate) / 60.0 / 60.0 / 24.0 / 365.0
+        switch yearsOld {
+        case 0..<19:
+            return "0 - 18"
+        case 19..<35:
+            return "19 - 34"
+        case 35..<50:
+            return "35 - 49"
+        case 50..<125:
+            return "50+"
+        default:
+            return "no age group"
+        }
+    }
+    
+    func acceptFriendRequest(playerId: String, notificationId: String) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        
+        let friendsRef = Database.database().reference()
+        
+        let childUpdates = ["/\("friends")/\(uid)/\(playerId)/": true, "/\("friends")/\(playerId)/\(uid)/": true] as [String : Any]
+        friendsRef.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if error != nil {
+                print("Data could not be saved: \(String(describing: error)).")
+                return
+            }
+            
+            Database.database().reference().child("notifications").child(notificationId).removeValue()
+            Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
+            
+            print("Crazy data 2 saved!")
+            
+            
+        })
+    }
+    
+    func sendFriendRequest(playerId: String, playersDeviceId: String) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        
+        
+        let ref = Database.database().reference()
+        let notifications2Ref = ref.child("notifications")
+        let childRef = notifications2Ref.childByAutoId()
+        let toId = playerId
+        let fromId = uid
+        let timeStamp = Int(Date().timeIntervalSince1970)
+        let values = ["type": "friend", "toId": toId, "fromId" :fromId, "timestamp": timeStamp] as [String : Any]
+        childRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if error != nil {
+//                let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+//                messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//                self.present(messageSendFailed, animated: true, completion: nil)
+                print("Data could not be saved: \(String(describing: error)).")
+                return
+            }
+            
+            let notificationsRef = Database.database().reference()
+            let notificationId = childRef.key!
+            let childUpdates = ["/\("friends")/\(uid)/\(playerId)/": false, "/\("user_notifications")/\(playerId)/\(notificationId)/": 1] as [String : Any]
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+//                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+//                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+//                    self.present(messageSendFailed, animated: true, completion: nil)
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let nameOnInvite = value as? String ?? "none"
+                        let pusher = PushNotificationHandler()
+                        pusher.setupPushNotification(deviceId: playersDeviceId, message: "\(nameOnInvite) wants to be your friend", title: "Friend Request")
+                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
+                    }
+                })
+                print("Crazy data 2 saved!")
+                
+                
+            })
+            
+            print("Crazy data saved!")
+            
+            
+        })
+    }
+    
+    func revokeFriend(playerId: String) {
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
+            Database.database().reference().child("friends").child(uid).child(playerId).removeValue()
+            Database.database().reference().child("friends").child(playerId).child(uid).removeValue()
+        }
     
     func updatePlayerStats(playerId: String, winner: Int, userIsTeam1: Bool) {
         let user1NameRef = Database.database().reference().child("users").child(playerId)

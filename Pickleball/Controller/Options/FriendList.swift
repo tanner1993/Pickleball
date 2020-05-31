@@ -258,6 +258,8 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         } else if whoSent == 0 {
             if tourneyId == "none" {
                 let playerProfile = StartupPage()
+                playerProfile.friendList = self
+                playerProfile.whichFriend = indexPath.item
                 playerProfile.playerId = friends[indexPath.item].id ?? "none"
                 playerProfile.isFriend = 2
                 navigationController?.pushViewController(playerProfile, animated: true)
@@ -277,17 +279,17 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         switch whoSent {
         case 1:
             createMatch?.teammate.id = friends[whichOne].id ?? "none"
-            createMatch?.teammate.username = friends[whichOne].username ?? "none"
+            createMatch?.teammate.name = friends[whichOne].name ?? "none"
             createMatch?.teammate.skillLevel = "\(friends[whichOne].skill_level ?? 1.0)"
             createMatch?.teammate.deviceId = friends[whichOne].deviceId ?? "none"
         case 2:
             createMatch?.opponent1.id = friends[whichOne].id ?? "none"
-            createMatch?.opponent1.username = friends[whichOne].username ?? "none"
+            createMatch?.opponent1.name = friends[whichOne].name ?? "none"
             createMatch?.opponent1.skillLevel = "\(friends[whichOne].skill_level ?? 1.0)"
             createMatch?.opponent1.deviceId = friends[whichOne].deviceId ?? "none"
         case 3:
             createMatch?.opponent2.id = friends[whichOne].id ?? "none"
-            createMatch?.opponent2.username = friends[whichOne].username ?? "none"
+            createMatch?.opponent2.name = friends[whichOne].name ?? "none"
             createMatch?.opponent2.skillLevel = "\(friends[whichOne].skill_level ?? 1.0)"
             createMatch?.opponent2.deviceId = friends[whichOne].deviceId ?? "none"
         default:

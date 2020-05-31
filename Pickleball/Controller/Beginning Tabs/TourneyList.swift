@@ -9,6 +9,7 @@
 import UIKit
 import FirebaseAuth
 import Firebase
+import FBSDKShareKit
 
 class TourneyList: UITableViewController {
 
@@ -145,7 +146,11 @@ class TourneyList: UITableViewController {
                     let finals1 = value["finals1"] as? Int ?? -1
                     let finals2 = value["finals2"] as? Int ?? -1
                     let winner = value["winner"] as? Int ?? -1
-                    let style = value["style"] as? Int ?? -1
+                    let style = value["style"] as? Int ?? 1
+                    let daysToPlay = value["daysToPlay"] as? Int ?? 3
+                    let publicBool = value["public"] as? Bool ?? true
+                    tourney.daysToPlay = daysToPlay
+                    tourney.publicBool = publicBool
                     if let teams = value["teams"] as? [String: AnyObject] {
                         var teams3 = [Team]()
                         for index in teams {
@@ -166,6 +171,39 @@ class TourneyList: UITableViewController {
                         tourney.teams = teams3
                         tourney.regTeams = teams3.count
                     }
+                    if let matches = value["matches"] as? [String: AnyObject] {
+                        var matchesArray = [Match2]()
+                        for index in matches {
+                            let match = Match2()
+                            let active = index.value["active"] as? Int ?? 0
+                            let submitter = index.value["submitter"] as? Int ?? 0
+                            let winner = index.value["winner"] as? Int ?? 0
+                            let team_1_player_1 = index.value["team_1_player_1"] as? String ?? "Player not found"
+                            let team_1_player_2 = index.value["team_1_player_2"] as? String ?? "Player not found"
+                            let team_2_player_1 = index.value["team_2_player_1"] as? String ?? "Player not found"
+                            let team_2_player_2 = index.value["team_2_player_2"] as? String ?? "Player not found"
+                            let team1_scores = index.value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+                            let team2_scores = index.value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+                            let time = index.value["time"] as? Double ?? Date().timeIntervalSince1970
+                            let style = index.value["style"] as? Int ?? 0
+                            match.active = active
+                            match.winner = winner
+                            match.submitter = submitter
+                            match.team_1_player_1 = team_1_player_1
+                            match.team_1_player_2 = team_1_player_2
+                            match.team_2_player_1 = team_2_player_1
+                            match.team_2_player_2 = team_2_player_2
+                            match.team1_scores = team1_scores
+                            match.team2_scores = team2_scores
+                            match.matchId = snapshot.key
+                            match.time = time
+                            match.style = style
+                            match.doubles = true
+                            match.matchId = index.key
+                            matchesArray.append(match)
+                        }
+                        tourney.matches = matchesArray
+                    }
                     
                     if let tourneyYetToView = value["yet_to_view"] as? [String] {
                         guard let uid = Auth.auth().currentUser?.uid else {
@@ -175,6 +213,18 @@ class TourneyList: UITableViewController {
                         if tourneyYetToView.contains(uid) {
                             tourney.notifBubble = 1
                         }
+                    }
+                    
+                    if let invites = value["invites"] as? [String] {
+                        tourney.invites = invites
+                    } else {
+                        tourney.invites = ["none"]
+                    }
+                    
+                    if let simpleInvites = value["simpleInvites"] as? [String] {
+                        tourney.simpleInvites = simpleInvites
+                    } else {
+                        tourney.simpleInvites = ["none"]
                     }
                     
                     tourney.name = name
@@ -280,17 +330,25 @@ class TourneyList: UITableViewController {
             } else {
                 activityIndicatorView.stopAnimating()
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
-                cell.textLabel?.text = "You are not registered for any tournaments yet.\nUse the search button in the top right corner\nto find tournaments being hosted in your area"
+                cell.textLabel?.text = "You are not registered for any tournaments yet.\nClick HERE for more info"
                 cell.textLabel?.numberOfLines = 3
                 cell.textLabel?.textAlignment = .center
+                cell.textLabel?.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
+                cell.textLabel?.layer.cornerRadius = 15
+                cell.textLabel?.layer.masksToBounds = true
                 return cell
             }
         } else {
             activityIndicatorView.stopAnimating()
+            noNotifications = 1
             let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! TourneyCell
             cell.tourney = myTourneys[indexPath.item]
             cell.editButton.addTarget(self, action: #selector(handleEdit), for: .touchUpInside)
             cell.editButton.tag = indexPath.item
+            cell.invitePlayers.addTarget(self, action: #selector(handleInviteFriends), for: .touchUpInside)
+            cell.invitePlayers.tag = indexPath.item
+            cell.blueInfoSquare.addTarget(self, action: #selector(handleShowTourneyInfo), for: .touchUpInside)
+            cell.blueInfoSquare.tag = indexPath.item
             if indexPath.item % 2 == 0 {
                 cell.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
             } else {
@@ -301,6 +359,27 @@ class TourneyList: UITableViewController {
         }
     }
     
+    @objc func handleShowTourneyInfo(sender: UIButton) {
+        let tourneyInfo = TourneyInfo()
+        tourneyInfo.tourney = myTourneys[sender.tag]
+        navigationController?.present(tourneyInfo, animated: true, completion: nil)
+    }
+    
+    @objc func handleInviteFriends(sender: UIButton) {
+        let layout = UICollectionViewFlowLayout()
+        let playerList = FindFriends(collectionViewLayout: layout)
+        playerList.tourneyId = myTourneys[sender.tag].id ?? "none"
+        playerList.whichTourney = sender.tag
+        playerList.tourneyList = self
+        playerList.tourneyOpenInvites = myTourneys[sender.tag].invites ?? ["none"]
+        playerList.tourneySimpleInvites = myTourneys[sender.tag].simpleInvites ?? ["none"]
+        playerList.sender = 5
+        playerList.tourneyName = myTourneys[sender.tag].name ?? "none"
+        playerList.simpleInvite = 1
+        playerList.teams = myTourneys[sender.tag].teams ?? [Team]()
+        navigationController?.present(playerList, animated: true, completion: nil)
+    }
+    
     @objc func handleEdit(sender: UIButton) {
         let tourneyIndex = sender.tag
         let createTourney = CreateTourney()
@@ -308,16 +387,25 @@ class TourneyList: UITableViewController {
         createTourney.tourneyList = self
         createTourney.tourneyIndex = tourneyIndex
         createTourney.tourneyInfo = myTourneys[tourneyIndex]
+        let indexPath = IndexPath(row: sender.tag, section: 0)
+        let shareContent = SharePhoto()
+        shareContent.image = tableView.cellForRow(at: indexPath)?.takeScreenshot()
+        shareContent.isUserGenerated = true
+        let sharePhotoContent = SharePhotoContent()
+        sharePhotoContent.photos = [shareContent]
+        createTourney.shareButton.shareContent = sharePhotoContent
         present(createTourney, animated: true, completion: nil)
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 175
+        return 200
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if myTourneys.count == 0 {
-            
+        if myTourneys.count == 0 && noNotifications == 1 {
+            let tourneyInfo = TourneyInfo()
+            tourneyInfo.typeOfInfo = 1
+            navigationController?.present(tourneyInfo, animated: true, completion: nil)
         } else {
             let layout = UICollectionViewFlowLayout()
             let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
@@ -391,6 +479,24 @@ class TourneyCell: UITableViewCell {
             } else {
                 editButton.isHidden = true
             }
+            
+            if uid == tourney?.creator && tourney?.active == 0 {
+                invitePlayers.isHidden = false
+                registrationPeriod.isHidden = true
+            } else {
+                invitePlayers.isHidden = true
+                registrationPeriod.isHidden = false
+            }
+            
+            let attrbReg = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 20), NSAttributedString.Key.foregroundColor : tourney?.active == 0 ? UIColor.green : UIColor.red]
+            
+            let normalRegistration = "Registration is: "
+            let boldRegistration = tourney?.active == 0 ? "OPEN" : "CLOSED"
+            let attributedRegistration = NSMutableAttributedString(string: normalRegistration)
+            let boldRegistrationString = NSAttributedString(string: boldRegistration, attributes: attrbReg as [NSAttributedString.Key : Any])
+            attributedRegistration.append(boldRegistrationString)
+            
+            registrationPeriod.attributedText = attributedRegistration
             
             let normalSkill = "Skill Level: "
             let boldSkill = "\(tourney?.skill_level ?? 0)"
@@ -471,6 +577,31 @@ class TourneyCell: UITableViewCell {
         button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 16)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
+    }()
+    
+    let invitePlayers: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Invite players to register", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        button.layer.cornerRadius = 6
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 17)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.isHidden = true
+        return button
+    }()
+    
+    let registrationPeriod: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue", size: 17)
+        label.textColor = .white
+        label.textAlignment = .center
+        label.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        label.layer.cornerRadius = 6
+        label.layer.masksToBounds = true
+        return label
     }()
     
     let notifBadge: UILabel = {
@@ -584,6 +715,21 @@ class TourneyCell: UITableViewCell {
         return view
     }()
     
+    let infoImage: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.isUserInteractionEnabled = false
+        bi.image = UIImage(named: "infoIBlue")
+        return bi
+    }()
+    
+    let blueInfoSquare: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     func setupViews() {
         addSubview(tournamentName)
         tournamentName.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
@@ -591,17 +737,29 @@ class TourneyCell: UITableViewCell {
         tournamentName.heightAnchor.constraint(equalToConstant: 34).isActive = true
         tournamentName.widthAnchor.constraint(equalTo: widthAnchor, constant: -80).isActive = true
         
-        addSubview(notifBadge)
-        notifBadge.leftAnchor.constraint(equalTo: tournamentName.rightAnchor).isActive = true
-        notifBadge.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
-        notifBadge.heightAnchor.constraint(equalToConstant: 28).isActive = true
-        notifBadge.widthAnchor.constraint(equalToConstant: 28).isActive = true
-        
         addSubview(editButton)
         editButton.rightAnchor.constraint(equalTo: tournamentName.leftAnchor).isActive = true
         editButton.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
         editButton.heightAnchor.constraint(equalToConstant: 34).isActive = true
         editButton.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        
+        addSubview(infoImage)
+        infoImage.leftAnchor.constraint(equalTo: tournamentName.rightAnchor, constant: 3).isActive = true
+        infoImage.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
+        infoImage.heightAnchor.constraint(equalToConstant: 34).isActive = true
+        infoImage.widthAnchor.constraint(equalToConstant: 34).isActive = true
+        
+        addSubview(blueInfoSquare)
+        blueInfoSquare.leftAnchor.constraint(equalTo: tournamentName.rightAnchor, constant: 5).isActive = true
+        blueInfoSquare.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
+        blueInfoSquare.heightAnchor.constraint(equalToConstant: 34).isActive = true
+        blueInfoSquare.widthAnchor.constraint(equalToConstant: 34).isActive = true
+        
+        addSubview(notifBadge)
+        notifBadge.rightAnchor.constraint(equalTo: blueInfoSquare.leftAnchor, constant: -4).isActive = true
+        notifBadge.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
+        notifBadge.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        notifBadge.widthAnchor.constraint(equalToConstant: 28).isActive = true
         
         addSubview(sexAndType)
         sexAndType.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
@@ -650,6 +808,18 @@ class TourneyCell: UITableViewCell {
         registered.topAnchor.constraint(equalTo: type.bottomAnchor, constant: 2).isActive = true
         registered.heightAnchor.constraint(equalToConstant: 30).isActive = true
         registered.rightAnchor.constraint(equalTo: duration.rightAnchor).isActive = true
+        
+        addSubview(invitePlayers)
+        invitePlayers.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        invitePlayers.topAnchor.constraint(equalTo: registered.bottomAnchor, constant: 2).isActive = true
+        invitePlayers.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        invitePlayers.widthAnchor.constraint(equalTo: widthAnchor, constant: -100).isActive = true
+        
+        addSubview(registrationPeriod)
+        registrationPeriod.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        registrationPeriod.topAnchor.constraint(equalTo: registered.bottomAnchor, constant: 2).isActive = true
+        registrationPeriod.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        registrationPeriod.widthAnchor.constraint(equalTo: widthAnchor, constant: -100).isActive = true
         
         addSubview(verticalSeparatorView)
         verticalSeparatorView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true

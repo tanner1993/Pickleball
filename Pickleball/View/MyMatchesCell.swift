@@ -14,6 +14,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     var delegate: FeedCellProtocol?
     var userIsChallenger = 0
     var nameTracker = [String: String]()
+    var daysToPlay = Int()
     
     var matches = [Match2]() {
         didSet {
@@ -79,6 +80,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! RecentMatchesCell
+        cell.daysToPlay = daysToPlay
         let uid = Auth.auth().currentUser?.uid
         let match = matches[indexPath.item]
         if match.active != 3 && yetToView.contains(uid!) {
@@ -238,6 +240,7 @@ class MyMatchesCell: BaseCell, UICollectionViewDataSource, UICollectionViewDeleg
                 vc.team2 = index
             }
         }
+        vc.daysToPlay = daysToPlay
         vc.teams = teams
         vc.matchId = matches[indexPath.item].matchId ?? "none"
         vc.tourneyId = tourneyIdentifier ?? ""

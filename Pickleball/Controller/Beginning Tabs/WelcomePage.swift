@@ -8,6 +8,7 @@
 
 import UIKit
 import Firebase
+import FBSDKLoginKit
 
 class WelcomePage: UIViewController {
     
@@ -116,11 +117,21 @@ class WelcomePage: UIViewController {
         } catch let logoutError {
             print(logoutError)
         }
-        
+        if AccessToken.isCurrentAccessTokenActive {
+            let managerFB = LoginManager()
+            managerFB.logOut()
+        }
         let loginController = LoginPage()
         loginController.welcomePage = self
         loginController.modalPresentationStyle = .fullScreen
         present(loginController, animated: true, completion: nil)
+    }
+    
+    func handleFBLogout() {
+        let loginController = LoginPage()
+        loginController.welcomePage = self
+        loginController.modalPresentationStyle = .fullScreen
+        present(loginController, animated: false, completion: nil)
     }
     
 

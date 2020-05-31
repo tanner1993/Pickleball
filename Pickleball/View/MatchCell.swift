@@ -12,6 +12,8 @@ import FirebaseAuth
 
 class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
+    var daysToPlay = Int()
+    
     var matches = [Match2]() {
         didSet {
             collectionView.reloadData()
@@ -73,6 +75,7 @@ class MatchCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate,
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! RecentMatchesCell
+        cell.daysToPlay = daysToPlay
         let uid = Auth.auth().currentUser?.uid
         let match = matches[indexPath.item]
         if match.active == 3 {

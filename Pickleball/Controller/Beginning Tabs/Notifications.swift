@@ -100,9 +100,9 @@ class Notifications: UITableViewController {
         ref.observe(.childAdded, with: { (snapshot) in
             let notificationId = snapshot.key
             let notificationSeen = snapshot.value! as! Int
-            if notificationSeen == 1 {
-                Database.database().reference().child("user_notifications").child(uid).child(notificationId).setValue(0, andPriority: .none)
-            }
+//            if notificationSeen == 1 {
+//                Database.database().reference().child("user_notifications").child(uid).child(notificationId).setValue(0, andPriority: .none)
+//            }
             let notificationsReference = Database.database().reference().child("notifications").child(notificationId)
             notificationsReference.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? NSDictionary {
@@ -115,6 +115,11 @@ class Notifications: UITableViewController {
                     if messageText == "tourney_invite" || messageText == "tourney_invite_simple" {
                         let tourneyId = value["tourneyId"] as? String ?? "none"
                         notification.tourneyId = tourneyId
+                        let tourneyName = value["tourneyName"] as? String ?? "none"
+                        notification.tourneyName = tourneyName
+                    }
+                    if notificationSeen == 1 {
+                        notification.seen = false
                     }
                     notification.timeStamp = timeStamp
                     notification.toId = toId
@@ -153,58 +158,34 @@ class Notifications: UITableViewController {
             } else {
                 activityIndicatorView.stopAnimating()
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
-                cell.textLabel?.text = "No Events"
+                cell.textLabel?.text = "No Notifications\nHere you will receive friend invites\nand tournament invites"
                 cell.textLabel?.textAlignment = .center
                 return cell
             }
         } else {
             activityIndicatorView.stopAnimating()
+            noNotifications = 1
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
+            cell.friendInvite = notifications[indexPath.row]
             if notifications[indexPath.row].message == "friend" {
-                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
-                cell.appLevel.isHidden = false
-                cell.friendInvite = notifications[indexPath.row]
-                cell.confirmButton.tag = indexPath.row
-                cell.confirmButton.addTarget(self, action: #selector(confirmFriend), for: .touchUpInside)
-                cell.rejectButton.tag = indexPath.row
-                cell.rejectButton.addTarget(self, action: #selector(rejectFriend), for: .touchUpInside)
-                return cell
-            } else if notifications[indexPath.row].message == "match" {
-                let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
-                cell.matchInvite = notifications[indexPath.row]
-                return cell
-            } else if notifications[indexPath.row].message == "reject_match" {
-                let cell = tableView.dequeueReusableCell(withIdentifier: cellId2, for: indexPath) as! MatchNotificationCell
-                cell.matchInvite = notifications[indexPath.row]
-                cell.viewButton.setTitle("Dismiss", for: .normal)
-                cell.viewButton.tag = indexPath.row
-                cell.viewButton.addTarget(self, action: #selector(dismissNotification), for: .touchUpInside)
+                cell.confirmFriendButton.tag = indexPath.row
+                cell.confirmFriendButton.addTarget(self, action: #selector(confirmFriend), for: .touchUpInside)
+                cell.rejectFriendButton.tag = indexPath.row
+                cell.rejectFriendButton.addTarget(self, action: #selector(rejectFriend), for: .touchUpInside)
                 return cell
             } else if notifications[indexPath.row].message == "tourney_invite" {
                 observeTourneyTeams(tourneyId: notifications[indexPath.row].tourneyId ?? "none")
                 checkIfStillExists(tourneyId: notifications[indexPath.row].tourneyId ?? "none")
-                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
-                cell.appLevel.isHidden = true
-                cell.friendInvite = notifications[indexPath.row]
-                if let uid = Auth.auth().currentUser?.uid {
-                    if uid != notifications[indexPath.row].fromId {
-                        cell.confirmButton.tag = indexPath.row
-                        cell.confirmButton.addTarget(self, action: #selector(confirmTourney), for: .touchUpInside)
-                    } else {
-                        cell.confirmButton.isHidden = true
-                        cell.rejectButton.setTitle("Cancel", for: .normal)
-                    }
-                }
-                cell.rejectButton.tag = indexPath.row
-                cell.rejectButton.addTarget(self, action: #selector(rejectTourney), for: .touchUpInside)
+                cell.revokeTourneyInvitation.tag = indexPath.row
+                cell.revokeTourneyInvitation.addTarget(self, action: #selector(rejectTourney), for: .touchUpInside)
+                cell.confirmTourneyButton.tag = indexPath.row
+                cell.confirmTourneyButton.addTarget(self, action: #selector(confirmTourney), for: .touchUpInside)
+                cell.rejectTourneyButton.tag = indexPath.row
+                cell.rejectTourneyButton.addTarget(self, action: #selector(rejectTourney), for: .touchUpInside)
                 return cell
             } else if notifications[indexPath.row].message == "tourney_invite_simple" {
-                let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FriendInviteCell
-                cell.appLevel.isHidden = true
-                cell.friendInvite = notifications[indexPath.row]
-                cell.confirmButton.isHidden = true
-                cell.rejectButton.tag = indexPath.row
-                cell.rejectButton.setTitle("Dismiss", for: .normal)
-                cell.rejectButton.addTarget(self, action: #selector(dismissNotification), for: .touchUpInside)
+                cell.dismissTourneyButton.tag = indexPath.row
+                cell.dismissTourneyButton.addTarget(self, action: #selector(dismissNotification), for: .touchUpInside)
                 return cell
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
@@ -270,27 +251,27 @@ class Notifications: UITableViewController {
         if notifications.count == 0 {
             
         } else {
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return
+            }
             if notifications[indexPath.row].message == "friend" {
                 let whichNotif = indexPath.row
                 let playerProfile = StartupPage()
                 playerProfile.playerId = notifications[whichNotif].fromId ?? "none"
                 playerProfile.isFriend = 3
+                playerProfile.notificationNumber = whichNotif
+                playerProfile.notificationsPage = self
                 playerProfile.hidesBottomBarWhenPushed = true
                 navigationController?.pushViewController(playerProfile, animated: true)
-            } else if notifications[indexPath.row].message == "match" {
-                let whichNotif = indexPath.row
-                let matchDisplay = MatchView()
-                matchDisplay.matchId = notifications[whichNotif].id ?? "none"
-                matchDisplay.hidesBottomBarWhenPushed = true
-                navigationController?.pushViewController(matchDisplay, animated: true)
-            } else if notifications[indexPath.row].message == "reject_match" {
-                
             } else if notifications[indexPath.row].message == "tourney_invite" || notifications[indexPath.row].message == "tourney_invite_simple" {
                 let tourneySearch = TourneySearch()
                 tourneySearch.inviteTourneyId = notifications[indexPath.item].tourneyId ?? "none"
                 tourneySearch.hidesBottomBarWhenPushed = true
                 navigationController?.pushViewController(tourneySearch, animated: true)
             }
+            Database.database().reference().child("user_notifications").child(uid).child(notifications[indexPath.row].id!).setValue(0)
+            notifications[indexPath.row].seen = true
+            tableView.reloadData()
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }
@@ -308,45 +289,22 @@ class Notifications: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return CGFloat(102)
+        return CGFloat(202)
     }
     
     @objc func confirmFriend(sender: UIButton) {
         let whichNotif = sender.tag
-        
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
         guard let playerId = notifications[whichNotif].fromId else {
             return
         }
-        
-        let friendsRef = Database.database().reference()
         guard let notificationId = notifications[whichNotif].id else {
             return
         }
-        let childUpdates = ["/\("friends")/\(uid)/\(playerId)/": true, "/\("friends")/\(playerId)/\(uid)/": true] as [String : Any]
-        friendsRef.updateChildValues(childUpdates, withCompletionBlock: {
-            (error:Error?, ref:DatabaseReference) in
-            
-            if error != nil {
-                let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
-                messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self.present(messageSendFailed, animated: true, completion: nil)
-                print("Data could not be saved: \(String(describing: error)).")
-                return
-            }
-            
-            Database.database().reference().child("notifications").child(notificationId).removeValue()
-            Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
-            self.notifications.remove(at: whichNotif)
-            self.noNotifications = 1
-            self.tableView.reloadData()
-            
-            print("Crazy data 2 saved!")
-            
-            
-        })
+        self.notifications.remove(at: whichNotif)
+        self.noNotifications = 1
+        self.tableView.reloadData()
+        let player = Player()
+        player.acceptFriendRequest(playerId: playerId, notificationId: notificationId)
     }
     
     @objc func rejectFriend(sender: UIButton) {
@@ -379,6 +337,9 @@ class Notifications: UITableViewController {
         guard let tourneyId = notifications[whichNotif].tourneyId, let fromId = notifications[whichNotif].fromId, let uid = Auth.auth().currentUser?.uid, let notificationId = notifications[whichNotif].id else {
             return
         }
+        
+        self.notifications.remove(at: whichNotif)
+        self.tableView.reloadData()
         for index in shouldDelete1 {
             if index.idT == tourneyId && index.should == true {
                 Database.database().reference().child("notifications").child(notificationId).removeValue()
@@ -415,9 +376,6 @@ class Notifications: UITableViewController {
             Database.database().reference().child("notifications").child(notificationId).removeValue()
             Database.database().reference().child("user_notifications").child(uid).child(notificationId).removeValue()
             Database.database().reference().child("user_notifications").child(fromId).child(notificationId).removeValue()
-            self.notifications.remove(at: whichNotif)
-            self.tableView.reloadData()
-            self.noNotifications = 1
             print("Data saved successfully!")
         
         

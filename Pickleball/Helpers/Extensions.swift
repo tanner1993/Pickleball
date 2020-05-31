@@ -87,5 +87,25 @@ extension String {
         let Test = NSPredicate(format:"SELF MATCHES %@", RegEx)
         return Test.evaluate(with: self)
     }
+    
+    var getFirstAndLastInitial: String {
+        var initials = ""
+        var finalChar = 0
+        for char in self {
+            if finalChar == 0 {
+                initials.append(char)
+            }
+            if finalChar == 1 {
+                initials.append(char)
+                initials.append(".")
+                break
+            }
+            
+            if char == " " {
+                finalChar = 1
+            }
+        }
+        return initials
+    }
 
 }

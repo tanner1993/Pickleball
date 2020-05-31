@@ -11,6 +11,30 @@ import FirebaseAuth
 import Firebase
 import Alamofire
 import Charts
+import FBSDKLoginKit
+import FBSDKShareKit
+
+extension UIView {
+
+    func takeScreenshot() -> UIImage {
+
+        // Begin context
+        UIGraphicsBeginImageContextWithOptions(self.bounds.size, false, UIScreen.main.scale)
+
+        // Draw view in that context
+        drawHierarchy(in: self.bounds, afterScreenUpdates: true)
+
+        // And finally, get image
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+
+        if (image != nil)
+        {
+            return image!
+        }
+        return UIImage()
+    }
+}
 
 class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
@@ -19,164 +43,253 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     var playerId = "none"
     var isFriend = 0
     var findFriends: FindFriends?
+    var friendList: FriendList?
+    var notificationsPage: Notifications?
     var whichFriend = -1
     var mainMenu: MainMenu?
     var findFriendSender = 0
     var newUser = 0
     var playersDeviceId = String()
+    var notificationNumber = -1
+    var opponentsList: OpponentsList?
+    var createdMatch = Match2()
     
+    let profileView = ProfileView(frame: CGRect(x: 0, y: 0, width: (UIApplication.shared.keyWindow?.frame.width)!, height: (UIApplication.shared.keyWindow?.frame.height)!))
     
-//    var activityIndicatorView: UIActivityIndicatorView!
-//
-//    override func loadView() {
-//        super.loadView()
-//
-//        activityIndicatorView = UIActivityIndicatorView(style: .whiteLarge)
-//    }
+    override func loadView() {
+        view = profileView
+    }
     
-    let pieChart: PieChartView = {
-        let bi = PieChartView()
-        bi.translatesAutoresizingMaskIntoConstraints = false
-        bi.contentMode = .scaleAspectFit
-        bi.isUserInteractionEnabled = true
-        return bi
-    }()
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupNavbarTitle()
+        profileView.activityView.startAnimating()
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        print(newUser)
+        if newUser == 1 {
+            print("yessss")
+        }
+        if playerId == "none" {
+            setupNavbarButtons()
+            setupCollectionView()
+            fetchNotifications()
+            fetchMessages()
+            fetchTourneyNotifications()
+            fetchMatchNotifications()
+            observePlayerProfile()
+        } else if playerId == uid {
+            observePlayerProfile()
+            setupNavbarButtons()
+        } else if isFriend == 3 {
+            fetchFriends()
+            observePlayerProfile()
+        } else {
+            setupNavbarButtons()
+            observePlayerProfile()
+        }
+        if findFriendSender != 0 {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Return", style: .plain, target: self, action: #selector(handleCancel))
+        }
+        let labelTap = UITapGestureRecognizer(target: self, action: #selector(handleAppLevelTap))
+        profileView.haloLevel.addGestureRecognizer(labelTap)
+        
+    }
     
-    let backgroundImage: UIImageView = {
-        let bi = UIImageView()
-        bi.translatesAutoresizingMaskIntoConstraints = false
-        bi.contentMode = .scaleAspectFit
-        bi.image = UIImage(named: "user_dashboard")
-        bi.isUserInteractionEnabled = true
-        return bi
-    }()
+
     
-    let skillLevel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Bold", size: 75)
-        label.textAlignment = .center
-        return label
-    }()
+    @objc func handleAppLevelTap() {
+        openMenu2(newExp: playerExp, newLevel: Int(profileView.haloLevel.text!)!, infoBool: false)
+        pieBackground2.haloLevel2.text = profileView.haloLevel.text!
+        pieBackground2.haloLevelTitle.text = profileView.haloLevelTitle.text!
+    }
     
-    let tourneyNameTextField: UITextField = {
-        let tf = UITextField()
-        tf.placeholder = "Name"
-        tf.backgroundColor = .white
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        tf.font = UIFont.boldSystemFont(ofSize: 16)
-        return tf
-    }()
+    var challengeYesOrNo = Bool()
     
-    let skillLevelLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "USAPA Self Rating: "
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
-        label.textAlignment = .right
-        label.adjustsFontSizeToFitWidth = true
-        return label
-    }()
+    func setupChangeStatusButton(challenge: Bool) {
+        challengeYesOrNo = challenge
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        profileView.challengeStatusButton.setTitle(challenge ? "Looking For Opponents" : "Not Looking For Opponents", for: .normal)
+        profileView.challengeStatusButton.setTitleColor(challenge ? UIColor.init(r: 120, g: 207, b: 138) : UIColor(r: 150, g: 150, b: 150), for: .normal)
+        if playerId == "none" {
+            profileView.challengeStatusButton.addTarget(self, action: #selector(openInfo), for: .touchUpInside)
+        } else {
+            if challenge && playerId != uid {
+                profileView.challengeStatusButton.addTarget(self, action: #selector(handleChallengePlayer), for: .touchUpInside)
+                profileView.challengePrompter.isHidden = false
+            } else {
+                profileView.challengeStatusButton.isEnabled = false
+            }
+        }
+    }
     
-    let haloLevel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = ""
-        label.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
-        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
-        label.textAlignment = .center
-        return label
-    }()
+    func setupChangeCourtButton(court: String) {
+        if playerId == "none" {
+            profileView.selectCourtButton.isHidden = false
+            profileView.selectCourtButton.addTarget(self, action: #selector(openCourtInfo), for: .touchUpInside)
+            if court == "none" {
+                profileView.selectCourtButton.setTitle("No Court Selected", for: .normal)
+            } else {
+                profileView.selectCourtButton.setTitle(court, for: .normal)
+                profileView.selectCourtButton.setTitleColor(.black, for: .normal)
+            }
+        } else {
+            profileView.courtText.isHidden = false
+            if court == "none" {
+                profileView.courtText.text = "No Court Selected"
+            } else {
+                profileView.courtText.text = court
+                profileView.courtText.textColor = .black
+            }
+        }
+    }
     
-    let haloLevelTitle: UILabel = {
-        let label = UILabel()
-        label.adjustsFontSizeToFitWidth = true
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.textAlignment = .center
-        return label
-    }()
+    @objc func openCourtInfo() {
+        if let window = UIApplication.shared.keyWindow {
+            blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+            blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu4)))
+            window.addSubview(blackView)
+            window.addSubview(selectCourtInfo)
+            selectCourtInfo.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(infoBackgroundHeight))
+            selectCourtInfo.layer.cornerRadius = 10
+            selectCourtInfo.layer.masksToBounds = true
+            selectCourtInfo.updateCourt.addTarget(self, action: #selector(handleUpdateCourt), for: .touchUpInside)
+            selectCourtInfo.dontShowCourt.addTarget(self, action: #selector(handleDontShowCourt), for: .touchUpInside)
+            blackView.frame = window.frame
+            blackView.alpha = 0
+
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                self.blackView.alpha = 1
+             self.selectCourtInfo.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.infoBackgroundHeight + 140), width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }, completion: nil)
+
+        }
+    }
     
-    let playerName: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
-        label.textAlignment = .left
-        return label
-    }()
+    @objc func handleUpdateCourt() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        guard let courtName = selectCourtInfo.courtNameTextField.text else {
+            return
+        }
+        if courtName.count < 3 || courtName.count > 25 {
+            let newalert = UIAlertController(title: "Sorry", message: "Invalid Court Name. Must be between 3 and 25 characters", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        } else {
+            Database.database().reference().child("users").child(uid).child("court").setValue(courtName)
+            profileView.selectCourtButton.setTitle(courtName, for: .normal)
+            profileView.selectCourtButton.setTitleColor(.black, for: .normal)
+        }
+        dismissMenu4()
+    }
     
-    let location: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.textAlignment = .left
-        return label
-    }()
+    func popStartup() {
+        self.opponentsList?.createdMatch = createdMatch
+        navigationController?.popViewController(animated: false)
+        opponentsList?.popOpponents()
+    }
     
-    let ageGroup: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.textAlignment = .left
-        return label
-    }()
+    @objc func handleDontShowCourt() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        Database.database().reference().child("users").child(uid).child("court").setValue("none")
+        profileView.selectCourtButton.setTitle("No Court Selected", for: .normal)
+        profileView.selectCourtButton.setTitleColor(UIColor(r: 150, g: 150, b: 150), for: .normal)
+        dismissMenu4()
+    }
     
-    let tourneysEntered: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .white
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 30)
-        label.textAlignment = .right
-        return label
-    }()
+    @objc func handleChallengePlayer() {
+        let newalert = UIAlertController(title: "Challenge Opponent", message: "Do you want to create a match with this opponent?", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Not now", style: UIAlertAction.Style.default, handler: nil))
+        newalert.addAction(UIAlertAction(title: "Yes", style: UIAlertAction.Style.default, handler: handleOpenCreateMatch))
+        self.present(newalert, animated: true, completion: nil)
+    }
     
-    let tourneysWon: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .white
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 30)
-        label.textAlignment = .right
-        return label
-    }()
+    func handleOpenCreateMatch(action: UIAlertAction) {
+        let createNewMatch = CreateMatch()
+        createNewMatch.modalPresentationStyle = .fullScreen
+        createNewMatch.opponentChallenge = true
+        createNewMatch.opponent1.id = playerId
+        createNewMatch.opponent1.name = profileView.playerName.text ?? "none"
+        createNewMatch.opponent1.skillLevel = profileView.skillLevel.text ?? "none"
+        createNewMatch.opponent1.deviceId = playersDeviceId
+        createNewMatch.getPlayerDetails()
+        createNewMatch.selectOpponentButton1.isEnabled = false
+        createNewMatch.singlesDoublesControl.selectedSegmentIndex = 0
+        createNewMatch.startupPage = self
+        navigationController?.present(createNewMatch, animated: true, completion: nil)
+    }
+        
+        let selectCourtInfo = SelectCourtInfo()
+        let infoBackground = ChangeStatusInfo()
+        let infoBackgroundHeight = 440
     
-    let matchesWon: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .white
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 30)
-        label.textAlignment = .right
-        return label
-    }()
+    @objc func openInfo() {
+        if let window = UIApplication.shared.keyWindow {
+            blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+            blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu3)))
+            window.addSubview(blackView)
+            window.addSubview(infoBackground)
+            infoBackground.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(infoBackgroundHeight))
+            infoBackground.layer.cornerRadius = 10
+            infoBackground.layer.masksToBounds = true
+            infoBackground.lookingToggle.isOn = challengeYesOrNo ? true : false
+            infoBackground.handleSwitchChanged()
+            infoBackground.changeStatus.addTarget(self, action: #selector(changeChallengeStatus), for: .touchUpInside)
+            blackView.frame = window.frame
+            blackView.alpha = 0
+
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                self.blackView.alpha = 1
+             self.infoBackground.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.infoBackgroundHeight + 140), width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }, completion: nil)
+
+        }
+    }
+
+    @objc func dismissMenu3() {
+        UIView.animate(withDuration: 0.5, animations: {
+            self.blackView.alpha = 0
+            if let window = UIApplication.shared.keyWindow {
+             self.infoBackground.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }
+        })
+    }
     
-    let matchesLost: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .white
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 30)
-        label.textAlignment = .right
-        return label
-    }()
+    @objc func dismissMenu4() {
+        UIView.animate(withDuration: 0.5, animations: {
+            self.blackView.alpha = 0
+            if let window = UIApplication.shared.keyWindow {
+             self.selectCourtInfo.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }
+        })
+        selectCourtInfo.courtNameTextField.resignFirstResponder()
+    }
     
-    let winRatio: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = .white
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 30)
-        label.textAlignment = .right
-        return label
-    }()
+    @objc func changeChallengeStatus() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        Database.database().reference().child("users").child(uid).child("challenge").setValue(infoBackground.lookingToggle.isOn ? true : false)
+        profileView.challengeStatusButton.setTitle(infoBackground.lookingToggle.isOn ? "Looking For Opponents" : "Not Looking For Opponents", for: .normal)
+        profileView.challengeStatusButton.setTitleColor(infoBackground.lookingToggle.isOn ? UIColor.init(r: 120, g: 207, b: 138) : UIColor(r: 150, g: 150, b: 150), for: .normal)
+        dismissMenu3()
+    }
     
     @objc func handleLogout() {
-//        do {
-//            try Auth.auth().signOut()
-//        } catch let logoutError {
-//            print(logoutError)
-//        }
-//
-//        let loginController = LoginPage()
-//        loginController.startupPage = self
-//        present(loginController, animated: true, completion: nil)
         dismiss(animated: true, completion: nil)
+//        if AccessToken.isCurrentAccessTokenActive {
+//            mainMenu?.welcomePage?.handleFBLogout()
+//        } else {
+//            mainMenu?.welcomePage?.handleLogout()
+//        }
         mainMenu?.welcomePage?.handleLogout()
     }
     
@@ -317,18 +430,33 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             let image = UIImage(named: "menu")!.withRenderingMode(UIImage.RenderingMode.alwaysOriginal)
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(openMenu))
         } else if isFriend == 0 {
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Invite Friend", style: .plain, target: self, action: #selector(sendFriendInvitation))
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Request Friend", style: .plain, target: self, action: #selector(sendFriendInvitation))
         } else if isFriend == 1 {
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Requested", style: .plain, target: self, action: #selector(sendFriendInvitation))
+            let friendButton = UIBarButtonItem(title: "Requested", style: .plain, target: self, action: #selector(sendFriendInvitation))
+            friendButton.isEnabled = false
+            self.navigationItem.rightBarButtonItem = friendButton
         } else if isFriend == 2 {
-            self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Friends", style: .plain, target: self, action: #selector(sendFriendInvitation))
+            let friendButton = UIBarButtonItem(title: "Unfriend", style: .plain, target: self, action: #selector(sendFriendInvitation))
+            self.navigationItem.rightBarButtonItem = friendButton
+        } else if isFriend == 3 && notificationNumber != -1 {
+            let friendButton = UIBarButtonItem(title: "Accept Friend", style: .plain, target: self, action: #selector(acceptFriendInvitation))
+            self.navigationItem.rightBarButtonItem = friendButton
         }
     }
     
-    func setupNavbarTitle(username: String) {
+    @objc func acceptFriendInvitation() {
+        player.acceptFriendRequest(playerId: playerId, notificationId: notificationsPage?.notifications[notificationNumber].id ?? "none")
+        notificationsPage?.notifications.remove(at: notificationNumber)
+        notificationsPage?.noNotifications = 1
+        notificationsPage?.tableView.reloadData()
+        isFriend = 2
+        setupNavbarButtons()
+    }
+    
+    func setupNavbarTitle() {
         let widthofscreen = Int(view.frame.width)
         let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
-        titleLabel.text = username
+        titleLabel.text = playerId == "none" ? "My Profile" : "Player Profile"
         titleLabel.textColor = .white
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
@@ -336,80 +464,21 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     
     @objc func sendFriendInvitation() {
         if isFriend == 0 {
-            guard let uid = Auth.auth().currentUser?.uid else {
-                return
-            }
-            
-            
-            let ref = Database.database().reference()
-            let notifications2Ref = ref.child("notifications")
-            let childRef = notifications2Ref.childByAutoId()
-            let toId = playerId
-            let fromId = uid
-            let timeStamp = Int(Date().timeIntervalSince1970)
-            let values = ["type": "friend", "toId": toId, "fromId" :fromId, "timestamp": timeStamp] as [String : Any]
-            childRef.updateChildValues(values, withCompletionBlock: {
-                (error:Error?, ref:DatabaseReference) in
-                
-                if error != nil {
-                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
-                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    self.present(messageSendFailed, animated: true, completion: nil)
-                    print("Data could not be saved: \(String(describing: error)).")
-                    return
-                }
-                
-                let notificationsRef = Database.database().reference()
-                let notificationId = childRef.key!
-                let childUpdates = ["/\("friends")/\(uid)/\(self.playerId)/": false, "/\("user_notifications")/\(self.playerId)/\(notificationId)/": 1] as [String : Any]
-                notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
-                    (error:Error?, ref:DatabaseReference) in
-                    
-                    if error != nil {
-                        let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
-                        messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                        self.present(messageSendFailed, animated: true, completion: nil)
-                        print("Data could not be saved: \(String(describing: error)).")
-                        return
-                    }
-                    Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
-                        if let value = snapshot.value {
-                            let nameOnInvite = value as? String ?? "none"
-                            let pusher = PushNotificationHandler()
-                            pusher.setupPushNotification(deviceId: self.playersDeviceId, message: "\(nameOnInvite) wants to be your friend", title: "Friend Request")
-                            //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
-                        }
-                    })
-                    print("Crazy data 2 saved!")
-                    
-                    
-                })
-                
-                print("Crazy data saved!")
-                
-                
-            })
+            player.sendFriendRequest(playerId: playerId, playersDeviceId: playersDeviceId)
             findFriends?.searchResults[whichFriend].friend = 1
             isFriend = 1
+            setupNavbarButtons()
+        } else if isFriend == 2 {
+            player.revokeFriend(playerId: playerId)
+            findFriends?.searchResults[whichFriend].friend = 0
+            friendList?.friends.remove(at: whichFriend)
+            friendList?.collectionView.reloadData()
+            isFriend = 0
             setupNavbarButtons()
         }
         
         
     }
-    
-//    fileprivate func setupPushNotification(deviceId: String, nameOnInvite: String) {
-//        let message = "\(nameOnInvite) sent you a friend request"
-//        let title = "Friend Request"
-//        let toDeviceId = deviceId
-//        var headers: HTTPHeaders = HTTPHeaders()
-//
-//        headers = ["Content-Type":"application/json", "Authorization":"key=\(AppDelegate.ServerKey)"]
-//        let notification = ["to":"\(toDeviceId)", "notification":["body":message,"title":title,"badge":1,"sound":"default"]] as [String:Any]
-//
-//        Alamofire.request(AppDelegate.Notification_URL as URLConvertible, method: .post as HTTPMethod, parameters: notification, encoding: JSONEncoding.default, headers: headers).responseJSON(completionHandler: {(response) in
-//            print(response)
-//        })
-//    }
     
     func updateLevel() {
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -422,12 +491,12 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             }
             let expValue = exp as? Int ?? -1
             let haloValue = self.player.haloLevel(exp: expValue)
-            if self.haloLevel.text! != "\(haloValue)" {
+            if self.profileView.haloLevel.text! != "\(haloValue)" {
                 self.setChart(exp: expValue)
-                self.haloLevel.text = "\(haloValue)"
+                self.profileView.haloLevel.text = "\(haloValue)"
             }
-            if self.haloLevelTitle.text! != self.player.levelTitle(level: haloValue) {
-                self.haloLevelTitle.text = self.player.levelTitle(level: haloValue)
+            if self.profileView.haloLevelTitle.text ?? "0" != self.player.levelTitle(level: haloValue) {
+                self.profileView.haloLevelTitle.text = self.player.levelTitle(level: haloValue)
             }
         })
     }
@@ -463,76 +532,24 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             let expValue = exp as? Int ?? -1
             let haloValue = self.player.haloLevel(exp: expValue)
             if haloValue > oldLevel {
-                self.haloLevelTitle2.text = "You moved up from level \(oldLevel) to level \(haloValue)!"
+                self.pieBackground2.haloLevelTitle2.text = "You moved up from level \(oldLevel) to level \(haloValue)!"
                 if self.player.levelTitle(level: oldLevel) != self.player.levelTitle(level: haloValue) {
-                    self.haloLevelTitle3.text = "You graduated from '\(self.player.levelTitle(level: oldLevel))' to '\(self.player.levelTitle(level: haloValue))'"
+                    self.pieBackground2.haloLevelTitle3.text = "You graduated from '\(self.player.levelTitle(level: oldLevel))' to '\(self.player.levelTitle(level: haloValue))'"
                 } else {
-                    self.haloLevelTitle3.text = "You're currently '\(self.player.levelTitle(level: haloValue))'"
+                    self.pieBackground2.haloLevelTitle3.text = "You're currently '\(self.player.levelTitle(level: haloValue))'"
                 }
-                self.openMenu2(newExp: expValue, newLevel: haloValue)
+                self.pieBackground2.haloLevel2.text = "\(haloValue)"
+                self.openMenu2(newExp: expValue, newLevel: haloValue, infoBool: true)
             }
             Database.database().reference().child("users").child(uid).child("oldLevel").setValue(0)
         })
     }
-    
-    let pieBackground2: UIView = {
-        let cv = UIView()
-        cv.backgroundColor = .white
-        cv.layer.cornerRadius = 10
-        cv.layer.masksToBounds = true
-        return cv
-    }()
-    
-    let haloLevel2: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
-        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let levelUpLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Level Up!"
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Bold", size: 50)
-        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
-        label.textAlignment = .center
-        return label
-    }()
-    
-    let haloLevelTitle2: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        label.text = "You leveled up!"
-        label.numberOfLines = 2
-        label.textAlignment = .center
-        label.adjustsFontSizeToFitWidth = true
-        return label
-    }()
-    
-    let haloLevelTitle3: UILabel = {
-        let label = UILabel()
-        label.numberOfLines = 2
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
-        label.textAlignment = .center
-        return label
-    }()
-    
+
     let pieBackroundHeight2 = 440
     
-    let pieChart2: PieChartView = {
-        let bi = PieChartView()
-        bi.translatesAutoresizingMaskIntoConstraints = false
-        bi.contentMode = .scaleAspectFit
-        bi.isUserInteractionEnabled = true
-        return bi
-    }()
+    let pieBackground2 = PieBackgroundPopup()
     
-    func openMenu2(newExp: Int, newLevel: Int) {
+    func openMenu2(newExp: Int, newLevel: Int, infoBool: Bool) {
         let bounds = self.player.findExpBounds(exp: newExp)
         let startExp = bounds[0]
         let endExp = bounds[1]
@@ -545,12 +562,32 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let chartData = PieChartData(dataSet: chartDataSet)
         let colors = [UIColor.init(r: 120, g: 207, b: 138), UIColor.white]
         chartDataSet.colors = colors
-        
-        pieChart2.data = chartData
-        pieChart2.legend.enabled = false
-        pieChart2.holeRadiusPercent = 0.93
-        pieChart2.transparentCircleColor = UIColor.init(r: 120, g: 207, b: 138)
-        pieChart2.transparentCircleRadiusPercent = 0.94
+        pieBackground2.layer.cornerRadius = 10
+        pieBackground2.layer.masksToBounds = true
+        pieBackground2.pieChart2.data = chartData
+        pieBackground2.pieChart2.legend.enabled = false
+        pieBackground2.pieChart2.holeRadiusPercent = 0.93
+        pieBackground2.pieChart2.transparentCircleColor = UIColor.init(r: 120, g: 207, b: 138)
+        pieBackground2.pieChart2.transparentCircleRadiusPercent = 0.94
+        if infoBool {
+            pieBackground2.pieChart2CenterYAnchor?.isActive = false
+            pieBackground2.pieChart2CenterYAnchor = pieBackground2.pieChart2.centerYAnchor.constraint(equalTo: pieBackground2.centerYAnchor)
+            pieBackground2.pieChart2CenterYAnchor?.isActive = true
+            pieBackground2.levelUpLabel.isHidden = false
+            pieBackground2.haloLevelTitle2.isHidden = false
+            pieBackground2.haloLevelTitle3.isHidden = false
+            pieBackground2.infoTextLevel.isHidden = true
+            pieBackground2.haloLevelTitle.isHidden = true
+        } else {
+            pieBackground2.pieChart2CenterYAnchor?.isActive = false
+            pieBackground2.pieChart2CenterYAnchor = pieBackground2.pieChart2.topAnchor.constraint(equalTo: pieBackground2.topAnchor, constant: 8)
+            pieBackground2.pieChart2CenterYAnchor?.isActive = true
+            pieBackground2.levelUpLabel.isHidden = true
+            pieBackground2.haloLevelTitle2.isHidden = true
+            pieBackground2.haloLevelTitle3.isHidden = true
+            pieBackground2.infoTextLevel.isHidden = false
+            pieBackground2.haloLevelTitle.isHidden = false
+        }
            if let window = UIApplication.shared.keyWindow {
                blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
                blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu2)))
@@ -565,36 +602,6 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 self.pieBackground2.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.pieBackroundHeight2 + 140), width: window.frame.width - 48, height: CGFloat(self.pieBackroundHeight2))
                }, completion: nil)
             
-            pieBackground2.addSubview(pieChart2)
-            pieChart2.heightAnchor.constraint(equalToConstant: 230).isActive = true
-            pieChart2.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
-            pieChart2.widthAnchor.constraint(equalToConstant: 230).isActive = true
-            pieChart2.centerYAnchor.constraint(equalTo: pieBackground2.centerYAnchor).isActive = true
-            
-            haloLevel2.text = "\(newLevel)"
-            pieBackground2.addSubview(haloLevel2)
-            haloLevel2.heightAnchor.constraint(equalToConstant: 150).isActive = true
-            haloLevel2.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
-            haloLevel2.widthAnchor.constraint(equalToConstant: 150).isActive = true
-            haloLevel2.centerYAnchor.constraint(equalTo: pieBackground2.centerYAnchor).isActive = true
-            
-            pieBackground2.addSubview(haloLevelTitle2)
-            haloLevelTitle2.heightAnchor.constraint(equalToConstant: 60).isActive = true
-            haloLevelTitle2.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
-            haloLevelTitle2.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
-            haloLevelTitle2.bottomAnchor.constraint(equalTo: pieChart2.topAnchor, constant: 15).isActive = true
-            
-            pieBackground2.addSubview(levelUpLabel)
-            levelUpLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
-            levelUpLabel.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
-            levelUpLabel.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
-            levelUpLabel.bottomAnchor.constraint(equalTo: haloLevelTitle2.topAnchor, constant: 0).isActive = true
-            
-            pieBackground2.addSubview(haloLevelTitle3)
-            haloLevelTitle3.heightAnchor.constraint(equalToConstant: 80).isActive = true
-            haloLevelTitle3.centerXAnchor.constraint(equalTo: pieBackground2.centerXAnchor).isActive = true
-            haloLevelTitle3.widthAnchor.constraint(equalToConstant: view.frame.width - 64).isActive = true
-            haloLevelTitle3.topAnchor.constraint(equalTo: pieChart2.bottomAnchor, constant: -15).isActive = true
            }
        }
        
@@ -610,40 +617,6 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     override func viewDidAppear(_ animated: Bool) {
         if playerId == "none" {
             checkLevelUp()
-        }
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        activityView.startAnimating()
-        setupViews()
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        print(newUser)
-        if newUser == 1 {
-            print("yessss")
-        }
-        if playerId == "none" {
-            setupNavbarButtons()
-            setupCollectionView()
-            fetchNotifications()
-            fetchMessages()
-            fetchTourneyNotifications()
-            fetchMatchNotifications()
-            observePlayerProfile()
-        } else if playerId == uid {
-            observePlayerProfile()
-            setupNavbarButtons()
-        } else if isFriend == 3 {
-            fetchFriends()
-            observePlayerProfile()
-        } else {
-            setupNavbarButtons()
-            observePlayerProfile()
-        }
-        if findFriendSender != 0 {
-            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Return", style: .plain, target: self, action: #selector(handleCancel))
         }
     }
     
@@ -747,6 +720,8 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         })
     }
     
+    var playerExp = Int()
+    
     func observePlayerProfile() {
         
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -762,39 +737,46 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 let attrb = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 23), NSAttributedString.Key.foregroundColor : UIColor.init(r: 88, g: 148, b: 200)]
                 let boldSkillString = NSAttributedString(string: boldSkill, attributes: attrb as [NSAttributedString.Key : Any])
                 attributedSkill.append(boldSkillString)
-                self.skillLevelLabel.attributedText = attributedSkill
+                self.profileView.skillLevelLabel.attributedText = attributedSkill
                 
                 let exp = value["exp"] as? Int ?? 0
+                self.playerExp = exp
                 self.setChart(exp: exp)
-                self.haloLevel.text = "\(self.player.haloLevel(exp: exp))"
-                self.haloLevelTitle.text = self.player.levelTitle(level: self.player.haloLevel(exp: exp))
-                self.playerName.text = value["name"] as? String ?? "no name"
+                self.profileView.haloLevel.text = "\(self.player.haloLevel(exp: exp))"
+                self.profileView.haloLevelTitle.text = self.player.levelTitle(level: self.player.haloLevel(exp: exp))
+                self.profileView.playerName.text = value["name"] as? String ?? "no name"
                 let state = value["state"] as? String ?? "no state"
-                let username = value["username"] as? String ?? "no name"
-                self.setupNavbarTitle(username: username)
                 self.stopAnimatingActivity(state: state)
                 let county = value["county"] as? String ?? "no state"
-                self.location.text = "\(state), \(county)"
+                self.profileView.location.text = "\(state), \(county)"
                 let birthdate = value["birthdate"] as? Double ?? 0
-                self.ageGroup.text = self.getAgeGroup(birthdate: birthdate)
-                self.tourneysEntered.text = "\(value["tourneys_played"] as? Int ?? 0)"
-                self.tourneysWon.text = "\(value["tourneys_won"] as? Int ?? 0)"
+                self.profileView.ageGroup.text = self.getAgeGroup(birthdate: birthdate)
                 let matchesWon1 = value["match_wins"] as? Int ?? 0
                 let matchesLost1 = value["match_losses"] as? Int ?? 0
-                self.matchesWon.text = "\(matchesWon1)"
-                self.matchesLost.text = "\(matchesLost1)"
+                //self.profileView.matchesWon.text = "\(matchesWon1)"
+                self.profileView.matchesPlayed.text = "\(matchesLost1 + matchesWon1)"
                 let winRatio = Double(matchesWon1) / (Double(matchesWon1) + Double(matchesLost1))
                 let winRatioRounded = winRatio.round(nearest: 0.01)
-                self.winRatio.text = (matchesWon1 + matchesLost1) == 0 ? "\(0)" : "\(winRatioRounded)"
+                self.profileView.winRatio.text = (matchesWon1 + matchesLost1) == 0 ? "\(0)" : "\(winRatioRounded)"
                 
                 let deviceId = value["deviceId"] as? String ?? "none"
+                let challenge = value["challenge"] as? Bool ?? false
+                self.setupChangeStatusButton(challenge: challenge)
+                
+                let court = value["court"] as? String ?? "none"
+                self.setupChangeCourtButton(court: court)
                 if self.playerId == "none" {
                     self.uploadDeviceId(deviceId: deviceId)
                 } else {
                     self.playersDeviceId = deviceId
+                    
                 }
             }
         }, withCancel: nil)
+    }
+    
+    func setupRecentMatches() {
+        
     }
     
     func setChart(exp: Int) {
@@ -812,7 +794,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             let chartData = PieChartData(dataSet: chartDataSet)
             let colors = [UIColor.init(r: 120, g: 207, b: 138), UIColor.white]
             chartDataSet.colors = colors
-            self.pieChart.data = chartData
+            self.profileView.pieChart.data = chartData
     }
     
     func uploadDeviceId(deviceId: String) {
@@ -826,9 +808,9 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     }
     
     func stopAnimatingActivity(state: String) {
-        activityView.isHidden = true
-        activityView.stopAnimating()
-        whiteBox.isHidden = true
+        profileView.activityView.isHidden = true
+        profileView.activityView.stopAnimating()
+        profileView.whiteBox.isHidden = true
     }
     
     func getAgeGroup(birthdate: Double) -> String {
@@ -855,179 +837,5 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let H = h / hib * hia
         return (X, Y, W, H)
     }
-    
-    let scrollView: UIScrollView = {
-        let sv = UIScrollView()
-        sv.translatesAutoresizingMaskIntoConstraints = false
-        sv.isScrollEnabled = true
-        sv.backgroundColor = .white
-        sv.minimumZoomScale = 1.0
-        //sv.maximumZoomScale = 2.5
-        return sv
-    }()
-    
-    func setupPieChart() {
-        let currentExp = PieChartDataEntry(value: 3, label: nil)
-        let goalExp = PieChartDataEntry(value: 150, label: nil)
-        let chartDataSet = PieChartDataSet(entries: [currentExp, goalExp], label: nil)
-        chartDataSet.drawValuesEnabled = false
-        let chartData = PieChartData(dataSet: chartDataSet)
-        let colors = [UIColor.init(r: 120, g: 207, b: 138), UIColor.white]
-        chartDataSet.colors = colors
-        pieChart.data = chartData
-        pieChart.legend.enabled = false
-        pieChart.holeRadiusPercent = 0.93
-        pieChart.transparentCircleColor = UIColor.init(r: 120, g: 207, b: 138)
-        pieChart.transparentCircleRadiusPercent = 0.94
-        backgroundImage.addSubview(pieChart)
-        pieChart.heightAnchor.constraint(equalToConstant: 230).isActive = true
-        pieChart.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        pieChart.widthAnchor.constraint(equalToConstant: 230).isActive = true
-        pieChart.centerYAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 269 / 2).isActive = true
-    }
-    
-    func setupViews() {
-        scrollView.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-        let Width = Float(view.frame.width)
-        let ratio: Float = 375.0 / 550.0
-        scrollView.contentSize = CGSize(width: Double(Width), height: Double(Width / ratio))
-        view.addSubview(scrollView)
-        scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        scrollView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        scrollView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
-        
-        scrollView.addSubview(backgroundImage)
-        backgroundImage.topAnchor.constraint(equalTo: scrollView.topAnchor).isActive = true
-        backgroundImage.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        backgroundImage.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        backgroundImage.heightAnchor.constraint(equalToConstant: CGFloat(Width / ratio)).isActive = true
-        
-//        view.addSubview(skillLevel)
-//        let skillLevelLoc = calculateButtonPosition(x: 200, y: 140, w: 250, h: 160, wib: 750, hib: 1100, wia: 375, hia: 550)
-//
-//        skillLevel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(skillLevelLoc.Y)).isActive = true
-//        skillLevel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(skillLevelLoc.X)).isActive = true
-//        skillLevel.heightAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.H)).isActive = true
-//        skillLevel.widthAnchor.constraint(equalToConstant: CGFloat(skillLevelLoc.W)).isActive = true
-        
-        setupPieChart()
-        
-        backgroundImage.addSubview(skillLevelLabel)
-        let skillLevelLabelLoc = calculateButtonPosition(x: 540, y: 485, w: 400, h: 55, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        skillLevelLabel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(skillLevelLabelLoc.Y)).isActive = true
-        skillLevelLabel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(skillLevelLabelLoc.X)).isActive = true
-        skillLevelLabel.heightAnchor.constraint(equalToConstant: CGFloat(skillLevelLabelLoc.H)).isActive = true
-        skillLevelLabel.widthAnchor.constraint(equalToConstant: CGFloat(skillLevelLabelLoc.W)).isActive = true
-        
-        backgroundImage.addSubview(haloLevel)
-        let haloLevelLoc = calculateButtonPosition(x: 375, y: 236.5, w: 250, h: 200, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        haloLevel.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(haloLevelLoc.Y)).isActive = true
-        haloLevel.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(haloLevelLoc.X)).isActive = true
-        haloLevel.heightAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.H)).isActive = true
-        haloLevel.widthAnchor.constraint(equalToConstant: CGFloat(haloLevelLoc.W)).isActive = true
-        
-        view.addSubview(haloLevelTitle)
-        //let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
-
-        haloLevelTitle.topAnchor.constraint(equalTo: haloLevel.bottomAnchor, constant: 2).isActive = true
-        haloLevelTitle.centerXAnchor.constraint(equalTo: backgroundImage.centerXAnchor).isActive = true
-        haloLevelTitle.heightAnchor.constraint(equalToConstant: 25).isActive = true
-        haloLevelTitle.widthAnchor.constraint(equalToConstant: 125).isActive = true
-        
-        backgroundImage.addSubview(playerName)
-        let playerNameLoc = calculateButtonPosition(x: 375, y: 40, w: 705, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        playerName.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(playerNameLoc.Y)).isActive = true
-        playerName.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(playerNameLoc.X)).isActive = true
-        playerName.heightAnchor.constraint(equalToConstant: CGFloat(playerNameLoc.H)).isActive = true
-        playerName.widthAnchor.constraint(equalToConstant: CGFloat(playerNameLoc.W)).isActive = true
-        
-        backgroundImage.addSubview(location)
-        let locationLoc = calculateButtonPosition(x: 216.75, y: 485, w: 383.5, h: 50, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        location.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(locationLoc.Y)).isActive = true
-        location.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(locationLoc.X)).isActive = true
-        location.heightAnchor.constraint(equalToConstant: CGFloat(locationLoc.H)).isActive = true
-        location.widthAnchor.constraint(equalToConstant: CGFloat(locationLoc.W)).isActive = true
-        
-        backgroundImage.addSubview(ageGroup)
-        let ageGroupLoc = calculateButtonPosition(x: 216.75, y: 440, w: 383.5, h: 50, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        ageGroup.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(ageGroupLoc.Y)).isActive = true
-        ageGroup.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(ageGroupLoc.X)).isActive = true
-        ageGroup.heightAnchor.constraint(equalToConstant: CGFloat(ageGroupLoc.H)).isActive = true
-        ageGroup.widthAnchor.constraint(equalToConstant: CGFloat(ageGroupLoc.W)).isActive = true
-        
-        backgroundImage.addSubview(tourneysEntered)
-        let tourneysEnteredLoc = calculateButtonPosition(x: 645, y: 630, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        tourneysEntered.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(tourneysEnteredLoc.Y)).isActive = true
-        tourneysEntered.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(tourneysEnteredLoc.X)).isActive = true
-        tourneysEntered.heightAnchor.constraint(equalToConstant: CGFloat(tourneysEnteredLoc.H)).isActive = true
-        tourneysEntered.widthAnchor.constraint(equalToConstant: CGFloat(tourneysEnteredLoc.W)).isActive = true
-        
-        backgroundImage.addSubview(tourneysWon)
-        let tourneysWonLoc = calculateButtonPosition(x: 645, y: 730, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        tourneysWon.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(tourneysWonLoc.Y)).isActive = true
-        tourneysWon.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(tourneysWonLoc.X)).isActive = true
-        tourneysWon.heightAnchor.constraint(equalToConstant: CGFloat(tourneysWonLoc.H)).isActive = true
-        tourneysWon.widthAnchor.constraint(equalToConstant: CGFloat(tourneysWonLoc.W)).isActive = true
-        
-        backgroundImage.addSubview(matchesWon)
-        let matchesWonLoc = calculateButtonPosition(x: 645, y: 830, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        matchesWon.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(matchesWonLoc.Y)).isActive = true
-        matchesWon.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(matchesWonLoc.X)).isActive = true
-        matchesWon.heightAnchor.constraint(equalToConstant: CGFloat(matchesWonLoc.H)).isActive = true
-        matchesWon.widthAnchor.constraint(equalToConstant: CGFloat(matchesWonLoc.W)).isActive = true
-        
-        backgroundImage.addSubview(matchesLost)
-        let matchesLostLoc = calculateButtonPosition(x: 645, y: 930, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        matchesLost.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(matchesLostLoc.Y)).isActive = true
-        matchesLost.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(matchesLostLoc.X)).isActive = true
-        matchesLost.heightAnchor.constraint(equalToConstant: CGFloat(matchesLostLoc.H)).isActive = true
-        matchesLost.widthAnchor.constraint(equalToConstant: CGFloat(matchesLostLoc.W)).isActive = true
-        
-        backgroundImage.addSubview(winRatio)
-        let winRatioLoc = calculateButtonPosition(x: 645, y: 1030, w: 160, h: 60, wib: 750, hib: 1100, wia: Float(view.frame.width), hia: Width / ratio)
-        
-        winRatio.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(winRatioLoc.Y)).isActive = true
-        winRatio.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(winRatioLoc.X)).isActive = true
-        winRatio.heightAnchor.constraint(equalToConstant: CGFloat(winRatioLoc.H)).isActive = true
-        winRatio.widthAnchor.constraint(equalToConstant: CGFloat(winRatioLoc.W)).isActive = true
-        
-        view.addSubview(whiteBox)
-        whiteBox.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        whiteBox.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        whiteBox.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        whiteBox.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
-        
-        whiteBox.addSubview(activityView)
-        activityView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor).isActive = true
-        activityView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        activityView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        activityView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
-        
-        
-    }
-    
-    let activityView: UIActivityIndicatorView = {
-        let view = UIActivityIndicatorView()
-        view.style = .gray
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    let whiteBox: UIView = {
-        let view = UIView()
-        view.backgroundColor = .white
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
 
 }

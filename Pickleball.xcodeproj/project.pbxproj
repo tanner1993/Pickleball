@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -34,11 +34,22 @@
 		773CA5CD23C2692700DED169 /* ProfileMenuCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */; };
 		773CA5CF23C27E5200DED169 /* EditProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773CA5CE23C27E5200DED169 /* EditProfile.swift */; };
 		77427F3123CFBD6C00372773 /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77427F3023CFBD6C00372773 /* Message.swift */; };
+		7745A2DA2476F77A00FC1FBF /* OpponentsList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7745A2D92476F77A00FC1FBF /* OpponentsList.swift */; };
+		7745A2DC2477205A00FC1FBF /* PlayerChallengeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7745A2DB2477205A00FC1FBF /* PlayerChallengeCell.swift */; };
+		7745A2DE2478965700FC1FBF /* SelectCourtInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7745A2DD2478965700FC1FBF /* SelectCourtInfo.swift */; };
+		7745A2E0247C978700FC1FBF /* PieBackgroundPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7745A2DF247C978700FC1FBF /* PieBackgroundPopup.swift */; };
+		7745A2E3247D7C6700FC1FBF /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7745A2E2247D7C6700FC1FBF /* FacebookCore */; };
+		7745A2E5247D7C6700FC1FBF /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 7745A2E4247D7C6700FC1FBF /* FacebookLogin */; };
 		7745AC72240CA413008C8900 /* FriendInviteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7745AC71240CA413008C8900 /* FriendInviteCell.swift */; };
-		77549E18246CCB420043FD44 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 77549E17246CCB420043FD44 /* GoogleService-Info.plist */; };
+		77549E1A246EFEF00043FD44 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 77549E19246EFEEF0043FD44 /* GoogleService-Info.plist */; };
+		77549E1C24742CC60043FD44 /* ChangeStatusInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77549E1B24742CC60043FD44 /* ChangeStatusInfo.swift */; };
+		77549E1E24746D8C0043FD44 /* TourneyInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77549E1D24746D8C0043FD44 /* TourneyInfo.swift */; };
+		77549E202475E3180043FD44 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77549E1F2475E3180043FD44 /* ProfileView.swift */; };
 		7755A849244A00A700A5CA45 /* Play.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7755A848244A00A700A5CA45 /* Play.swift */; };
 		7757C4742419AAF5006E059A /* EmptyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7757C4732419AAF5006E059A /* EmptyCell.swift */; };
 		7757C4762427F372006E059A /* WelcomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7757C4752427F372006E059A /* WelcomePage.swift */; };
+		775DD31C247DECCE0068209A /* FacebookShare in Frameworks */ = {isa = PBXBuildFile; productRef = 775DD31B247DECCE0068209A /* FacebookShare */; };
+		775DD31E247DF2250068209A /* FBSDKShareKit in Resources */ = {isa = PBXBuildFile; fileRef = 775DD31D247DF2250068209A /* FBSDKShareKit */; };
 		7760977B240EF21100AD30F5 /* CreateMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977A240EF21100AD30F5 /* CreateMatch.swift */; };
 		7760977D241000C400AD30F5 /* MatchNotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977C241000C400AD30F5 /* MatchNotificationCell.swift */; };
 		7760977F2410534D00AD30F5 /* MatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977E2410534D00AD30F5 /* MatchView.swift */; };
@@ -86,18 +97,26 @@
 		773CA5CC23C2692700DED169 /* ProfileMenuCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileMenuCell.swift; sourceTree = "<group>"; };
 		773CA5CE23C27E5200DED169 /* EditProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfile.swift; sourceTree = "<group>"; };
 		77427F3023CFBD6C00372773 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
+		7745A2D92476F77A00FC1FBF /* OpponentsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpponentsList.swift; sourceTree = "<group>"; };
+		7745A2DB2477205A00FC1FBF /* PlayerChallengeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerChallengeCell.swift; sourceTree = "<group>"; };
+		7745A2DD2478965700FC1FBF /* SelectCourtInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCourtInfo.swift; sourceTree = "<group>"; };
+		7745A2DF247C978700FC1FBF /* PieBackgroundPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieBackgroundPopup.swift; sourceTree = "<group>"; };
 		7745AC71240CA413008C8900 /* FriendInviteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendInviteCell.swift; sourceTree = "<group>"; };
-		77549E17246CCB420043FD44 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		77549E19246EFEEF0043FD44 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		77549E1B24742CC60043FD44 /* ChangeStatusInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeStatusInfo.swift; sourceTree = "<group>"; };
+		77549E1D24746D8C0043FD44 /* TourneyInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyInfo.swift; sourceTree = "<group>"; };
+		77549E1F2475E3180043FD44 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		7755A847244785E000A5CA45 /* Pickleball.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Pickleball.entitlements; sourceTree = "<group>"; };
 		7755A848244A00A700A5CA45 /* Play.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Play.swift; sourceTree = "<group>"; };
 		7757C4732419AAF5006E059A /* EmptyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyCell.swift; sourceTree = "<group>"; };
 		7757C4752427F372006E059A /* WelcomePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomePage.swift; sourceTree = "<group>"; };
+		775DD31D247DF2250068209A /* FBSDKShareKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = FBSDKShareKit; sourceTree = "<group>"; };
 		7760977A240EF21100AD30F5 /* CreateMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMatch.swift; sourceTree = "<group>"; };
 		7760977C241000C400AD30F5 /* MatchNotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationCell.swift; sourceTree = "<group>"; };
 		7760977E2410534D00AD30F5 /* MatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchView.swift; sourceTree = "<group>"; };
 		77931F8323C65C8A00724247 /* CreateTourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTourney.swift; sourceTree = "<group>"; };
 		77940C4123C7AE6A000061D4 /* TourneySearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneySearch.swift; sourceTree = "<group>"; };
-		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		77BBB01F231499C3006CB608 /* Pickleball Gamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pickleball Gamer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		77BBB022231499C3006CB608 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77BBB027231499C3006CB608 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		77BBB029231499C5006CB608 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -118,7 +137,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7745A2E5247D7C6700FC1FBF /* FacebookLogin in Frameworks */,
 				7718BD782326C6C30004777C /* FirebaseAuth.framework in Frameworks */,
+				7745A2E3247D7C6700FC1FBF /* FacebookCore in Frameworks */,
+				775DD31C247DECCE0068209A /* FacebookShare in Frameworks */,
 				987E58EBF3E95FDFB4293DC5 /* Pods_Pickleball.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -163,6 +185,8 @@
 				7727354723CD4996004BEC33 /* FindFriends.swift */,
 				7760977A240EF21100AD30F5 /* CreateMatch.swift */,
 				7760977E2410534D00AD30F5 /* MatchView.swift */,
+				77549E1D24746D8C0043FD44 /* TourneyInfo.swift */,
+				7745A2D92476F77A00FC1FBF /* OpponentsList.swift */,
 			);
 			path = Options;
 			sourceTree = "<group>";
@@ -180,7 +204,7 @@
 		77BBB020231499C3006CB608 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				77BBB01F231499C3006CB608 /* Pickleball.app */,
+				77BBB01F231499C3006CB608 /* Pickleball Gamer.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -194,7 +218,7 @@
 				77BBB03D231EE56E006CB608 /* Helpers */,
 				77BBB03C231EE566006CB608 /* Model */,
 				77BBB029231499C5006CB608 /* Assets.xcassets */,
-				77549E17246CCB420043FD44 /* GoogleService-Info.plist */,
+				77549E19246EFEEF0043FD44 /* GoogleService-Info.plist */,
 				77BBB022231499C3006CB608 /* AppDelegate.swift */,
 				77BBB026231499C3006CB608 /* Main.storyboard */,
 				77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */,
@@ -221,6 +245,11 @@
 				7731F55D242D70F300903245 /* FeedMatchCell.swift */,
 				7731F561242FDC7700903245 /* TeamStatsCell.swift */,
 				772051BC24646B8E00C4947A /* MatchViewOrganizer.swift */,
+				77549E1B24742CC60043FD44 /* ChangeStatusInfo.swift */,
+				77549E1F2475E3180043FD44 /* ProfileView.swift */,
+				7745A2DB2477205A00FC1FBF /* PlayerChallengeCell.swift */,
+				7745A2DD2478965700FC1FBF /* SelectCourtInfo.swift */,
+				7745A2DF247C978700FC1FBF /* PieBackgroundPopup.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -267,6 +296,7 @@
 		A20C0AA1F89D4ACB5FCE6A35 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				775DD31D247DF2250068209A /* FBSDKShareKit */,
 				7718BD772326C6C30004777C /* FirebaseAuth.framework */,
 				C36AE5BDF4C1B57CA0EF0834 /* Pods_Pickleball.framework */,
 			);
@@ -291,8 +321,13 @@
 			dependencies = (
 			);
 			name = Pickleball;
+			packageProductDependencies = (
+				7745A2E2247D7C6700FC1FBF /* FacebookCore */,
+				7745A2E4247D7C6700FC1FBF /* FacebookLogin */,
+				775DD31B247DECCE0068209A /* FacebookShare */,
+			);
 			productName = Pickleball;
-			productReference = 77BBB01F231499C3006CB608 /* Pickleball.app */;
+			productReference = 77BBB01F231499C3006CB608 /* Pickleball Gamer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -328,6 +363,9 @@
 				Base,
 			);
 			mainGroup = 77BBB016231499C3006CB608;
+			packageReferences = (
+				7745A2E1247D7C6700FC1FBF /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
+			);
 			productRefGroup = 77BBB020231499C3006CB608 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -342,10 +380,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				77549E1A246EFEF00043FD44 /* GoogleService-Info.plist in Resources */,
 				77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */,
-				77549E18246CCB420043FD44 /* GoogleService-Info.plist in Resources */,
 				77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */,
 				77BBB028231499C3006CB608 /* Main.storyboard in Resources */,
+				775DD31E247DF2250068209A /* FBSDKShareKit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -398,6 +437,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7745A2DA2476F77A00FC1FBF /* OpponentsList.swift in Sources */,
 				7718BDC3233AC09E0004777C /* MyMatchesCell.swift in Sources */,
 				773CA5CD23C2692700DED169 /* ProfileMenuCell.swift in Sources */,
 				7731F560242FDBEB00903245 /* TourneyStats.swift in Sources */,
@@ -424,6 +464,7 @@
 				7718BD702322D4EC0004777C /* MatchCell.swift in Sources */,
 				7718BD82232AC84A0004777C /* StartupPage.swift in Sources */,
 				77BBB0452320838F006CB608 /* Team.swift in Sources */,
+				77549E1C24742CC60043FD44 /* ChangeStatusInfo.swift in Sources */,
 				7757C4762427F372006E059A /* WelcomePage.swift in Sources */,
 				77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */,
 				77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */,
@@ -434,7 +475,12 @@
 				773CA5CF23C27E5200DED169 /* EditProfile.swift in Sources */,
 				7718BD8023288A340004777C /* PlayerCell.swift in Sources */,
 				7727354823CD4996004BEC33 /* FindFriends.swift in Sources */,
+				77549E202475E3180043FD44 /* ProfileView.swift in Sources */,
 				7739865B23BBEC4700195253 /* MainMenu.swift in Sources */,
+				7745A2E0247C978700FC1FBF /* PieBackgroundPopup.swift in Sources */,
+				7745A2DC2477205A00FC1FBF /* PlayerChallengeCell.swift in Sources */,
+				7745A2DE2478965700FC1FBF /* SelectCourtInfo.swift in Sources */,
+				77549E1E24746D8C0043FD44 /* TourneyInfo.swift in Sources */,
 				7745AC72240CA413008C8900 /* FriendInviteCell.swift in Sources */,
 				7718BD7C2328694F0004777C /* Player.swift in Sources */,
 				7718BD74232332600004777C /* Match.swift in Sources */,
@@ -596,9 +642,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = TRBoulder.Pickleball;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Pickleball Gamer";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -619,9 +665,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4;
+				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = TRBoulder.Pickleball;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Pickleball Gamer";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -649,6 +695,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7745A2E1247D7C6700FC1FBF /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7745A2E2247D7C6700FC1FBF /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7745A2E1247D7C6700FC1FBF /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
+		7745A2E4247D7C6700FC1FBF /* FacebookLogin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7745A2E1247D7C6700FC1FBF /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookLogin;
+		};
+		775DD31B247DECCE0068209A /* FacebookShare */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7745A2E1247D7C6700FC1FBF /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookShare;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 77BBB017231499C3006CB608 /* Project object */;
 }

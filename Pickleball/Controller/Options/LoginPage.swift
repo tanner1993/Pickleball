@@ -9,13 +9,149 @@
 import UIKit
 import Firebase
 import FirebaseAuth
+import FBSDKLoginKit
 
-class LoginPage: UIViewController {
+class LoginPage: UIViewController, LoginButtonDelegate {
+    func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
+        do {
+            try Auth.auth().signOut()
+        } catch let logoutError {
+            print(logoutError)
+        }
+        print("logged out of facebook")
+    }
+    
+    let activityView: UIActivityIndicatorView = {
+        let view = UIActivityIndicatorView()
+        view.style = .gray
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+    
+    let whiteBox: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.isHidden = true
+        return view
+    }()
+    
+    func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
+        if let error = error {
+          print(error.localizedDescription)
+          return
+        }
+        if AccessToken.isCurrentAccessTokenActive {
+            view.bringSubviewToFront(whiteBox)
+            view.bringSubviewToFront(activityView)
+            whiteBox.isHidden = false
+            activityView.isHidden = false
+            activityView.startAnimating()
+            let credential = FacebookAuthProvider.credential(withAccessToken: AccessToken.current!.tokenString)
+            
+            Auth.auth().signIn(with: credential) { (authResult, error) in
+              if let error = error {
+                let authError = error as NSError
+                let newalert = UIAlertController(title: "Sorry", message: "If you have already used this email to login without Facebook, you will need to link the accounts, enter the email and password you originally used to login", preferredStyle: UIAlertController.Style.alert)
+                newalert.addTextField(configurationHandler: { (textField) in
+                    textField.placeholder = "Email"
+                })
+                newalert.addTextField(configurationHandler: { (textField) in
+                    textField.placeholder = "Password"
+                })
+                newalert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.default, handler: self.cancelLinking))
+                let saveAction = UIAlertAction(title: "Submit", style: .default, handler: { alert -> Void in
+                    let firstTextField = newalert.textFields![0] as UITextField
+                    let secondTextField = newalert.textFields![1] as UITextField
+                    guard let email = firstTextField.text?.lowercased(), let password = secondTextField.text?.lowercased() else {
+                                print("Form is not valid")
+                                let newalert = UIAlertController(title: "Sorry", message: "The email or password you entered is invalid", preferredStyle: UIAlertController.Style.alert)
+                                newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+                                self.present(newalert, animated: true, completion: nil)
+                                let managerFB = LoginManager()
+                                managerFB.logOut()
+                        self.whiteBox.isHidden = true
+                        self.activityView.isHidden = true
+                        self.activityView.stopAnimating()
+                                return
+                            }
+                            
+                            Auth.auth().signIn(withEmail: email, password: password, completion: {(user, error) in
+                                if error != nil {
+                                    print(error as Any)
+                                    let newalert = UIAlertController(title: "Sorry", message: "The email or password you entered is incorrect", preferredStyle: UIAlertController.Style.alert)
+                                    newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+                                    self.present(newalert, animated: true, completion: nil)
+                                    let managerFB = LoginManager()
+                                    managerFB.logOut()
+                                    self.whiteBox.isHidden = true
+                                    self.activityView.isHidden = true
+                                    self.activityView.stopAnimating()
+                                    return
+                                }
+                                Auth.auth().currentUser?.link(with: credential, completion: { (authResult, error) in
+                                    if error != nil {
+                                        print(error as Any)
+                                        let newalert = UIAlertController(title: "Sorry", message: "Could not link", preferredStyle: UIAlertController.Style.alert)
+                                        newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+                                        self.present(newalert, animated: true, completion: nil)
+                                        let managerFB = LoginManager()
+                                        managerFB.logOut()
+                                        self.whiteBox.isHidden = true
+                                        self.activityView.isHidden = true
+                                        self.activityView.stopAnimating()
+                                        return
+                                    }
+                                    self.dismiss(animated: true, completion: nil)
+                                    return
+                                })
+                                
+                                print("Yay! You've linked accounts")
+                            })
+                })
+                newalert.addAction(saveAction)
+                self.present(newalert, animated: true, completion: nil)
+                return
+              }
+              guard let uid = authResult?.user.uid else {
+                  return
+              }
+              if self.uids.contains(uid) == false {
+                guard let name = authResult?.user.displayName, let email = authResult?.user.email else {
+                    return
+                }
+                let fullName = self.playerNow.getUserFirstAndLastName(fullName: name)
+                self.createAccountForFBUser(email: email, fullName: fullName, uid: uid)
+              } else {
+                self.whiteBox.isHidden = true
+                self.activityView.isHidden = true
+                self.activityView.stopAnimating()
+                  self.dismiss(animated: true, completion: nil)
+              }
+            }
+        }
+    }
+    
+    func cancelLinking(action: UIAlertAction) {
+        let managerFB = LoginManager()
+        managerFB.logOut()
+    }
+    
     
     var startupPage: StartupPage?
     var welcomePage: WelcomePage?
     var usernames = [String]()
     var emails = [String]()
+    var uids = [String]()
+    let playerNow = Player()
+    var facebookLogout = false
+    
+    let facebookLogin:FBLoginButton = {
+        let fbLogin = FBLoginButton()
+        fbLogin.translatesAutoresizingMaskIntoConstraints = false
+        return fbLogin
+    }()
     
     let brandImageView: UIImageView = {
         let image = UIImageView()
@@ -91,22 +227,6 @@ class LoginPage: UIViewController {
         return view
     }()
     
-    let userNameTextField: UITextField = {
-        let tf = UITextField()
-        tf.placeholder = "Username"
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        tf.font = UIFont.boldSystemFont(ofSize: 16)
-        tf.autocapitalizationType = UITextAutocapitalizationType.none
-        return tf
-    }()
-    
-    let userNameSeparatorView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
     let emailTextField: UITextField = {
         let tf = UITextField()
         tf.placeholder = "Email"
@@ -176,7 +296,6 @@ class LoginPage: UIViewController {
         emailTextField.resignFirstResponder()
         passwordTextField.resignFirstResponder()
         lastNameTextField.resignFirstResponder()
-        userNameTextField.resignFirstResponder()
         self.view.endEditing(true)
     }
     
@@ -184,26 +303,22 @@ class LoginPage: UIViewController {
         let title = loginRegSegControl.titleForSegment(at: loginRegSegControl.selectedSegmentIndex)
         registerButton.setTitle(title, for: .normal)
         
-        inputsContainerViewHeightAnchor?.constant = loginRegSegControl.selectedSegmentIndex == 0 ? 100 : 200
+        inputsContainerViewHeightAnchor?.constant = loginRegSegControl.selectedSegmentIndex == 0 ? 100 : 150
         
         nameTextFieldHeightAnchor?.isActive = false
-        nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
+        nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/3)
         nameTextFieldHeightAnchor?.isActive = true
         
         lastNameTextFieldHeightAnchor?.isActive = false
-        lastNameTextFieldHeightAnchor = lastNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
+        lastNameTextFieldHeightAnchor = lastNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/3)
         lastNameTextFieldHeightAnchor?.isActive = true
         
         verticalSeparatorViewHeightAnchor?.isActive = false
-        verticalSeparatorViewHeightAnchor = verticalSeparatorView.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
+        verticalSeparatorViewHeightAnchor = verticalSeparatorView.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/3)
         verticalSeparatorViewHeightAnchor?.isActive = true
         
-        userNameTextFieldHeightAnchor?.isActive = false
-        userNameTextFieldHeightAnchor = userNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 0 : 1/4)
-        userNameTextFieldHeightAnchor?.isActive = true
-        
         emailTextFieldHeightAnchor?.isActive = false
-        emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 1/2 : 1/4)
+        emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: loginRegSegControl.selectedSegmentIndex == 0 ? 1/2 : 1/3)
         emailTextFieldHeightAnchor?.isActive = true
         
         passwordTextFieldHeightAnchor?.isActive = false
@@ -224,7 +339,10 @@ class LoginPage: UIViewController {
         setupLoginImageView()
         setupRegisterButton()
         setupKeyboardObservers()
+        facebookLogin.permissions = ["public_profile", "email"]
+        facebookLogin.delegate = self
     }
+    
     
     func observeUsernamesEmails() {
         
@@ -235,6 +353,8 @@ class LoginPage: UIViewController {
                 self.usernames.append(username)
                 let email = value["email"] as? String ?? "Player not found"
                 self.emails.append(email)
+                let uid = snapshot.key
+                self.uids.append(uid)
             }
             
         }, withCancel: nil)
@@ -305,14 +425,8 @@ class LoginPage: UIViewController {
     }
     
     @objc func handleRegister() {
-        guard let email = emailTextField.text?.lowercased(), let password = passwordTextField.text, let name = nameTextField.text, let lastName = lastNameTextField.text, let username = userNameTextField.text?.lowercased() else {
+        guard let email = emailTextField.text?.lowercased(), let password = passwordTextField.text, let name = nameTextField.text, let lastName = lastNameTextField.text else {
             print("Form is not valid")
-            return
-        }
-        if username.isValidName != true {
-            let newalert = UIAlertController(title: "Sorry", message: "Invalid Username. Must be between 3 and 13 characters, only letters, numbers, and underscores allowed", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
-            self.present(newalert, animated: true, completion: nil)
             return
         }
         if name.isValidFirstName != true {
@@ -323,12 +437,6 @@ class LoginPage: UIViewController {
         }
         if lastName.isValidFirstName != true {
             let newalert = UIAlertController(title: "Sorry", message: "Invalid Last Name. Must be between 2 and 16 characters, only letters allowed", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
-            self.present(newalert, animated: true, completion: nil)
-            return
-        }
-        if usernames.contains(username) == true {
-            let newalert = UIAlertController(title: "Sorry", message: "This username has already been taken, please select a different one", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
             return
@@ -351,7 +459,6 @@ class LoginPage: UIViewController {
             self.present(newalert, animated: true, completion: nil)
             return
         }
-        print(username)
         Auth.auth().createUser(withEmail: email, password: password, completion: {(authDataResult: AuthDataResult?, error) in
             if error != nil {
                 print(error as Any)
@@ -365,7 +472,7 @@ class LoginPage: UIViewController {
             let ref = Database.database().reference()
             let usersref = ref.child("users").child(uid)
             let fullName = name + " " + lastName
-            let values = ["name": fullName, "email": email, "username": username, "exp": 0, "state": "none", "county": "none", "skill_level": Float(0), "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": Double(0), "sex": "none"] as [String : Any]
+            let values = ["name": fullName, "email": email, "exp": 0, "state": "none", "county": "none", "skill_level": Float(0), "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": Double(0), "sex": "none"] as [String : Any]
             usersref.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -386,6 +493,36 @@ class LoginPage: UIViewController {
 
                     
             })
+        })
+    }
+    
+    func createAccountForFBUser(email: String, fullName: String, uid: String) {
+        let ref = Database.database().reference()
+        let usersref = ref.child("users").child(uid)
+//        let fullName = name + " " + lastName
+        let values = ["name": fullName, "email": email, "exp": 0, "state": "none", "county": "none", "skill_level": Float(0), "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": Double(0), "sex": "none"] as [String : Any]
+        usersref.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            self.whiteBox.isHidden = true
+            self.activityView.isHidden = true
+            self.activityView.stopAnimating()
+            let editProfile = EditProfile()
+            editProfile.sender = 1
+            editProfile.loginPage = self
+            editProfile.modalPresentationStyle = .fullScreen
+            self.present(editProfile, animated: true, completion: nil)
+            //self.startupPage?.observePlayerProfile()
+            //self.welcomePage?.newUser = 1
+            //self.dismiss(animated: true, completion: nil)
+            
+            print("Data saved successfully!")
+
+                
         })
     }
     
@@ -437,7 +574,7 @@ class LoginPage: UIViewController {
     func setupContainerView() {
         view.addSubview(inputsContainerView)
         inputsContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        inputsContainerViewCenterYAnchor = inputsContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 65)
+        inputsContainerViewCenterYAnchor = inputsContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 45)
         inputsContainerViewCenterYAnchor?.isActive = true
         inputsContainerView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         inputsContainerViewHeightAnchor = inputsContainerView.heightAnchor.constraint(equalToConstant: 150)
@@ -447,21 +584,21 @@ class LoginPage: UIViewController {
         nameTextField.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
         nameTextField.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
         nameTextField.rightAnchor.constraint(equalTo: inputsContainerView.centerXAnchor, constant: -2).isActive = true
-        nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
+        nameTextFieldHeightAnchor = nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/3)
         nameTextFieldHeightAnchor?.isActive = true
         
         inputsContainerView.addSubview(lastNameTextField)
         lastNameTextField.leftAnchor.constraint(equalTo: inputsContainerView.centerXAnchor, constant: 12).isActive = true
         lastNameTextField.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
         lastNameTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: -2).isActive = true
-        lastNameTextFieldHeightAnchor = lastNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
+        lastNameTextFieldHeightAnchor = lastNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/3)
         lastNameTextFieldHeightAnchor?.isActive = true
         
         inputsContainerView.addSubview(verticalSeparatorView)
         verticalSeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.centerXAnchor).isActive = true
         verticalSeparatorView.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
         verticalSeparatorView.widthAnchor.constraint(equalToConstant: 1).isActive = true
-        verticalSeparatorViewHeightAnchor = verticalSeparatorView.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
+        verticalSeparatorViewHeightAnchor = verticalSeparatorView.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/3)
         verticalSeparatorViewHeightAnchor?.isActive = true
         
         inputsContainerView.addSubview(nameSeparatorView)
@@ -470,24 +607,11 @@ class LoginPage: UIViewController {
         nameSeparatorView.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor).isActive = true
         nameSeparatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
         
-        inputsContainerView.addSubview(userNameTextField)
-        userNameTextField.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
-        userNameTextField.topAnchor.constraint(equalTo: nameTextField.bottomAnchor).isActive = true
-        userNameTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        userNameTextFieldHeightAnchor = userNameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
-        userNameTextFieldHeightAnchor?.isActive = true
-        
-        inputsContainerView.addSubview(userNameSeparatorView)
-        userNameSeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor).isActive = true
-        userNameSeparatorView.topAnchor.constraint(equalTo: userNameTextField.bottomAnchor).isActive = true
-        userNameSeparatorView.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor).isActive = true
-        userNameSeparatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        
         inputsContainerView.addSubview(emailTextField)
         emailTextField.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
-        emailTextField.topAnchor.constraint(equalTo: userNameTextField.bottomAnchor).isActive = true
+        emailTextField.topAnchor.constraint(equalTo: nameTextField.bottomAnchor).isActive = true
         emailTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
+        emailTextFieldHeightAnchor = emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/3)
         emailTextFieldHeightAnchor?.isActive = true
         
         inputsContainerView.addSubview(emailSeparatorView)
@@ -500,8 +624,20 @@ class LoginPage: UIViewController {
         passwordTextField.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
         passwordTextField.topAnchor.constraint(equalTo: emailTextField.bottomAnchor).isActive = true
         passwordTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/4)
+        passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/3)
         passwordTextFieldHeightAnchor?.isActive = true
+        
+        view.addSubview(whiteBox)
+        whiteBox.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        whiteBox.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        whiteBox.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        whiteBox.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        
+        whiteBox.addSubview(activityView)
+        activityView.topAnchor.constraint(equalTo: whiteBox.topAnchor).isActive = true
+        activityView.leftAnchor.constraint(equalTo: whiteBox.leftAnchor).isActive = true
+        activityView.widthAnchor.constraint(equalTo: whiteBox.widthAnchor).isActive = true
+        activityView.heightAnchor.constraint(equalTo: whiteBox.heightAnchor).isActive = true
     }
     
     func setupRegisterButton() {
@@ -517,6 +653,12 @@ class LoginPage: UIViewController {
         passwordReset.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         passwordReset.heightAnchor.constraint(equalToConstant: 25).isActive = true
         passwordReset.isHidden = true
+        
+        view.addSubview(facebookLogin)
+        facebookLogin.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        facebookLogin.topAnchor.constraint(equalTo: passwordReset.bottomAnchor, constant: 12).isActive = true
+//        facebookLogin.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
+//        facebookLogin.heightAnchor.constraint(equalToConstant: 50).isActive = true
     }
     
     override public var preferredStatusBarStyle: UIStatusBarStyle {

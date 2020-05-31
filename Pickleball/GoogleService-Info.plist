@@ -3,21 +3,21 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>903829995045-5go0eacc5f64vh3mq758s3vkvht3bg1r.apps.googleusercontent.com</string>
+	<string>436570257454-ncap4neo0brhhaqtamdfcqsk8kibvu0o.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.903829995045-5go0eacc5f64vh3mq758s3vkvht3bg1r</string>
+	<string>com.googleusercontent.apps.436570257454-ncap4neo0brhhaqtamdfcqsk8kibvu0o</string>
 	<key>API_KEY</key>
-	<string>AIzaSyAzhi5xjymS1SuH1e5gFmB3VhE0LPcMqok</string>
+	<string>AIzaSyCZ-aW9mBsTsVoHveVE6srf3Cs-WMhyda4</string>
 	<key>GCM_SENDER_ID</key>
-	<string>903829995045</string>
+	<string>436570257454</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>TRBoulder.Pickleball</string>
 	<key>PROJECT_ID</key>
-	<string>pickleballpliny</string>
+	<string>pickleballdev</string>
 	<key>STORAGE_BUCKET</key>
-	<string>pickleballpliny.appspot.com</string>
+	<string>pickleballdev.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,8 +29,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:903829995045:ios:08b161cd01ac7e22</string>
+	<string>1:436570257454:ios:10974161ba116435ad07bf</string>
 	<key>DATABASE_URL</key>
-	<string>https://pickleballpliny.firebaseio.com</string>
+	<string>https://pickleballdev.firebaseio.com</string>
 </dict>
 </plist>

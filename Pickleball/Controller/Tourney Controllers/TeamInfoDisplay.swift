@@ -646,8 +646,8 @@ class TeamInfoDisplay: UIViewController {
             return
         }
         
-        if abs(teamIdSelected.rank! - usersTeamId.rank!) > 3 {
-            let newalert = UIAlertController(title: "Not gonna happen", message: "You can only challenge teams that are within a rank of 3 from you", preferredStyle: UIAlertController.Style.alert)
+        if (teamIdSelected.rank! - usersTeamId.rank!) < -3 || (teamIdSelected.rank! - usersTeamId.rank!) > 1 {
+            let newalert = UIAlertController(title: "Not gonna happen", message: "You can only challenge teams that are within a rank of 3 higher than you or 1 lower than you", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
             return

@@ -9,8 +9,10 @@
 import UIKit
 import Firebase
 import Charts
+import FBSDKShareKit
 
 class MatchView: UIViewController {
+    var daysToPlay = Int()
     var match = Match2()
     var player = Player()
     var team1 = Team()
@@ -81,6 +83,14 @@ class MatchView: UIViewController {
         matchViewOrganizer.confirmMatchScores.addTarget(self, action: #selector(handleConfirm), for: .touchUpInside)
         matchViewOrganizer.rejectMatchScores.addTarget(self, action: #selector(handleReject), for: .touchUpInside)
         styleAndDoublesSetup()
+        
+        matchViewOrganizer.cantLoadImageButton.addTarget(self, action: #selector(cantShareDisplay), for: .touchUpInside)
+    }
+    
+    @objc func cantShareDisplay() {
+        let createMatchConfirmed = UIAlertController(title: "Sorry", message: "You will need to link your account to a Facebook profile on the Login page before you can share to Facebook", preferredStyle: .alert)
+        createMatchConfirmed.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
+        self.present(createMatchConfirmed, animated: true, completion: nil)
     }
     
     func furtherSetup() {
@@ -419,8 +429,8 @@ class MatchView: UIViewController {
             matchViewOrganizer.matchStatusLabel.isHidden = false
             matchViewOrganizer.matchStatusLabel.text = "Waiting for opponents to confirm match"
             matchViewOrganizer.matchStatusLabel.numberOfLines = 2
-        } else if active == 1 && (startTime + (86400 * 3)) < currentTime && tourneyId != "none" {
-            let matchdeleted = UIAlertController(title: "Sorry", message: "It's been 3 days and you failed to play in the time limit, the match will be deleted and you will be free to challenge someone else", preferredStyle: .alert)
+        } else if active == 1 && (startTime + Double(86400 * daysToPlay)) < currentTime && tourneyId != "none" {
+            let matchdeleted = UIAlertController(title: "Sorry", message: "It's been \(daysToPlay) days and you failed to play in the time limit, the match will be deleted and you will be free to challenge someone else", preferredStyle: .alert)
             matchdeleted.addAction(UIAlertAction(title: "Ok", style: .default, handler: self.handleTimeExpired))
             self.present(matchdeleted, animated: true, completion: nil)
         } else if active == 1 {
@@ -447,10 +457,24 @@ class MatchView: UIViewController {
             }
             
             if userIsTeam1 && submitter == 1 || userIsTeam1 == false && submitter == 2 {
-                matchViewOrganizer.confirmMatchScores.isHidden = true
                 matchViewOrganizer.rejectMatchScores.isHidden = true
-                matchViewOrganizer.matchStatusLabel.text = "Waiting for opponent to accept submitted scores"
-                matchViewOrganizer.matchStatusLabel.numberOfLines = 2
+                if tourneyId != "none" && ((match.timeOfScores ?? currentTime) + 86400) < currentTime {
+                    matchViewOrganizer.matchStatusLabel.isHidden = true
+                    matchViewOrganizer.confirmMatchScores.setTitle("24 hours has passed, confirm scores for opponent", for: .normal)
+                    matchViewOrganizer.confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+                    matchViewOrganizer.confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+                    matchViewOrganizer.confirmMatchScores.titleLabel?.numberOfLines = 3
+                    matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = false
+                    matchViewOrganizer.confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W)
+                    matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = true
+                    matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = false
+                    matchViewOrganizer.confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X)
+                    matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = true
+                } else {
+                    matchViewOrganizer.confirmMatchScores.isHidden = true
+                    matchViewOrganizer.matchStatusLabel.text = "Waiting for opponent to accept submitted scores"
+                    matchViewOrganizer.matchStatusLabel.numberOfLines = 2
+                }
                 disableScores(team1Scores: confirmers, team2Scores: team2)
             } else {
                 matchViewOrganizer.confirmMatchScores.setTitle("Yes these scores are right, finish the match", for: .normal)
@@ -480,6 +504,14 @@ class MatchView: UIViewController {
                 matchViewOrganizer.confirmCheck4.isHidden = match.doubles! ? false : true
                 disableScores(team1Scores: confirmers, team2Scores: team2)
                 matchViewOrganizer.winnerConfirmed.isHidden = false
+                matchViewOrganizer.matchStyleLabel.isHidden = true
+                if AccessToken.isCurrentAccessTokenActive {
+                    matchViewOrganizer.loadImageButton.isHidden = false
+                    matchViewOrganizer.shareButton.isHidden = false
+                } else {
+                    matchViewOrganizer.cantLoadImageButton.isHidden = false
+                }
+                matchViewOrganizer.shareFriendsLabel.isHidden = false
             }
         }
     }
@@ -691,68 +723,26 @@ class MatchView: UIViewController {
             return
         }
         
-        
-        let ref = Database.database().reference()
-        let notifications2Ref = ref.child("notifications")
-        let childRef = notifications2Ref.childByAutoId()
-        let toId = match.team_1_player_1!
-        let fromId = uid
-        let timeStamp = Int(Date().timeIntervalSince1970)
-        let values = ["type": "reject_match", "toId": toId, "fromId" :fromId, "timestamp": timeStamp] as [String : Any]
-        childRef.updateChildValues(values, withCompletionBlock: {
-            (error:Error?, ref:DatabaseReference) in
-            
-            if error != nil {
-                let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
-                messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                self.present(messageSendFailed, animated: true, completion: nil)
-                print("Data could not be saved: \(String(describing: error)).")
-                return
+        var nameOnInvite = String()
+        switch uid {
+        case match.team_1_player_1:
+            nameOnInvite = matchViewOrganizer.userPlayer1.text!
+        case match.team_1_player_2:
+            nameOnInvite = matchViewOrganizer.userPlayer2.text!
+        case match.team_2_player_1:
+            nameOnInvite = matchViewOrganizer.oppPlayer1.text!
+        case match.team_2_player_2:
+            nameOnInvite = matchViewOrganizer.oppPlayer2.text!
+        default:
+            print("failedUser")
+        }
+        Database.database().reference().child("users").child(match.team_1_player_1!).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value {
+                let deviceId = value as? String ?? "none"
+                let pusher = PushNotificationHandler()
+                pusher.setupPushNotification(deviceId: deviceId, message: "\(nameOnInvite) rejected a match you invited them to", title: "Match Canceled")
+                //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
             }
-            
-            let notificationsRef = Database.database().reference()
-            let notificationId = childRef.key!
-            let childUpdates = ["/\("user_notifications")/\(toId)/\(notificationId)/": 1] as [String : Any]
-            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
-                (error:Error?, ref:DatabaseReference) in
-                
-                if error != nil {
-                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
-                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    self.present(messageSendFailed, animated: true, completion: nil)
-                    print("Data could not be saved: \(String(describing: error)).")
-                    return
-                }
-                
-                print("Crazy data 2 saved!")
-                var nameOnInvite = String()
-                switch uid {
-                case self.match.team_1_player_1:
-                    nameOnInvite = self.matchViewOrganizer.userPlayer1.text!
-                case self.match.team_1_player_2:
-                    nameOnInvite = self.matchViewOrganizer.userPlayer2.text!
-                case self.match.team_2_player_1:
-                    nameOnInvite = self.matchViewOrganizer.oppPlayer1.text!
-                case self.match.team_2_player_2:
-                    nameOnInvite = self.matchViewOrganizer.oppPlayer2.text!
-                default:
-                    print("failedUser")
-                }
-                Database.database().reference().child("users").child(toId).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
-                    if let value = snapshot.value {
-                        let deviceId = value as? String ?? "none"
-                        let pusher = PushNotificationHandler()
-                        pusher.setupPushNotification(deviceId: deviceId, message: "\(nameOnInvite) rejected a match you invited them to", title: "Match Canceled")
-                        //self.setupPushNotification(deviceId: self.playersDeviceId, nameOnInvite: nameOnInvite)
-                    }
-                })
-                
-                
-            })
-            
-            print("Crazy data saved!")
-            
-            
         })
     }
     
@@ -859,7 +849,7 @@ class MatchView: UIViewController {
     }
     
     func performConfirmActive1() {
-        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
+//        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
         resigningFirstResponders()
         finalTeam1Scores.removeAll()
         finalTeam2Scores.removeAll()
@@ -875,7 +865,8 @@ class MatchView: UIViewController {
         
         switch scoresValidation {
         case 0:
-            let values = ["winner": match.winner!, "active": 2, "submitter": userIsTeam1 ? 1 : 2, "team_1_player_1": match.team_1_player_1!, "team_1_player_2": match.team_1_player_2!, "team_2_player_1": match.team_2_player_1!, "team_2_player_2": match.team_2_player_2!, "team1_scores": match.team1_scores!, "team2_scores": match.team2_scores!, "style": match.style!] as [String : Any]
+            let timeOfScores = Date().timeIntervalSince1970
+            let values = ["winner": match.winner!, "active": 2, "submitter": userIsTeam1 ? 1 : 2, "team_1_player_1": match.team_1_player_1!, "team_1_player_2": match.team_1_player_2!, "team_2_player_1": match.team_2_player_1!, "team_2_player_2": match.team_2_player_2!, "team1_scores": match.team1_scores!, "team2_scores": match.team2_scores!, "style": match.style!, "timeOfScores": timeOfScores] as [String : Any]
             let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
             ref.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
@@ -965,7 +956,7 @@ class MatchView: UIViewController {
     }
     
     func performConfirmActive2() {
-        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
+//        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
         let time = Date().timeIntervalSince1970
         let values = ["active": 3, "time": time] as [String : Any]
         let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
@@ -978,16 +969,6 @@ class MatchView: UIViewController {
             }
             
             print("Data saved successfully!")
-            let ref2 = Database.database().reference().child("completed_matches").child(self.matchId)
-            let values2 = ["active": 3, "winner": self.match.winner ?? 1, "forfeit": self.match.forfeit ?? -1, "team_1_player_1": self.match.team_1_player_1 ?? "none", "team_1_player_2": self.match.team_1_player_2 ?? "none", "team_2_player_1": self.match.team_2_player_1 ?? "none", "team_2_player_2": self.match.team_2_player_2 ?? "none", "team1_scores": self.match.team1_scores ?? [0,0,0,0,0], "team2_scores": self.match.team2_scores ?? [0,0,0,0,0], "time": time, "style": self.match.style!] as [String : Any]
-            ref2.updateChildValues(values2, withCompletionBlock: {
-                (error:Error?, ref:DatabaseReference) in
-                
-                if let error = error {
-                    print("Data could not be saved: \(error).")
-                    return
-                }
-                })
             self.match.active = 3
             self.matchFeed?.matches[self.whichItem].active = 3
             self.matchFeed?.tableView.reloadData()
@@ -996,6 +977,14 @@ class MatchView: UIViewController {
             self.matchViewOrganizer.confirmCheck2.isHidden = self.match.doubles! ? false : true
             self.matchViewOrganizer.confirmCheck3.isHidden = false
             self.matchViewOrganizer.confirmCheck4.isHidden = self.match.doubles! ? false : true
+            self.matchViewOrganizer.matchStyleLabel.isHidden = true
+            if AccessToken.isCurrentAccessTokenActive {
+                self.matchViewOrganizer.loadImageButton.isHidden = false
+                self.matchViewOrganizer.shareButton.isHidden = false
+            } else {
+                self.matchViewOrganizer.cantLoadImageButton.isHidden = false
+            }
+            self.matchViewOrganizer.shareFriendsLabel.isHidden = false
             self.updatePlayerStats()
             guard let uid = Auth.auth().currentUser?.uid else {
                 return

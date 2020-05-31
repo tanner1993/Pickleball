@@ -49,8 +49,41 @@ class MatchFeed: UITableViewController {
         tableView?.register(UITableViewCell.self, forCellReuseIdentifier: cellIdNone)
         tableView?.backgroundColor = .white
         self.tableView.separatorStyle = .none
-//        self.collectionView!.register(FeedMatchCell.self, forCellWithReuseIdentifier: cellId)
-//        self.collectionView.backgroundColor = .white
+        
+        if sender == 1 {
+            tableView?.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 45, right: 0)
+            tableView?.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 45, right: 0)
+            setupFindOpponents()
+        }
+    }
+    
+    func setupFindOpponents() {
+        view.addSubview(findOpponents)
+        findOpponents.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor).isActive = true
+        findOpponents.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        findOpponents.heightAnchor.constraint(equalToConstant: 45).isActive = true
+        findOpponents.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+    }
+    
+    let findOpponents: UIButton = {
+        let button = UIButton(type: .system)
+        //button.backgroundColor = .white
+        button.setTitle("Find opponents in your area", for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleFindOpponents), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func handleFindOpponents() {
+        let layout = UICollectionViewFlowLayout()
+        let opponentsList = OpponentsList(collectionViewLayout: layout)
+        opponentsList.matchFeed = self
+        //opponentsList.modalPresentationStyle = .fullScreen
+        navigationController?.pushViewController(opponentsList, animated: true)
     }
     
     func fillInRow() {
@@ -109,15 +142,21 @@ class MatchFeed: UITableViewController {
                 activityIndicatorView.stopAnimating()
                 let cell = tableView.dequeueReusableCell(withIdentifier: cellIdNone, for: indexPath)
                 if sender == 0 {
-                    cell.textLabel?.text = "No News"
+                    cell.textLabel?.text = "No Match News"
                 } else {
-                    cell.textLabel?.text = "No Matches Yet"
+                    cell.textLabel?.text = "You do not have any matches yet. Click the PLUS in the top right to create a match or click the 'Find opponents in your area' button below"
+                    cell.textLabel?.numberOfLines = 5
+                    cell.textLabel?.textAlignment = .center
+                    cell.textLabel?.backgroundColor = UIColor(displayP3Red: 88/255, green: 148/255, blue: 200/255, alpha: 0.3)
+                    cell.textLabel?.layer.cornerRadius = 15
+                    cell.textLabel?.layer.masksToBounds = true
                 }
                 cell.textLabel?.textAlignment = .center
                 return cell
             }
         } else {
             activityIndicatorView.stopAnimating()
+            noNotifications = 1
             let match = matches[indexPath.item]
             let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FeedMatchCell
             if sender == 0 {
@@ -374,8 +413,48 @@ class MatchFeed: UITableViewController {
 //        return false
 //    }
     
+//    func fetchMatches() {
+//        let ref = Database.database().reference().child("completed_matches").queryLimited(toLast: 10)
+//        ref.observe(.childAdded, with: { (snapshot) in
+//                if let value = snapshot.value as? NSDictionary {
+//                    let matchT = Match2()
+//                    let active = value["active"] as? Int ?? 0
+//                    let submitter = value["submitter"] as? Int ?? 0
+//                    let winner = value["winner"] as? Int ?? 0
+//                    let team_1_player_1 = value["team_1_player_1"] as? String ?? "Player not found"
+//                    let team_1_player_2 = value["team_1_player_2"] as? String ?? "Player not found"
+//                    let team_2_player_1 = value["team_2_player_1"] as? String ?? "Player not found"
+//                    let team_2_player_2 = value["team_2_player_2"] as? String ?? "Player not found"
+//                    let team1_scores = value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+//                    let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+//                    let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+//                    let style = value["style"] as? Int ?? 0
+//                    let forfeit = value["forfeit"] as? Int ?? 0
+//                    matchT.active = active
+//                    matchT.winner = winner
+//                    matchT.submitter = submitter
+//                    matchT.team_1_player_1 = team_1_player_1
+//                    matchT.team_1_player_2 = team_1_player_2
+//                    matchT.team_2_player_1 = team_2_player_1
+//                    matchT.team_2_player_2 = team_2_player_2
+//                    matchT.team1_scores = team1_scores
+//                    matchT.team2_scores = team2_scores
+//                    matchT.matchId = snapshot.key
+//                    matchT.time = time
+//                    matchT.style = style
+//                    matchT.forfeit = forfeit
+//                    matchT.doubles = team_1_player_2 == "Player not found" ? false : true
+//                    self.matches.append(matchT)
+//                    self.matches = self.matches.sorted { p1, p2 in
+//                        return (p1.time!) > (p2.time!)
+//                    }
+//                    DispatchQueue.main.async { self.tableView.reloadData()}
+//                }
+//        }, withCancel: nil)
+//    }
+    
     func fetchMatches() {
-        let ref = Database.database().reference().child("completed_matches").queryLimited(toLast: 10)
+        let ref = Database.database().reference().child("matches").queryOrdered(byChild: "active").queryEqual(toValue: 3).queryLimited(toLast: 10)
         ref.observe(.childAdded, with: { (snapshot) in
                 if let value = snapshot.value as? NSDictionary {
                     let matchT = Match2()
@@ -419,7 +498,6 @@ class MatchFeed: UITableViewController {
             let rootRef = Database.database().reference()
             let query = rootRef.child("matches").child(element)
             query.observeSingleEvent(of: .value, with: { (snapshot) in
-                print(snapshot)
                 if let value = snapshot.value as? NSDictionary {
                     let matchT = Match2()
                     let active = value["active"] as? Int ?? 0
@@ -449,13 +527,32 @@ class MatchFeed: UITableViewController {
                     matchT.style = style
                     matchT.doubles = team_1_player_2 == "Player not found" ? false : true
                     matchT.seen = self.matchNotifs[index] == true ? true : false
-                    self.matches.append(matchT)
+                    let currentTime = Date().timeIntervalSince1970
+                    if (time + Double(86400 * 31)) < currentTime {
+                        self.deleteMatchExpiration(matchToDelete: matchT)
+                    } else {
+                        self.matches.append(matchT)
+                    }
                     DispatchQueue.main.async {
                         self.tableView.reloadData()
                     }
                 }
             }, withCancel: nil)
         }
+    }
+    
+    func deleteMatchExpiration(matchToDelete: Match2) {
+        var referencesNeedDeletion = [String]()
+        if matchToDelete.doubles == true {
+            referencesNeedDeletion.append(matchToDelete.team_1_player_2!)
+            referencesNeedDeletion.append(matchToDelete.team_2_player_2!)
+        }
+        referencesNeedDeletion.append(matchToDelete.team_1_player_1!)
+        referencesNeedDeletion.append(matchToDelete.team_2_player_1!)
+        for index in referencesNeedDeletion {
+            Database.database().reference().child("user_matches").child(index).child(matchToDelete.matchId!).removeValue()
+        }
+        Database.database().reference().child("matches").child(matchToDelete.matchId!).removeValue()
     }
 
 }

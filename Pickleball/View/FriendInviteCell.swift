@@ -32,58 +32,79 @@ class FriendInviteCell: UITableViewCell {
             }
             let fromId = friendInvite?.fromId ?? "none"
             let toId = friendInvite?.toId ?? "none"
-            if friendInvite?.message == "tourney_invite" || friendInvite?.message == "tourney_invite_simple" {
-                let tourneyId = friendInvite?.tourneyId ?? "none"
-                    let ref = Database.database().reference().child("tourneys").child(tourneyId)
-                    ref.observeSingleEvent(of: .value, with: {(snapshot) in
-                        if let value = snapshot.value as? NSDictionary {
-                            let tourneyName = value["name"] as? String ?? "none"
-                            self.skillLevel.text = tourneyName
-                            self.skillLevelWidth?.constant = 150
-                        }
-                    }, withCancel: nil)
+            let tourneyName = friendInvite?.tourneyName ?? "none"
+            if friendInvite?.seen ?? true {
+                notifBadge.isHidden = true
+            } else {
+                notifBadge.isHidden = false
             }
             let recipientNameRef = Database.database().reference().child("users").child(fromId == uid ? toId : fromId)
             recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    //let name = value["name"] as? String ?? "No Name"
-                    let username = value["username"] as? String ?? "No Username"
-                    //let state = value["state"] as? String ?? "No State"
-                    //let county = value["county"] as? String ?? "No county"
-                    let skillsLevel = value["skill_level"] as? Float ?? 0.0
-                    let exp = value["exp"] as? Int ?? 0
-                    let haloLevel = self.playerObject.haloLevel(exp: exp)
+                    let name = value["name"] as? String ?? "No Name"
+                    let abbName = name.getFirstAndLastInitial
+                    print(abbName)
                     if self.friendInvite?.message == "tourney_invite" {
-                        self.playerName.font = UIFont(name: "HelveticaNeue", size: 13)
-                        self.playerName.text = fromId == uid ? "You invited \(username) to a tourney:" : "\(username) invited you to a tourney:"
+                        self.notificationTitle.text = "Tourney Request"
+                        self.confirmFriendButton.isHidden = true
+                        self.rejectFriendButton.isHidden = true
+                        self.dismissTourneyButton.isHidden = true
+                        if uid != fromId {
+                            self.confirmTourneyButton.isHidden = false
+                            self.rejectTourneyButton.isHidden = false
+                            self.revokeTourneyInvitation.isHidden = true
+                        } else {
+                            self.confirmTourneyButton.isHidden = true
+                            self.rejectTourneyButton.isHidden = true
+                            self.revokeTourneyInvitation.isHidden = false
+                        }
                         self.friendSymbol.image = UIImage(named: "tourney_symbol")
+                        self.friendSymbol2.image = UIImage(named: "tourney_symbol")
+                        self.friendSymbol.isHidden = false
+                        self.friendSymbol2.isHidden = false
+                        self.invitationText.text = fromId != uid ? "\(name) wants you to be their teammate in the tournament: \(tourneyName). Click to view tournament or confirm/reject below:" : "You invited \(name) to play with you in the tournament: \(tourneyName). Click to view tournament or revoke the invitation below:"
                     } else if self.friendInvite?.message == "tourney_invite_simple" {
-                        self.playerName.font = UIFont(name: "HelveticaNeue", size: 13)
-                        self.playerName.text = "\(username) wants you to join a tourney:"
+                        self.notificationTitle.text = "Tourney Notification"
+                        self.confirmTourneyButton.isHidden = true
+                        self.confirmFriendButton.isHidden = true
+                        self.rejectTourneyButton.isHidden = true
+                        self.rejectFriendButton.isHidden = true
+                        self.dismissTourneyButton.isHidden = false
+                        self.revokeTourneyInvitation.isHidden = true
                         self.friendSymbol.image = UIImage(named: "tourney_symbol")
+                        self.friendSymbol2.image = UIImage(named: "tourney_symbol")
+                        self.friendSymbol.isHidden = false
+                        self.friendSymbol2.isHidden = false
+                        self.invitationText.text = "\(name) wants you to register for their tournament: \(tourneyName). Click to view tournament or dismiss this notification below:"
                     } else {
-                        self.playerName.font = UIFont(name: "HelveticaNeue", size: 15)
-                        self.playerName.text = "\(username) wants to be your friend"
+                        self.notificationTitle.text = "Friend Request"
+                        self.confirmTourneyButton.isHidden = true
+                        self.confirmFriendButton.isHidden = false
+                        self.rejectTourneyButton.isHidden = true
+                        self.rejectFriendButton.isHidden = false
+                        self.dismissTourneyButton.isHidden = true
+                        self.revokeTourneyInvitation.isHidden = true
                         self.friendSymbol.image = UIImage(named: "friend_request")
-                        self.appLevel.text = "\(haloLevel)"
-                        self.skillLevel.text = "\(skillsLevel)"
-                        self.skillLevelWidth?.constant = 40
+                        self.friendSymbol2.image = UIImage(named: "friend_request")
+                        self.friendSymbol.isHidden = false
+                        self.friendSymbol2.isHidden = false
+                        self.invitationText.text = "\(name) wants to be your friend. Click to view their profile or confirm/reject below:"
                     }
                     if let seconds = self.friendInvite?.timeStamp {
-                        
+
                         let dateTime = Date(timeIntervalSince1970: seconds)
                         let days = self.dayDifference(from: seconds)
-                        
+
                         let dateFormatter = DateFormatter()
                         if days == "week" {
                             dateFormatter.dateFormat = "MM/dd/yy"
-                            self.timeStamp.text = dateFormatter.string(from: dateTime)
+                            self.timeStamp.text = "Created: \(dateFormatter.string(from: dateTime))"
                         } else {
                             dateFormatter.dateFormat = "hh:mm a"
-                            if self.friendInvite?.message == "tourney_invite" {
-                                self.timeStamp.text = fromId == uid ? "Tourney invite sent: \(days), \(dateFormatter.string(from: dateTime))" : "Tourney invite sent by \(username): \(days), \(dateFormatter.string(from: dateTime))"
+                            if self.friendInvite?.message == "tourney_invite" || self.friendInvite?.message == "tourney_invite_simple" {
+                                self.timeStamp.text = fromId == uid ? "Tourney invite sent \(days), \(dateFormatter.string(from: dateTime))" : "Tourney invite sent by \(abbName) \(days), \(dateFormatter.string(from: dateTime))"
                             } else {
-                                self.timeStamp.text = "Friend request sent by \(username): \(days), \(dateFormatter.string(from: dateTime))"
+                                self.timeStamp.text = "Friend request sent by \(abbName) \(days), \(dateFormatter.string(from: dateTime))"
                             }
                         }
                     }
@@ -115,21 +136,33 @@ class FriendInviteCell: UITableViewCell {
     
     let playerObject = Player()
     
-    let playerInitials: UILabel = {
+//    let playerInitials: UILabel = {
+//        let label = UILabel()
+//        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
+//        label.textColor = .white
+//        label.layer.cornerRadius = 25
+//        label.layer.masksToBounds = true
+//        label.font = UIFont(name: "HelveticaNeue", size: 25)
+//        label.textAlignment = .center
+//        return label
+//    }()
+    
+    let notifBadge: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-        label.textColor = .white
-        label.layer.cornerRadius = 25
+        label.isHidden = true
+        label.layer.cornerRadius = 12
         label.layer.masksToBounds = true
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
         label.textAlignment = .center
         return label
     }()
     
     let timeStamp: UILabel = {
         let label = UILabel()
-        label.text = "HH:MM:SS"
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = UIColor.init(r: 170, g: 170, b: 170)
         label.font = UIFont(name: "HelveticaNeue", size: 12)
@@ -137,68 +170,117 @@ class FriendInviteCell: UITableViewCell {
         return label
     }()
     
-    let rejectButton: UIButton = {
+    let rejectFriendButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Reject", for: .normal)
+        button.isHidden = true
         button.setTitleColor(UIColor.init(r: 252, g: 16, b: 13), for: .normal)
-        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 30)
         button.titleLabel?.textAlignment = .center
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    let confirmButton: UIButton = {
+    let rejectTourneyButton: UIButton = {
         let button = UIButton(type: .system)
+        button.setTitle("Reject", for: .normal)
+        button.isHidden = true
+        button.setTitleColor(UIColor.init(r: 252, g: 16, b: 13), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 30)
+        button.titleLabel?.textAlignment = .center
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    let confirmFriendButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.isHidden = true
         button.setTitle("Accept", for: .normal)
         button.setTitleColor(UIColor.init(r: 32, g: 140, b: 21), for: .normal)
-        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 30)
         button.titleLabel?.textAlignment = .center
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    func confirmFriend() {
-        
-    }
+    let confirmTourneyButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.isHidden = true
+        button.setTitle("Accept", for: .normal)
+        button.setTitleColor(UIColor.init(r: 32, g: 140, b: 21), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 30)
+        button.titleLabel?.textAlignment = .center
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    let dismissTourneyButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.isHidden = true
+        button.setTitle("Dismiss", for: .normal)
+        button.setTitleColor(UIColor.init(r: 252, g: 16, b: 13), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 30)
+        button.titleLabel?.textAlignment = .center
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    let revokeTourneyInvitation: UIButton = {
+        let button = UIButton(type: .system)
+        button.isHidden = true
+        button.setTitle("Revoke Invitation", for: .normal)
+        button.setTitleColor(UIColor.init(r: 252, g: 16, b: 13), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 30)
+        button.titleLabel?.textAlignment = .center
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     let invitationText: UILabel = {
         let label = UILabel()
-        label.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.layer.cornerRadius = 24
-        label.layer.masksToBounds = true
-        label.font = UIFont.boldSystemFont(ofSize: 12)
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 16)
+        label.numberOfLines = 3
         label.textAlignment = .center
         return label
     }()
     
-    let skillLevel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = ""
-        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .left
-        return label
-    }()
+//    let skillLevel: UILabel = {
+//        let label = UILabel()
+//        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.text = ""
+//        label.textColor = UIColor.init(r: 88, g: 148, b: 200)
+//        label.font = UIFont(name: "HelveticaNeue", size: 25)
+//        label.textAlignment = .left
+//        return label
+//    }()
+//    
+//    let appLevel: UILabel = {
+//        let label = UILabel()
+//        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.text = "playerName"
+//        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
+//        label.font = UIFont(name: "HelveticaNeue", size: 25)
+//        label.textAlignment = .left
+//        return label
+//    }()
     
-    let appLevel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "playerName"
-        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
-        label.font = UIFont(name: "HelveticaNeue", size: 25)
-        label.textAlignment = .left
-        return label
-    }()
+//    let playerName: UILabel = {
+//        let label = UILabel()
+//        label.translatesAutoresizingMaskIntoConstraints = false
+//        label.text = "playerName"
+//        label.numberOfLines = 2
+//        label.font = UIFont(name: "HelveticaNeue", size: 15)
+//        label.textAlignment = .left
+//        return label
+//    }()
     
-    let playerName: UILabel = {
+    let notificationTitle: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "playerName"
-        label.numberOfLines = 2
-        label.font = UIFont(name: "HelveticaNeue", size: 15)
-        label.textAlignment = .left
+        label.adjustsFontSizeToFitWidth = true
+        label.font = UIFont(name: "HelveticaNeue", size: 25)
+        label.textAlignment = .center
         return label
     }()
     
@@ -206,6 +288,16 @@ class FriendInviteCell: UITableViewCell {
         let bi = UIImageView()
         bi.translatesAutoresizingMaskIntoConstraints = false
         bi.contentMode = .scaleAspectFit
+        bi.isHidden = true
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
+    
+    let friendSymbol2: UIImageView = {
+        let bi = UIImageView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.isHidden = true
         bi.isUserInteractionEnabled = true
         return bi
     }()
@@ -221,6 +313,12 @@ class FriendInviteCell: UITableViewCell {
     
     func setupViews() {
         
+        addSubview(notifBadge)
+        notifBadge.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
+        notifBadge.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
+        notifBadge.heightAnchor.constraint(equalToConstant: 24).isActive = true
+        notifBadge.widthAnchor.constraint(equalToConstant: 24).isActive = true
+        
         addSubview(timeStamp)
         timeStamp.topAnchor.constraint(equalTo: topAnchor, constant: 1).isActive = true
         timeStamp.leftAnchor.constraint(equalTo: rightAnchor, constant: -300).isActive = true
@@ -233,36 +331,78 @@ class FriendInviteCell: UITableViewCell {
         friendSymbol.heightAnchor.constraint(equalToConstant: 70).isActive = true
         friendSymbol.widthAnchor.constraint(equalToConstant: 70).isActive = true
         
-        addSubview(playerName)
-        playerName.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 4).isActive = true
-        playerName.leftAnchor.constraint(equalTo: friendSymbol.rightAnchor, constant: 4).isActive = true
-        playerName.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        playerName.widthAnchor.constraint(equalToConstant: 160).isActive = true
+        addSubview(friendSymbol2)
+        friendSymbol2.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 4).isActive = true
+        friendSymbol2.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        friendSymbol2.heightAnchor.constraint(equalToConstant: 70).isActive = true
+        friendSymbol2.widthAnchor.constraint(equalToConstant: 70).isActive = true
         
-        addSubview(skillLevel)
-        skillLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
-        skillLevel.leftAnchor.constraint(equalTo: playerName.leftAnchor).isActive = true
-        skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        skillLevelWidth = skillLevel.widthAnchor.constraint(equalToConstant: 40)
-        skillLevelWidth?.isActive = true
+        addSubview(notificationTitle)
+        notificationTitle.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 4).isActive = true
+        notificationTitle.rightAnchor.constraint(equalTo: friendSymbol2.leftAnchor, constant: -4).isActive = true
+        notificationTitle.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        notificationTitle.leftAnchor.constraint(equalTo: friendSymbol.rightAnchor, constant: 4).isActive = true
         
-        addSubview(appLevel)
-        appLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
-        appLevel.leftAnchor.constraint(equalTo: skillLevel.rightAnchor, constant: 15).isActive = true
-        appLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        appLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
+//        addSubview(playerName)
+//        playerName.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 4).isActive = true
+//        playerName.leftAnchor.constraint(equalTo: friendSymbol.rightAnchor, constant: 4).isActive = true
+//        playerName.heightAnchor.constraint(equalToConstant: 40).isActive = true
+//        playerName.widthAnchor.constraint(equalToConstant: 160).isActive = true
         
-        addSubview(confirmButton)
-        confirmButton.topAnchor.constraint(equalTo: timeStamp.bottomAnchor, constant: 1).isActive = true
-        confirmButton.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 1).isActive = true
-        confirmButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
-        confirmButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -2).isActive = true
+//        addSubview(skillLevel)
+//        skillLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
+//        skillLevel.leftAnchor.constraint(equalTo: playerName.leftAnchor).isActive = true
+//        skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
+//        skillLevelWidth = skillLevel.widthAnchor.constraint(equalToConstant: 40)
+//        skillLevelWidth?.isActive = true
+//
+//        addSubview(appLevel)
+//        appLevel.topAnchor.constraint(equalTo: playerName.bottomAnchor).isActive = true
+//        appLevel.leftAnchor.constraint(equalTo: skillLevel.rightAnchor, constant: 15).isActive = true
+//        appLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
+//        appLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        addSubview(invitationText)
+        invitationText.topAnchor.constraint(equalTo: friendSymbol2.bottomAnchor, constant: 2).isActive = true
+        invitationText.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        invitationText.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        invitationText.widthAnchor.constraint(equalTo: widthAnchor, constant: -24).isActive = true
+        
+        addSubview(confirmFriendButton)
+        confirmFriendButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 3).isActive = true
+        confirmFriendButton.leftAnchor.constraint(equalTo: centerXAnchor, constant: 2).isActive = true
+        confirmFriendButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        confirmFriendButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -2).isActive = true
+        
+        addSubview(confirmTourneyButton)
+        confirmTourneyButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 3).isActive = true
+        confirmTourneyButton.leftAnchor.constraint(equalTo: centerXAnchor, constant: 2).isActive = true
+        confirmTourneyButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        confirmTourneyButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -2).isActive = true
 
-        addSubview(rejectButton)
-        rejectButton.topAnchor.constraint(equalTo: confirmButton.bottomAnchor, constant: 1).isActive = true
-        rejectButton.leftAnchor.constraint(equalTo: playerName.rightAnchor, constant: 1).isActive = true
-        rejectButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
-        rejectButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -2).isActive = true
+        addSubview(rejectFriendButton)
+        rejectFriendButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 3).isActive = true
+        rejectFriendButton.leftAnchor.constraint(equalTo: leftAnchor, constant: 2).isActive = true
+        rejectFriendButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        rejectFriendButton.rightAnchor.constraint(equalTo: centerXAnchor, constant: -2).isActive = true
+        
+        addSubview(rejectTourneyButton)
+        rejectTourneyButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 3).isActive = true
+        rejectTourneyButton.leftAnchor.constraint(equalTo: leftAnchor, constant: 2).isActive = true
+        rejectTourneyButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        rejectTourneyButton.rightAnchor.constraint(equalTo: centerXAnchor, constant: -2).isActive = true
+        
+        addSubview(dismissTourneyButton)
+        dismissTourneyButton.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 3).isActive = true
+        dismissTourneyButton.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        dismissTourneyButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        dismissTourneyButton.widthAnchor.constraint(equalTo: widthAnchor, constant: -24).isActive = true
+        
+        addSubview(revokeTourneyInvitation)
+        revokeTourneyInvitation.topAnchor.constraint(equalTo: invitationText.bottomAnchor, constant: 3).isActive = true
+        revokeTourneyInvitation.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        revokeTourneyInvitation.heightAnchor.constraint(equalToConstant: 35).isActive = true
+        revokeTourneyInvitation.widthAnchor.constraint(equalTo: widthAnchor, constant: -24).isActive = true
         
         addSubview(separatorView)
         separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true

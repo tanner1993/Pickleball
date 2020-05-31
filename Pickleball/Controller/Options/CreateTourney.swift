@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 import FirebaseAuth
+import FBSDKShareKit
 
 class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
@@ -308,13 +309,15 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         default:
             style = 0
         }
+        let publicBool = privatePublicControl.selectedSegmentIndex == 0 ? true : false
+        let daysToPlay = Int(daysToPlayStepper.value)
         
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
         let ref = Database.database().reference().child("tourneys")
         let tourneyref = sender == false ? ref.childByAutoId() : ref.child(tourneyInfo.id!)
-        let values = ["active": 0, "name": name, "skill_level": skillLevel, "type": type, "sex": sex, "age_group": ageGroup, "start_date": startdate, "duration": endDate, "creator": uid, "state": state, "county": county, "style": style] as [String : Any]
+        let values = ["active": 0, "name": name, "skill_level": skillLevel, "type": type, "sex": sex, "age_group": ageGroup, "start_date": startdate, "duration": endDate, "creator": uid, "state": state, "county": county, "style": style, "public": publicBool, "daysToPlay": daysToPlay] as [String : Any]
         tourneyref.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -345,13 +348,15 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
             tourney.finals2 = self.sender == false ? 0 : self.tourneyInfo.finals2!
             tourney.winner = self.sender == false ? 0 : self.tourneyInfo.winner!
             tourney.style = style
+            tourney.daysToPlay = daysToPlay
+            tourney.publicBool = publicBool
             if self.sender {
                 self.tourneyList?.myTourneys[self.tourneyIndex] = tourney
                 self.tourneyList?.tableView.reloadData()
                 self.tourneySearch?.searchResults[self.tourneyIndex] = tourney
                 self.tourneySearch?.tableView.reloadData()
             } else {
-                self.tourneyList?.loadUpMyCreatedTourneys(createdTourney: tourney)
+                Database.database().reference().child("user_tourneys").child(uid).child(tourneyref.key!).setValue(0)
             }
             
         })
@@ -389,13 +394,88 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         return button
     }()
     
+    let changeActive: UIButton = {
+        let button = UIButton(type: .system)
+        //button.backgroundColor = .white
+        button.titleLabel?.numberOfLines = 1
+        button.titleLabel?.textAlignment = .center
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 17)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .red
+        button.layer.cornerRadius = 14
+        button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleChangeActive), for: .touchUpInside)
+        return button
+    }()
+    
+    let reopenRegistration: UIButton = {
+        let button = UIButton(type: .system)
+        //button.backgroundColor = .white
+        button.setTitle("Reopen Registration", for: .normal)
+        button.titleLabel?.numberOfLines = 1
+        button.titleLabel?.textAlignment = .center
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 17)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = UIColor(r: 0, g: 100, b: 0)
+        button.layer.cornerRadius = 14
+        button.layer.masksToBounds = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(reopenReg), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func reopenReg() {
+            Database.database().reference().child("tourneys").child(tourneyInfo.id ?? "none").child("active").setValue(0)
+            //Database.database().reference().child("tourneys").child(tourneyInfo.id ?? "none").child("time").setValue(Date().timeIntervalSince1970)
+            self.tourneyList?.myTourneys[self.tourneyIndex].active = 0
+            self.tourneyList?.tableView.reloadData()
+            self.dismiss(animated: true, completion: nil)
+        }
+    
+    @objc func handleChangeActive() {
+        if tourneyInfo.active == 1 {
+            let createMatchFailed = UIAlertController(title: "Are you sure?", message: "Once semi-finals start you can't go back", preferredStyle: .alert)
+            createMatchFailed.addAction(UIAlertAction(title: "Nevermind", style: .default, handler: nil))
+            createMatchFailed.addAction(UIAlertAction(title: "I'm sure", style: .default, handler: handleImSure))
+            self.present(createMatchFailed, animated: true, completion: nil)
+        } else if tourneyInfo.active == 0 {
+            Database.database().reference().child("tourneys").child(tourneyInfo.id ?? "none").child("active").setValue(1)
+            Database.database().reference().child("tourneys").child(tourneyInfo.id ?? "none").child("time").setValue(Date().timeIntervalSince1970)
+            self.tourneyList?.myTourneys[self.tourneyIndex].active = 1
+            self.tourneyList?.tableView.reloadData()
+            self.dismiss(animated: true, completion: nil)
+        } else {
+
+        }
+    }
+    
+    func handleImSure(action: UIAlertAction) {
+        Database.database().reference().child("tourneys").child(tourneyInfo.id ?? "none").child("active").setValue(2)
+        self.tourneyList?.myTourneys[self.tourneyIndex].active = 2
+        self.tourneyList?.tableView.reloadData()
+        guard let allMatches = tourneyInfo.matches else {
+            return
+        }
+        for element in allMatches {
+            if element.active != 3 {
+                let matchToDelete = element
+                Database.database().reference().child("tourneys").child(tourneyInfo.id ?? "none").child("matches").child(matchToDelete.matchId!).removeValue()
+                let tourneyFunctions = Tourney()
+                tourneyFunctions.removeCantChallenge(team_1_player_1: matchToDelete.team_1_player_1!, team_1_player_2: matchToDelete.team_1_player_2!, team_2_player_1: matchToDelete.team_2_player_1!, team_2_player_2: matchToDelete.team_2_player_2!, tourneyId: tourneyInfo.id ?? "none")
+            }
+        }
+        tourneyInfo.handleSetupSemifinal1()
+        self.dismiss(animated: true, completion: nil)
+    }
+    
     let deleteButton: UIButton = {
         let button = UIButton(type: .system)
         //button.backgroundColor = .white
         button.setTitle("Delete Tournament", for: .normal)
         button.titleLabel?.numberOfLines = 2
         button.titleLabel?.textAlignment = .center
-        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 17)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 17)
         button.setTitleColor(.red, for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(handleDelete), for: .touchUpInside)
@@ -485,6 +565,16 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         return sv
     }()
     
+    let privatePublicControl: UISegmentedControl = {
+        let sc = UISegmentedControl(items: ["Public", "Private"])
+        sc.translatesAutoresizingMaskIntoConstraints = false
+        let font = UIFont(name: "HelveticaNeue", size: 17)
+        sc.setTitleTextAttributes([NSAttributedString.Key.font: font as Any], for: .normal)
+        sc.tintColor = .white
+        sc.selectedSegmentIndex = 0
+        return sc
+    }()
+    
     let matchesLabel: UILabel = {
         let label = UILabel()
         label.text = "# of games per match"
@@ -498,8 +588,8 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
     let matchesControl: UISegmentedControl = {
         let sc = UISegmentedControl(items: ["Single", "2 out of 3", "3 out of 5"])
         sc.translatesAutoresizingMaskIntoConstraints = false
-        let font = UIFont.systemFont(ofSize: 16)
-        sc.setTitleTextAttributes([NSAttributedString.Key.font: font], for: .normal)
+        let font = UIFont(name: "HelveticaNeue", size: 17)
+        sc.setTitleTextAttributes([NSAttributedString.Key.font: font as Any], for: .normal)
         sc.tintColor = .white
         sc.selectedSegmentIndex = 1
         return sc
@@ -700,10 +790,51 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         return view
     }()
     
+    let daysToPlayStepper: UIStepper = {
+        let view = UIStepper()
+        view.backgroundColor = .white
+        view.maximumValue = 7
+        view.minimumValue = 1
+        view.value = 3
+        view.layer.cornerRadius = 3
+        view.layer.masksToBounds = true
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.stepValue = 1
+        view.addTarget(self, action: #selector(stepperChanged), for: .valueChanged)
+        return view
+    }()
+    
+    @objc func stepperChanged() {
+        daysToPlayDisplay.text = "\(Int(daysToPlayStepper.value)) days"
+    }
+    
+    let daysToPlayDisplay: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        label.textAlignment = .center
+        label.textColor = .white
+        return label
+    }()
+    
+    let daysToPlayLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Days players have to complete a match:"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        label.adjustsFontSizeToFitWidth = true
+        label.textAlignment = .center
+        label.textColor = .white
+        label.numberOfLines = 2
+        return label
+    }()
+    
+    let shareButton = FBShareButton()
+    
     func setupViews() {
         scrollView.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         let Width = Float(view.frame.width)
-        scrollView.contentSize = CGSize(width: Double(Width), height: Double(780))
+        scrollView.contentSize = CGSize(width: Double(Width), height: Double(940))
         view.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
         
 //        view.addSubview(officialTourneyCheck)
@@ -718,14 +849,6 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         backButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
         backButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
-        if sender {
-            view.addSubview(deleteButton)
-            deleteButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -4).isActive = true
-            deleteButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
-            deleteButton.widthAnchor.constraint(equalToConstant: 140).isActive = true
-            deleteButton.heightAnchor.constraint(equalToConstant: 45).isActive = true
-        }
-        
         view.addSubview(scrollView)
         scrollView.topAnchor.constraint(equalTo: backButton.bottomAnchor).isActive = true
         scrollView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
@@ -738,10 +861,55 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         createTourneyLabel.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -120).isActive = true
         createTourneyLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
+        if sender {
+            view.addSubview(deleteButton)
+            deleteButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -4).isActive = true
+            deleteButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 20).isActive = true
+            deleteButton.widthAnchor.constraint(equalToConstant: 140).isActive = true
+            deleteButton.heightAnchor.constraint(equalToConstant: 45).isActive = true
+            
+            shareButton.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(shareButton)
+            shareButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+            shareButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 25).isActive = true
+            
+            if tourneyInfo.active == 0 {
+                changeActive.setTitle("End Registration", for: .normal)
+            } else if tourneyInfo.active == 1 {
+                changeActive.setTitle("Start Semifinals", for: .normal)
+            } else {
+                changeActive.setTitle("Semis has started", for: .normal)
+                changeActive.isUserInteractionEnabled = false
+            }
+            scrollView.addSubview(changeActive)
+            changeActive.topAnchor.constraint(equalTo: createTourneyLabel.bottomAnchor, constant: 10).isActive = true
+            changeActive.heightAnchor.constraint(equalToConstant: 40).isActive = true
+            
+            if tourneyInfo.active == 1 {
+                scrollView.addSubview(reopenRegistration)
+                reopenRegistration.rightAnchor.constraint(equalTo: view.centerXAnchor, constant: -2).isActive = true
+                reopenRegistration.topAnchor.constraint(equalTo: createTourneyLabel.bottomAnchor, constant: 10).isActive = true
+                reopenRegistration.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true
+                reopenRegistration.heightAnchor.constraint(equalToConstant: 40).isActive = true
+                
+                changeActive.leftAnchor.constraint(equalTo: view.centerXAnchor, constant: 2).isActive = true
+                changeActive.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -4).isActive = true
+            } else {
+                changeActive.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+                changeActive.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -80).isActive = true
+            }
+        }
+        
+        scrollView.addSubview(privatePublicControl)
+        privatePublicControl.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        privatePublicControl.topAnchor.constraint(equalTo: sender ? changeActive.bottomAnchor : createTourneyLabel.bottomAnchor, constant: 10).isActive = true
+        privatePublicControl.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -80).isActive = true
+        privatePublicControl.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
         
         let inputsArray = ["Name", "Type", "Skill Level", "Sex", "Age Group"]
         let inputsArray2 = ["State", "County"]
-        let inputContainer1 = createInputContainer(topAnchor: createTourneyLabel, anchorConstant: 20, numberInputs: 5, vertSepDistance: 120, inputs: inputsArray, inputTypes: [0, 1, 1, 1, 1])
+        let inputContainer1 = createInputContainer(topAnchor: privatePublicControl, anchorConstant: 20, numberInputs: 5, vertSepDistance: 120, inputs: inputsArray, inputTypes: [0, 1, 1, 1, 1])
         let inputContainer2 = createInputContainer(topAnchor: inputContainer1, anchorConstant: 20, numberInputs: 2, vertSepDistance: 120, inputs: inputsArray2, inputTypes: [1, 1])
         
         scrollView.addSubview(inputsContainerView)
@@ -936,9 +1104,26 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         matchesControl.widthAnchor.constraint(equalToConstant: view.frame.width - 20).isActive = true
         matchesControl.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
+        scrollView.addSubview(daysToPlayLabel)
+        daysToPlayLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        daysToPlayLabel.topAnchor.constraint(equalTo: matchesControl.bottomAnchor, constant: 8).isActive = true
+        daysToPlayLabel.widthAnchor.constraint(equalToConstant: view.frame.width - 14).isActive = true
+        daysToPlayLabel.heightAnchor.constraint(equalToConstant: 60).isActive = true
+        
+        scrollView.addSubview(daysToPlayStepper)
+        daysToPlayStepper.rightAnchor.constraint(equalTo: view.centerXAnchor, constant: -10).isActive = true
+        daysToPlayStepper.topAnchor.constraint(equalTo: daysToPlayLabel.bottomAnchor, constant: 4).isActive = true
+        
+        daysToPlayDisplay.text = "\(Int(daysToPlayStepper.value)) days"
+        scrollView.addSubview(daysToPlayDisplay)
+        daysToPlayDisplay.leftAnchor.constraint(equalTo: view.centerXAnchor, constant: 10).isActive = true
+        daysToPlayDisplay.topAnchor.constraint(equalTo: daysToPlayLabel.bottomAnchor, constant: 0).isActive = true
+        daysToPlayDisplay.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        daysToPlayDisplay.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
         scrollView.addSubview(saveTourney)
         saveTourney.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        saveTourney.topAnchor.constraint(equalTo: matchesControl.bottomAnchor, constant: 20).isActive = true
+        saveTourney.topAnchor.constraint(equalTo: daysToPlayStepper.bottomAnchor, constant: 20).isActive = true
         saveTourney.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -100).isActive = true
         saveTourney.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
@@ -1056,7 +1241,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
     
     let types = ["Ladder"]
     let skillLevels = [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
-    let sexes = ["Mens", "Womens", "Mixed"]
+    let sexes = ["Mens", "Womens", "Mixed", "Any"]
     
     let ageGroups = ["Any", "0-18", "19 - 34", "35-49", "50+"]
     let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]

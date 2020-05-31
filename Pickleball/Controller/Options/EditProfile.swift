@@ -15,14 +15,13 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
     var inputsContainerViewCenterYAnchor: NSLayoutConstraint?
     let blackView = UIView()
     var selectedDropDown = 0
-    var usernames = [String]()
     var emails = [String]()
     var sender = 0
     var loginPage: LoginPage?
     var startupPage: StartupPage?
     
     @objc func handleSaveChanges() {
-        guard let email = emailTextField.text?.lowercased(), let name = nameTextField.text, let lastName = nameTextField2.text, let username = usernameTextField.text?.lowercased(), let state = stateTextField.text, let county = countyTextField.text, let month = monthTextField.text, let day = dayTextField.text, let year = yearTextField.text, let skillLevel = skillLevelTextField.text, let sex = sexTextField.text else {
+        guard let email = emailTextField.text?.lowercased(), let name = nameTextField.text, let lastName = nameTextField2.text, let state = stateTextField.text, let county = countyTextField.text, let month = monthTextField.text, let day = dayTextField.text, let year = yearTextField.text, let skillLevel = skillLevelTextField.text, let sex = sexTextField.text else {
             let newalert = UIAlertController(title: "Sorry", message: "One or more fields are incorrect", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
@@ -46,19 +45,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
             self.present(newalert, animated: true, completion: nil)
             return
         }
-        
-        if username.isValidName != true {
-            let newalert = UIAlertController(title: "Sorry", message: "Invalid Username. Must be between 3 and 15 characters, only letters, numbers, and underscores allowed", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
-            self.present(newalert, animated: true, completion: nil)
-            return
-        }
-        if usernames.contains(username) == true {
-            let newalert = UIAlertController(title: "Sorry", message: "This username has already been taken, please select a different one", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
-            self.present(newalert, animated: true, completion: nil)
-            return
-        }
         if emails.contains(email) == true {
             let newalert = UIAlertController(title: "Sorry", message: "This email has already been taken, please select a different one", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
@@ -78,7 +64,7 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
     }
     
     @objc func saveChanges(action: UIAlertAction) {
-        guard let email = emailTextField.text?.lowercased(), let name = nameTextField.text, let lastName = nameTextField2.text, let username = usernameTextField.text?.lowercased(), let state = stateTextField.text, let county = countyTextField.text, let month = monthTextField.text, let day = dayTextField.text, let year = yearTextField.text, let skillLevel = skillLevelTextField.text, let sex = sexTextField.text else {
+        guard let email = emailTextField.text?.lowercased(), let name = nameTextField.text, let lastName = nameTextField2.text, let state = stateTextField.text, let county = countyTextField.text, let month = monthTextField.text, let day = dayTextField.text, let year = yearTextField.text, let skillLevel = skillLevelTextField.text, let sex = sexTextField.text else {
             let newalert = UIAlertController(title: "Sorry", message: "One or more fields are incorrect", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
@@ -103,9 +89,9 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let usersref = ref.child("users").child(uid)
         var values = [String : Any]()
         if sender == 0 {
-            values = ["name": fullName, "email": email, "username": username, "exp": 0, "state": state, "county": county, "skill_level": Float(skillLevel)!, "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": birthdate, "sex": sex] as [String : Any]
+            values = ["name": fullName, "email": email, "exp": 0, "state": state, "county": county, "skill_level": Float(skillLevel)!, "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": birthdate, "sex": sex] as [String : Any]
         } else {
-            values = ["name": fullName, "email": email, "username": username, "state": state, "county": county, "skill_level": Float(skillLevel)!, "court": "none", "birthdate": birthdate, "sex": sex] as [String : Any]
+            values = ["name": fullName, "email": email, "state": state, "county": county, "skill_level": Float(skillLevel)!, "court": "none", "birthdate": birthdate, "sex": sex] as [String : Any]
         }
         usersref.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
@@ -140,14 +126,12 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 let username = value["username"] as? String ?? "Player not found"
                 let email = value["email"] as? String ?? "Player not found"
                 if snapshot.key != uid {
-                    self.usernames.append(username)
                     self.emails.append(email)
                 } else if snapshot.key == uid {
                     let fullName = value["name"] as? String ?? "none none"
                     let names = self.getFirstAndLast(fullName: fullName)
                     self.nameTextField.text = names[0]
                     self.nameTextField2.text = names[1]
-                    self.usernameTextField.text = value["username"] as? String ?? "Player not found"
                     self.emailTextField.text = value["email"] as? String ?? "Player not found"
                     if self.sender == 2 {
                         self.stateTextField.text = value["state"] as? String ?? ""
@@ -192,7 +176,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         nameTextField.resignFirstResponder()
         nameTextField2.resignFirstResponder()
         emailTextField.resignFirstResponder()
-        usernameTextField.resignFirstResponder()
         self.view.endEditing(true)
     }
     
@@ -256,7 +239,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         nameTextField.resignFirstResponder()
         nameTextField2.resignFirstResponder()
         emailTextField.resignFirstResponder()
-        usernameTextField.resignFirstResponder()
         self.view.endEditing(true)
         if let window = UIApplication.shared.keyWindow {
             blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
@@ -427,7 +409,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         nameTextField.resignFirstResponder()
         nameTextField2.resignFirstResponder()
         emailTextField.resignFirstResponder()
-        usernameTextField.resignFirstResponder()
         self.view.endEditing(true)
     }
     
@@ -491,37 +472,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         return view
     }()
     
-    let usernameLabel: UILabel = {
-        let lb = UILabel()
-        lb.text = "Username"
-        lb.translatesAutoresizingMaskIntoConstraints = false
-        lb.font = UIFont(name: "HelveticaNeue", size: 20)
-        return lb
-    }()
-    
-    let usernameTextField: UITextField = {
-        let tf = UITextField()
-        //tf.placeholder = "Name"
-        tf.autocapitalizationType = UITextAutocapitalizationType.none
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        tf.font = UIFont(name: "HelveticaNeue-Light", size: 20)
-        return tf
-    }()
-    
-    let usernameSeparatorView: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor(r: 220, g: 220, b: 220)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    let verticalSeparatorView2: UIView = {
-        let view = UIView()
-        view.backgroundColor = .black
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
     let emailLabel: UILabel = {
         let lb = UILabel()
         lb.text = "Email"
@@ -534,6 +484,7 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let tf = UITextField()
         tf.autocapitalizationType = UITextAutocapitalizationType.none
         tf.isUserInteractionEnabled = false
+        tf.adjustsFontSizeToFitWidth = true
         //tf.placeholder = "Name"
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.font = UIFont(name: "HelveticaNeue-Light", size: 20)
@@ -852,7 +803,7 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         inputsContainerViewCenterYAnchor = inputsContainerView.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 60)
         inputsContainerViewCenterYAnchor?.isActive = true
         inputsContainerView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
-        inputsContainerView.heightAnchor.constraint(equalToConstant: 300).isActive = true
+        inputsContainerView.heightAnchor.constraint(equalToConstant: 250).isActive = true
         
         scrollView.addSubview(inputsContainerView2)
         inputsContainerView2.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
@@ -883,13 +834,13 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         nameLabel.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
         nameLabel.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
         nameLabel.rightAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 110).isActive = true
-        nameLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        nameLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(nameTextField)
         nameTextField.leftAnchor.constraint(equalTo: nameLabel.rightAnchor, constant: 8).isActive = true
         nameTextField.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
         nameTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        nameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(nameSeparatorView)
         nameSeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor).isActive = true
@@ -907,13 +858,13 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         nameLabel2.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
         nameLabel2.topAnchor.constraint(equalTo: nameLabel.bottomAnchor).isActive = true
         nameLabel2.rightAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 110).isActive = true
-        nameLabel2.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        nameLabel2.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(nameTextField2)
         nameTextField2.leftAnchor.constraint(equalTo: nameLabel2.rightAnchor, constant: 8).isActive = true
         nameTextField2.topAnchor.constraint(equalTo: nameLabel.bottomAnchor).isActive = true
         nameTextField2.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        nameTextField2.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        nameTextField2.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(nameSeparatorView2)
         nameSeparatorView2.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor).isActive = true
@@ -927,41 +878,17 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         verticalSeparatorView12.widthAnchor.constraint(equalToConstant: 1).isActive = true
         verticalSeparatorView12.heightAnchor.constraint(equalTo: nameLabel2.heightAnchor, constant: -12).isActive = true
         
-        inputsContainerView.addSubview(usernameLabel)
-        usernameLabel.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
-        usernameLabel.topAnchor.constraint(equalTo: nameLabel2.bottomAnchor).isActive = true
-        usernameLabel.rightAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 110).isActive = true
-        usernameLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
-        
-        inputsContainerView.addSubview(usernameTextField)
-        usernameTextField.leftAnchor.constraint(equalTo: usernameLabel.rightAnchor, constant: 8).isActive = true
-        usernameTextField.topAnchor.constraint(equalTo: usernameLabel.topAnchor).isActive = true
-        usernameTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        usernameTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
-        
-        inputsContainerView.addSubview(usernameSeparatorView)
-        usernameSeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor).isActive = true
-        usernameSeparatorView.topAnchor.constraint(equalTo: usernameTextField.bottomAnchor).isActive = true
-        usernameSeparatorView.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor).isActive = true
-        usernameSeparatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        
-        inputsContainerView.addSubview(verticalSeparatorView2)
-        verticalSeparatorView2.rightAnchor.constraint(equalTo: usernameLabel.rightAnchor).isActive = true
-        verticalSeparatorView2.centerYAnchor.constraint(equalTo: usernameLabel.centerYAnchor).isActive = true
-        verticalSeparatorView2.widthAnchor.constraint(equalToConstant: 1).isActive = true
-        verticalSeparatorView2.heightAnchor.constraint(equalTo: usernameLabel.heightAnchor, constant: -12).isActive = true
-        
         inputsContainerView.addSubview(emailLabel)
         emailLabel.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
-        emailLabel.topAnchor.constraint(equalTo: usernameLabel.bottomAnchor).isActive = true
+        emailLabel.topAnchor.constraint(equalTo: nameLabel2.bottomAnchor).isActive = true
         emailLabel.rightAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 110).isActive = true
-        emailLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        emailLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(emailTextField)
         emailTextField.leftAnchor.constraint(equalTo: emailLabel.rightAnchor, constant: 8).isActive = true
         emailTextField.topAnchor.constraint(equalTo: emailLabel.topAnchor).isActive = true
         emailTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        emailTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(emailSeparatorView)
         emailSeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor).isActive = true
@@ -979,13 +906,13 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         stateLabel.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
         stateLabel.topAnchor.constraint(equalTo: emailLabel.bottomAnchor).isActive = true
         stateLabel.rightAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 110).isActive = true
-        stateLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        stateLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(stateTextField)
         stateTextField.leftAnchor.constraint(equalTo: stateLabel.rightAnchor, constant: 8).isActive = true
         stateTextField.topAnchor.constraint(equalTo: stateLabel.topAnchor).isActive = true
         stateTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        stateTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        stateTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(stateDropDown)
         stateDropDown.leftAnchor.constraint(equalTo: stateLabel.rightAnchor, constant: 8).isActive = true
@@ -1009,19 +936,19 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         countyLabel.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
         countyLabel.topAnchor.constraint(equalTo: stateLabel.bottomAnchor).isActive = true
         countyLabel.rightAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 110).isActive = true
-        countyLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        countyLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(countyTextField)
         countyTextField.leftAnchor.constraint(equalTo: countyLabel.rightAnchor, constant: 8).isActive = true
         countyTextField.topAnchor.constraint(equalTo: countyLabel.topAnchor).isActive = true
         countyTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        countyTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        countyTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(countyDropDown)
         countyDropDown.leftAnchor.constraint(equalTo: countyLabel.rightAnchor, constant: 8).isActive = true
         countyDropDown.topAnchor.constraint(equalTo: countyLabel.topAnchor).isActive = true
         countyDropDown.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: 4).isActive = true
-        countyDropDown.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/6).isActive = true
+        countyDropDown.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/5).isActive = true
         
         inputsContainerView.addSubview(countySeparatorView)
         countySeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor).isActive = true

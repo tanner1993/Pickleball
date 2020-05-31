@@ -28,15 +28,17 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     var opp2Id = "none"
     var teams = [Team]()
     var tourneyId = "none"
+    var tourneyName = "none"
     var simpleInvite = 0
     var tourneyOpenInvites = [String]()
+    var tourneySimpleInvites = [String]()
     var tourneyStandings = TourneyStandings()
     var startTime: Double = 0
+    var whichTourney = Int()
+    var tourneyList: TourneyList?
     
     var friends = [Player]()
     var almostFriends = [Player]()
-    
-    var tourneyList: TourneyList?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -272,18 +274,17 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         switch sender {
         case 2:
             createMatch?.teammate.id = searchResults[whichOne].id ?? "none"
-            createMatch?.teammate.username = searchResults[whichOne].username ?? "none"
+            createMatch?.teammate.name = searchResults[whichOne].name ?? "none"
             createMatch?.teammate.skillLevel = "\(searchResults[whichOne].skill_level ?? 1.0)"
             createMatch?.teammate.deviceId = searchResults[whichOne].deviceId ?? "none"
         case 3:
             createMatch?.opponent1.id = searchResults[whichOne].id ?? "none"
-            createMatch?.opponent1.username = searchResults[whichOne].username ?? "none"
+            createMatch?.opponent1.name = searchResults[whichOne].name ?? "none"
             createMatch?.opponent1.skillLevel = "\(searchResults[whichOne].skill_level ?? 1.0)"
-            print(searchResults[whichOne].deviceId ?? "none")
             createMatch?.opponent1.deviceId = searchResults[whichOne].deviceId ?? "none"
         case 4:
             createMatch?.opponent2.id = searchResults[whichOne].id ?? "none"
-            createMatch?.opponent2.username = searchResults[whichOne].username ?? "none"
+            createMatch?.opponent2.name = searchResults[whichOne].name ?? "none"
             createMatch?.opponent2.skillLevel = "\(searchResults[whichOne].skill_level ?? 1.0)"
             createMatch?.opponent2.deviceId = searchResults[whichOne].deviceId ?? "none"
         default:
@@ -322,7 +323,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         let timeStamp = Int(Date().timeIntervalSince1970)
         let ref = Database.database().reference().child("notifications")
         let notificationRef = ref.childByAutoId()
-        let values = ["type": "tourney_invite", "fromId": uid, "toId": toId, "timestamp": timeStamp, "tourneyId": tourneyId] as [String : Any]
+        let values = ["type": "tourney_invite", "fromId": uid, "toId": toId, "timestamp": timeStamp, "tourneyId": tourneyId, "tourneyName": tourneyName] as [String : Any]
         notificationRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -370,14 +371,25 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             self.present(alreadyRegistered, animated: true, completion: nil)
             return
         }
-        let joinInviteConfirmed = UIAlertController(title: "Successfully sent tourney invite", message: "It's waiting in your friends inbox", preferredStyle: .alert)
-        joinInviteConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: self.handleDismiss))
+        
+        let check2 = checkAlreadySimpleInvited(toId: toId)
+        if check2 == false {
+            let alreadyRegistered = UIAlertController(title: "No need", message: "This player has already been invited", preferredStyle: .alert)
+            alreadyRegistered.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            self.present(alreadyRegistered, animated: true, completion: nil)
+            return
+        }
+        
+        let joinInviteConfirmed = UIAlertController(title: "Successfully sent tourney invite", message: "It's waiting in the player's inbox", preferredStyle: .alert)
+        joinInviteConfirmed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         self.present(joinInviteConfirmed, animated: true, completion: nil)
         let uid = Auth.auth().currentUser!.uid
         let timeStamp = Int(Date().timeIntervalSince1970)
+        self.tourneySimpleInvites.append(toId)
+        self.tourneyList?.myTourneys[whichTourney].simpleInvites?.append(toId)
         let ref = Database.database().reference().child("notifications")
         let notificationRef = ref.childByAutoId()
-        let values = ["type": "tourney_invite_simple", "fromId": uid, "toId": toId, "timestamp": timeStamp, "tourneyId": tourneyId] as [String : Any]
+        let values = ["type": "tourney_invite_simple", "fromId": uid, "toId": toId, "timestamp": timeStamp, "tourneyId": tourneyId, "tourneyName": tourneyName] as [String : Any]
         notificationRef.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -388,7 +400,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             
             let notificationsRef = Database.database().reference()
             let notificationId = notificationRef.key!
-            let childUpdates = ["/\("user_notifications")/\(toId)/\(notificationId)/": 1] as [String : Any]
+            let childUpdates = ["/\("user_notifications")/\(toId)/\(notificationId)/": 1, "/\("tourneys")/\(self.tourneyId)/\("simpleInvites")/": self.tourneySimpleInvites] as [String : Any]
             notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -432,6 +444,14 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         }
     }
     
+    func checkAlreadySimpleInvited(toId: String) -> Bool {
+        if tourneySimpleInvites.contains(toId) == true {
+            return false
+        } else {
+            return true
+        }
+    }
+    
     let whiteContainerView: UIView = {
         let wc = UIView()
         wc.translatesAutoresizingMaskIntoConstraints = false
@@ -460,7 +480,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     let searchButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = UIColor.init(r: 88, g: 148, b: 200)
-        button.setTitle("Search Players", for: .normal)
+        button.setTitle("Filter Players", for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 5
@@ -618,6 +638,10 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         return sb
     }()
     
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+    
     func fetchUsers() {
         let rootRef = Database.database().reference()
         let query = rootRef.child("users").queryOrdered(byChild: "name")
@@ -633,6 +657,9 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     let state = value["state"] as? String ?? "No State"
                     let county = value["county"] as? String ?? "No County"
                     let deviceId = value["deviceId"] as? String ?? "none"
+                    let sex = value["sex"] as? String ?? "none"
+                    let birthdate = value["birthdate"] as? Double ?? 0
+                    let ageGroup = player.getAgeGroup(birthdate: birthdate)
                     player.name = name
                     player.username = username
                     player.id = child.key
@@ -641,8 +668,10 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     player.state = state
                     player.county = county
                     player.deviceId = deviceId
+                    player.sex = sex
+                    player.age_group = ageGroup
                     
-                    if player.id != Auth.auth().currentUser?.uid {
+                    if player.id != self.teammateId && player.id != self.opp1Id && player.id != self.opp2Id && player.id != Auth.auth().currentUser?.uid {
                         self.players.append(player)
                     }
                 }
@@ -708,7 +737,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     let counties = ["Any", "Beaver", "Box Elder", "Cache", "Carbon", "Daggett", "Davis", "Duchesne", "Emery", "Garfield", "Grand", "Iron", "Juab", "Kane", "Millard", "Morgan", "Piute", "Rich", "Salt Lake", "San Juan", "Sanpete", "Sevier", "Summit", "Tooele", "Uintah", "Utah", "Wasatch", "Washington", "Wayne", "Weber"]
     let skillLevels = ["Any", "2.0", "2.5", "3.0", "3.5", "4.0", "4.5", "5.0"]
     let sexes = ["Any", "Male", "Female"]
-    let ageGroups = ["Any", "0-18", "19 - 34", "35-49", "50+"]
+    let ageGroups = ["Any", "0 - 18", "19 - 34", "35 - 49", "50+"]
     
 }
 

@@ -92,6 +92,7 @@ class TeamStatsCell: UITableViewCell {
     let teamName1: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.adjustsFontSizeToFitWidth = true
         label.font = UIFont(name: "HelveticaNeue", size: 22)
         label.textAlignment = .right
         return label
@@ -99,6 +100,7 @@ class TeamStatsCell: UITableViewCell {
     
     let teamName2: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue", size: 22)
         label.textAlignment = .left

@@ -31,6 +31,11 @@ class Tourney: NSObject {
     var regTeams: Int?
     var style: Int?
     var teams: [Team]?
+    var matches: [Match2]?
+    var publicBool: Bool?
+    var daysToPlay: Int?
+    var invites: [String]?
+    var simpleInvites: [String]?
     
     func removeCantChallenge(team_1_player_1: String, team_1_player_2: String, team_2_player_1: String, team_2_player_2: String, tourneyId: String) {
         let ref = Database.database().reference().child("tourneys").child(tourneyId)
@@ -98,6 +103,7 @@ class Tourney: NSObject {
                 let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                 let time = value["time"] as? Double ?? Date().timeIntervalSince1970
                 let forfeit = value["forfeit"] as? Int ?? 0
+                let timeOfScores = value["timeOfScores"] as? Double ?? Date().timeIntervalSince1970
                 //self.setupCorrectBottom(active: active, submitter: submitter, confirmers: team1_scores, team2: team2_scores, idList: idList, startTime: time, forfeit: forfeit)
                 matchT.active = active
                 matchT.winner = winner
@@ -113,9 +119,106 @@ class Tourney: NSObject {
                 matchT.forfeit = forfeit
                 matchT.style = style
                 matchT.doubles = team_1_player_2 == "Player not found" ? false : true
+                matchT.timeOfScores = timeOfScores
                 completion(matchT)
             }
             
         }, withCancel: nil)
+    }
+    
+    func handleSetupSemifinal1() {
+        var team1stIndex = -1
+        var team2ndIndex = -1
+        var team3rdIndex = -1
+        var team4thIndex = -1
+        guard let tourneyTeams = teams else {
+            return
+        }
+        for (index, element) in tourneyTeams.enumerated() {
+            if element.rank == 1 {
+                team1stIndex = index
+            } else if element.rank == 2 {
+                team2ndIndex = index
+            } else if element.rank == 3 {
+                team3rdIndex = index
+            } else if element.rank == 4 {
+                team4thIndex = index
+            }
+        }
+        handleSetupSemifinal2(team_1_player_1: tourneyTeams[team1stIndex].player1!, team_1_player_2: tourneyTeams[team1stIndex].player2!, team_2_player_1: tourneyTeams[team4thIndex].player1!, team_2_player_2: tourneyTeams[team4thIndex].player2!)
+        handleSetupSemifinal2(team_1_player_1: tourneyTeams[team2ndIndex].player1!, team_1_player_2: tourneyTeams[team2ndIndex].player2!, team_2_player_1: tourneyTeams[team3rdIndex].player1!, team_2_player_2: tourneyTeams[team3rdIndex].player2!)
+        var yetToView2 = [String]()
+        for index in yetToView ?? [String]() {
+            yetToView2.append(index)
+        }
+        let userIds = [tourneyTeams[team1stIndex].player1!, tourneyTeams[team1stIndex].player2!, tourneyTeams[team4thIndex].player1!, tourneyTeams[team4thIndex].player2!, tourneyTeams[team2ndIndex].player1!, tourneyTeams[team2ndIndex].player2!, tourneyTeams[team3rdIndex].player1!, tourneyTeams[team3rdIndex].player2!]
+        for index in userIds {
+            if yetToView2.contains(index) == false {
+                yetToView2.append(index)
+            }
+        }
+        
+        let notificationsRef = Database.database().reference()
+        let childUpdates = ["/\("tourneys")/\(self.id!)/\("yet_to_view")/": yetToView2] as [String : Any]
+        notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if error != nil {
+                print("Data could not be saved: \(String(describing: error)).")
+                return
+            }
+            
+            print("Crazy data 2 saved!")
+            
+            
+        })
+    }
+    
+    func handleSetupSemifinal2(team_1_player_1: String, team_1_player_2: String, team_2_player_1: String, team_2_player_2: String) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let userIds = [team_1_player_1, team_1_player_2, team_2_player_1, team_2_player_2]
+        
+        let timeOfChallenge = Date().timeIntervalSince1970
+        let ref = Database.database().reference().child("tourneys").child(id ?? "none").child("matches")
+        let createMatchRef = ref.childByAutoId()
+        let values = ["style": style ?? 1, "active": 1, "team_1_player_1": team_1_player_1, "team_1_player_2": team_1_player_2, "team_2_player_1": team_2_player_1, "team_2_player_2": team_2_player_2, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
+        createMatchRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            let notificationsRef = Database.database().reference()
+            let childUpdates = ["/\("user_tourneys")/\(team_1_player_1)/\(self.id!)/": team_1_player_1 == uid ? 0 : 1, "/\("user_tourneys")/\(team_1_player_2)/\(self.id!)/": team_1_player_2 == uid ? 0 : 1, "/\("user_tourneys")/\(team_2_player_1)/\(self.id!)/": team_2_player_1 == uid ? 0 : 1, "/\("user_tourneys")/\(team_2_player_2)/\(self.id!)/": team_2_player_2 == uid ? 0 : 1] as [String : Any]
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                
+                let newMessage = "You have made it to semifinals!"
+                let title = self.name!
+                for index in userIds {
+                    Database.database().reference().child("users").child(index).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
+                        if let value = snapshot.value {
+                            let deviceId = value as? String ?? "none"
+                            let pusher = PushNotificationHandler()
+                            pusher.setupPushNotification(deviceId: deviceId, message: newMessage, title: title)
+                        }
+                    })
+                }
+                
+                print("Crazy data 2 saved!")
+                
+                
+            })
+            
+        })
     }
 }

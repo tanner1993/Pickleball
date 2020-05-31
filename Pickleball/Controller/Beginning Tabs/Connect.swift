@@ -188,9 +188,6 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             ref2.observe(.childAdded, with: { (snapshot) in
                 let messageId = snapshot.key
                 let messageSeen = snapshot.value! as! Int
-//                if messageSeen == 1 {
-//                    Database.database().reference().child("user_messages").child(uid).child(recipientId).child(messageId).setValue(0, andPriority: .none)
-//                }
                 let messagesReference = Database.database().reference().child("messages").child(messageId)
                 messagesReference.observeSingleEvent(of: .value, with: {(snapshot) in
                     if let value = snapshot.value as? NSDictionary {
@@ -241,17 +238,15 @@ class RecentMessagesCell: BaseCell {
             }
             recentMessage.text = message?.message
             let chatPartnerId = message?.chatPartnerId()
-            var chatPartnerName = "nothing"
             let recipientNameRef = Database.database().reference().child("users").child(chatPartnerId ?? "No Id")
             recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
                 if let value = snapshot.value as? [String: AnyObject] {
-                    chatPartnerName = value["username"] as? String ?? "noname"
                     let chatPartnerName2 = value["name"] as? String ?? "noname"
                     let chatPartnerId = snapshot.key
                     if chatPartnerId != self.message?.chatPartnerId() {
                         
                     } else {
-                        self.playerName.text = chatPartnerName
+                        self.playerName.text = chatPartnerName2
                         var initials = ""
                         var finalChar = 0
                         for (index, char) in chatPartnerName2.enumerated() {

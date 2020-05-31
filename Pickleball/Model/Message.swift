@@ -20,6 +20,7 @@ class Message: NSObject {
     var id: String?
     var tourneyId: String?
     var seen: Bool?
+    var tourneyName: String?
     
     func chatPartnerId() -> String? {
         return fromId == Auth.auth().currentUser?.uid ? toId : fromId

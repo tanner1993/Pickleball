@@ -66,14 +66,7 @@ class PlayerCell: BaseCell {
 class FriendListCell: BaseCell {
     var player: Player? {
         didSet {
-            if messageButton.isHidden == true {
-                playerUserName.text = "\(player?.username ?? "none")  |  \(player?.name ?? "none")"
-                playerUsernameWidthAnchor?.constant = 225
-            } else {
-                playerUserName.text = "\(player?.username ?? "none")"
-                playerUsernameWidthAnchor?.constant = 135
-            }
-            //playerName.text = "|  \(player?.name ?? "none")"
+            playerUserName.text = "\(player?.name ?? "none")"
             skillLevel.text = "\(player?.skill_level ?? 0.0)"
             appLevel.text = "\(player?.halo_level ?? 0)"
             playerLocation.text = "\(player?.state ?? "none"), \(player?.county ?? "none")"
@@ -205,12 +198,19 @@ class FriendListCell: BaseCell {
         playerInitials.heightAnchor.constraint(equalToConstant: 70).isActive = true
         playerInitials.widthAnchor.constraint(equalToConstant: 70).isActive = true
         
+        addSubview(messageButton)
+        messageButton.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
+        messageButton.widthAnchor.constraint(equalToConstant: 120).isActive = true
+        messageButton.heightAnchor.constraint(equalToConstant: frame.height - 8).isActive = true
+        messageButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        
         addSubview(playerUserName)
         playerUserName.topAnchor.constraint(equalTo: topAnchor).isActive = true
         playerUserName.leftAnchor.constraint(equalTo: playerInitials.rightAnchor, constant: 4).isActive = true
         playerUserName.heightAnchor.constraint(equalToConstant: frame.height / 2).isActive = true
-        playerUsernameWidthAnchor = playerUserName.widthAnchor.constraint(equalToConstant: 135)
-        playerUsernameWidthAnchor?.isActive = true
+        playerUserName.rightAnchor.constraint(equalTo: messageButton.leftAnchor, constant: -4).isActive = true
+//        playerUsernameWidthAnchor = playerUserName.widthAnchor.constraint(equalToConstant: 135)
+//        playerUsernameWidthAnchor?.isActive = true
         
 //        addSubview(playerName)
 //        playerName.topAnchor.constraint(equalTo: topAnchor).isActive = true
@@ -230,11 +230,6 @@ class FriendListCell: BaseCell {
         appLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
         appLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
         
-        addSubview(messageButton)
-        messageButton.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
-        messageButton.leftAnchor.constraint(equalTo: playerUserName.rightAnchor, constant: 4).isActive = true
-        messageButton.heightAnchor.constraint(equalToConstant: frame.height - 8).isActive = true
-        messageButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
         
 //        addSubview(friendImage)
 //        friendImage.topAnchor.constraint(equalTo: playerUserName.topAnchor, constant: 10).isActive = true

@@ -11,6 +11,9 @@ import Firebase
 import FirebaseAuth
 
 class RecentMatchesCell: BaseCell {
+    
+    var daysToPlay = Int()
+    
     func dayDifference(from interval : TimeInterval) -> String
     {
         let calendar = Calendar.current
@@ -184,20 +187,24 @@ class RecentMatchesCell: BaseCell {
             } else {
                 if match?.active == 0 && (startTime + 86400) < Date().timeIntervalSince1970 {
                     timeLeftLabel.text = "match\nexp"
-                } else if (startTime + (86400 * 3)) < Date().timeIntervalSince1970 {
+                } else if (startTime + Double(86400 * daysToPlay)) < Date().timeIntervalSince1970 {
                     timeLeftLabel.text = "match\nexp"
                 } else {
                     var hoursLeft: Double = 0
                     if match?.active == 0 {
                         hoursLeft = ((startTime + 86400) - Date().timeIntervalSince1970) / 3600
                     } else {
-                        hoursLeft = ((startTime + (86400 * 3)) - Date().timeIntervalSince1970) / 3600
+                        hoursLeft = ((startTime + Double(86400 * daysToPlay)) - Date().timeIntervalSince1970) / 3600
                     }
                     let hoursRounded = hoursLeft.round(nearest: 1)
                     if hoursRounded == 0 {
-                        timeLeftLabel.text = "<0.5\ndays\nleft"
-                    } else {
+                        timeLeftLabel.text = "<0.5\nhours\nleft"
+                    } else if hoursRounded > 0 && hoursRounded < 48 {
                         timeLeftLabel.text = "\(hoursRounded)\nhours\nleft"
+                    } else {
+                        let daysLeft = ((startTime + Double(86400 * daysToPlay)) - Date().timeIntervalSince1970) / 86400
+                        let daysRounded = daysLeft.round(nearest: 1)
+                        timeLeftLabel.text = "\(daysRounded)\ndays\nleft"
                     }
                 }
             }
