@@ -3,109 +3,109 @@
     {
       "size" : "20x20",
       "idiom" : "iphone",
-      "filename" : "PRIcon40.png",
+      "filename" : "PGIconSized40.png",
       "scale" : "2x"
     },
     {
       "size" : "20x20",
       "idiom" : "iphone",
-      "filename" : "PRIcon60.png",
+      "filename" : "PGIconSized60.png",
       "scale" : "3x"
     },
     {
       "size" : "29x29",
       "idiom" : "iphone",
-      "filename" : "PRIcon58-1.png",
+      "filename" : "PGIconSized58.png",
       "scale" : "2x"
     },
     {
       "size" : "29x29",
       "idiom" : "iphone",
-      "filename" : "PRIcon87.png",
+      "filename" : "PGIconSized87.png",
       "scale" : "3x"
     },
     {
       "size" : "40x40",
       "idiom" : "iphone",
-      "filename" : "PRIcon80.png",
+      "filename" : "PGIconSized80.png",
       "scale" : "2x"
     },
     {
       "size" : "40x40",
       "idiom" : "iphone",
-      "filename" : "PRIcon120.png",
+      "filename" : "PGIconSized120-1.png",
       "scale" : "3x"
     },
     {
       "size" : "60x60",
       "idiom" : "iphone",
-      "filename" : "test3120.png",
+      "filename" : "PGIconSized120.png",
       "scale" : "2x"
     },
     {
       "size" : "60x60",
       "idiom" : "iphone",
-      "filename" : "test3180.png",
+      "filename" : "PGIconSized180.png",
       "scale" : "3x"
     },
     {
       "size" : "20x20",
       "idiom" : "ipad",
-      "filename" : "PRIcon20.png",
+      "filename" : "PGIconSized20.png",
       "scale" : "1x"
     },
     {
       "size" : "20x20",
       "idiom" : "ipad",
-      "filename" : "PRIcon40-1.png",
+      "filename" : "PGIconSized40-1.png",
       "scale" : "2x"
     },
     {
       "size" : "29x29",
       "idiom" : "ipad",
-      "filename" : "PRIcon29.png",
+      "filename" : "PGIconSized29.png",
       "scale" : "1x"
     },
     {
       "size" : "29x29",
       "idiom" : "ipad",
-      "filename" : "PRIcon58.png",
+      "filename" : "PGIconSized58-1.png",
       "scale" : "2x"
     },
     {
       "size" : "40x40",
       "idiom" : "ipad",
-      "filename" : "PRIcon40-2.png",
+      "filename" : "PGIconSized40-2.png",
       "scale" : "1x"
     },
     {
       "size" : "40x40",
       "idiom" : "ipad",
-      "filename" : "PRIcon80-1.png",
+      "filename" : "PGIconSized80-1.png",
       "scale" : "2x"
     },
     {
       "size" : "76x76",
       "idiom" : "ipad",
-      "filename" : "PRIcon76.png",
+      "filename" : "PGIconSized76.png",
       "scale" : "1x"
     },
     {
       "size" : "76x76",
       "idiom" : "ipad",
-      "filename" : "PRIcon152.png",
+      "filename" : "PGIconSized152.png",
       "scale" : "2x"
     },
     {
       "size" : "83.5x83.5",
       "idiom" : "ipad",
-      "filename" : "PRIcon167.png",
+      "filename" : "PGIconSized167.png",
       "scale" : "2x"
     },
     {
       "size" : "1024x1024",
       "idiom" : "ios-marketing",
-      "filename" : "PRIcon.jpg",
+      "filename" : "PGIconSized@1024x-100.jpg",
       "scale" : "1x"
     }
   ],
