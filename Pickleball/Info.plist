@@ -26,12 +26,12 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>fb2582799202033035</string>
-				<string>com.googleusercontent.apps.436570257454-ncap4neo0brhhaqtamdfcqsk8kibvu0o</string>
+				<string>com.googleusercontent.apps.903829995045-5go0eacc5f64vh3mq758s3vkvht3bg1r</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>FacebookAppID</key>
 	<string>2582799202033035</string>
 	<key>FacebookDisplayName</key>

@@ -30,46 +30,11 @@ class TeamCell: FeedCell {
     
     var team: Team? {
         didSet {
-//            let player1ref = Database.database().reference().child("users").child(team?.player1 ?? "nope").child("name")
-//            player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                if let value = snapshot.value {
-//                    let playerName = value as? String ?? "noName"
-//                    self.player1.text = self.getFirstAndLastInitial(name: playerName)
-//                }
-//            })
-//            
-//            let player2ref = Database.database().reference().child("users").child(team?.player2 ?? "nope").child("name")
-//            player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-//                if let value = snapshot.value {
-//                    let playerName = value as? String ?? "noName"
-//                    self.player2.text = self.getFirstAndLastInitial(name: playerName)
-//                }
-//            })
             wins.text = "W: \(team?.wins ?? -1)"
             losses.text = "L: \(team?.losses ?? -1)"
             teamRank.text = "\(team?.rank ?? -1)"
         }
     }
-    
-//    func getFirstAndLastInitial(name: String) -> String {
-//        var initials = ""
-//        var finalChar = 0
-//        for char in name {
-//            if finalChar == 0 {
-//                initials.append(char)
-//            }
-//            if finalChar == 1 {
-//                initials.append(char)
-//                initials.append(".")
-//                break
-//            }
-//            
-//            if char == " " {
-//                finalChar = 1
-//            }
-//        }
-//        return initials
-//    }
     
     let player1: UILabel = {
         let label = UILabel()

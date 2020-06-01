@@ -41,7 +41,6 @@
 		7745A2E3247D7C6700FC1FBF /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7745A2E2247D7C6700FC1FBF /* FacebookCore */; };
 		7745A2E5247D7C6700FC1FBF /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 7745A2E4247D7C6700FC1FBF /* FacebookLogin */; };
 		7745AC72240CA413008C8900 /* FriendInviteCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7745AC71240CA413008C8900 /* FriendInviteCell.swift */; };
-		77549E1A246EFEF00043FD44 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 77549E19246EFEEF0043FD44 /* GoogleService-Info.plist */; };
 		77549E1C24742CC60043FD44 /* ChangeStatusInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77549E1B24742CC60043FD44 /* ChangeStatusInfo.swift */; };
 		77549E1E24746D8C0043FD44 /* TourneyInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77549E1D24746D8C0043FD44 /* TourneyInfo.swift */; };
 		77549E202475E3180043FD44 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77549E1F2475E3180043FD44 /* ProfileView.swift */; };
@@ -49,7 +48,7 @@
 		7757C4742419AAF5006E059A /* EmptyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7757C4732419AAF5006E059A /* EmptyCell.swift */; };
 		7757C4762427F372006E059A /* WelcomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7757C4752427F372006E059A /* WelcomePage.swift */; };
 		775DD31C247DECCE0068209A /* FacebookShare in Frameworks */ = {isa = PBXBuildFile; productRef = 775DD31B247DECCE0068209A /* FacebookShare */; };
-		775DD31E247DF2250068209A /* FBSDKShareKit in Resources */ = {isa = PBXBuildFile; fileRef = 775DD31D247DF2250068209A /* FBSDKShareKit */; };
+		775DD320248488070068209A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 775DD31F248488070068209A /* GoogleService-Info.plist */; };
 		7760977B240EF21100AD30F5 /* CreateMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977A240EF21100AD30F5 /* CreateMatch.swift */; };
 		7760977D241000C400AD30F5 /* MatchNotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977C241000C400AD30F5 /* MatchNotificationCell.swift */; };
 		7760977F2410534D00AD30F5 /* MatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977E2410534D00AD30F5 /* MatchView.swift */; };
@@ -102,7 +101,6 @@
 		7745A2DD2478965700FC1FBF /* SelectCourtInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectCourtInfo.swift; sourceTree = "<group>"; };
 		7745A2DF247C978700FC1FBF /* PieBackgroundPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieBackgroundPopup.swift; sourceTree = "<group>"; };
 		7745AC71240CA413008C8900 /* FriendInviteCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendInviteCell.swift; sourceTree = "<group>"; };
-		77549E19246EFEEF0043FD44 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		77549E1B24742CC60043FD44 /* ChangeStatusInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeStatusInfo.swift; sourceTree = "<group>"; };
 		77549E1D24746D8C0043FD44 /* TourneyInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneyInfo.swift; sourceTree = "<group>"; };
 		77549E1F2475E3180043FD44 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
@@ -110,7 +108,7 @@
 		7755A848244A00A700A5CA45 /* Play.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Play.swift; sourceTree = "<group>"; };
 		7757C4732419AAF5006E059A /* EmptyCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyCell.swift; sourceTree = "<group>"; };
 		7757C4752427F372006E059A /* WelcomePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomePage.swift; sourceTree = "<group>"; };
-		775DD31D247DF2250068209A /* FBSDKShareKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = FBSDKShareKit; sourceTree = "<group>"; };
+		775DD31F248488070068209A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7760977A240EF21100AD30F5 /* CreateMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMatch.swift; sourceTree = "<group>"; };
 		7760977C241000C400AD30F5 /* MatchNotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationCell.swift; sourceTree = "<group>"; };
 		7760977E2410534D00AD30F5 /* MatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchView.swift; sourceTree = "<group>"; };
@@ -218,7 +216,7 @@
 				77BBB03D231EE56E006CB608 /* Helpers */,
 				77BBB03C231EE566006CB608 /* Model */,
 				77BBB029231499C5006CB608 /* Assets.xcassets */,
-				77549E19246EFEEF0043FD44 /* GoogleService-Info.plist */,
+				775DD31F248488070068209A /* GoogleService-Info.plist */,
 				77BBB022231499C3006CB608 /* AppDelegate.swift */,
 				77BBB026231499C3006CB608 /* Main.storyboard */,
 				77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */,
@@ -296,7 +294,6 @@
 		A20C0AA1F89D4ACB5FCE6A35 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				775DD31D247DF2250068209A /* FBSDKShareKit */,
 				7718BD772326C6C30004777C /* FirebaseAuth.framework */,
 				C36AE5BDF4C1B57CA0EF0834 /* Pods_Pickleball.framework */,
 			);
@@ -354,7 +351,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 77BBB01A231499C3006CB608 /* Build configuration list for PBXProject "Pickleball" */;
+			buildConfigurationList = 77BBB01A231499C3006CB608 /* Build configuration list for PBXProject "Pickleball Gamer" */;
 			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -380,11 +377,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				77549E1A246EFEF00043FD44 /* GoogleService-Info.plist in Resources */,
 				77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */,
 				77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */,
+				775DD320248488070068209A /* GoogleService-Info.plist in Resources */,
 				77BBB028231499C3006CB608 /* Main.storyboard in Resources */,
-				775DD31E247DF2250068209A /* FBSDKShareKit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -635,6 +631,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = Pickleball/Pickleball.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = UGU2X2N7R3;
 				ENABLE_BITCODE = YES;
 				INFOPLIST_FILE = Pickleball/Info.plist;
@@ -658,6 +655,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_ENTITLEMENTS = Pickleball/Pickleball.entitlements;
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = UGU2X2N7R3;
 				ENABLE_BITCODE = YES;
 				INFOPLIST_FILE = Pickleball/Info.plist;
@@ -676,7 +674,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		77BBB01A231499C3006CB608 /* Build configuration list for PBXProject "Pickleball" */ = {
+		77BBB01A231499C3006CB608 /* Build configuration list for PBXProject "Pickleball Gamer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				77BBB02F231499C5006CB608 /* Debug */,
