@@ -45,18 +45,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
             self.present(newalert, animated: true, completion: nil)
             return
         }
-        if emails.contains(email) == true {
-            let newalert = UIAlertController(title: "Sorry", message: "This email has already been taken, please select a different one", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
-            self.present(newalert, animated: true, completion: nil)
-            return
-        }
-        if isValidEmail(email) != true {
-            let newalert = UIAlertController(title: "Sorry", message: "This email is invalid", preferredStyle: UIAlertController.Style.alert)
-            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
-            self.present(newalert, animated: true, completion: nil)
-            return
-        }
         let newalert = UIAlertController(title: "Confirm", message: "Are you sure you want to save these changes?", preferredStyle: UIAlertController.Style.alert)
         newalert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.default, handler: nil))
         newalert.addAction(UIAlertAction(title: "Yes", style: UIAlertAction.Style.default, handler: saveChanges))

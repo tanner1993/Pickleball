@@ -114,7 +114,7 @@
 		7760977E2410534D00AD30F5 /* MatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchView.swift; sourceTree = "<group>"; };
 		77931F8323C65C8A00724247 /* CreateTourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTourney.swift; sourceTree = "<group>"; };
 		77940C4123C7AE6A000061D4 /* TourneySearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneySearch.swift; sourceTree = "<group>"; };
-		77BBB01F231499C3006CB608 /* Pickleball Gamer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Pickleball Gamer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77BBB022231499C3006CB608 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		77BBB027231499C3006CB608 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		77BBB029231499C5006CB608 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -202,7 +202,7 @@
 		77BBB020231499C3006CB608 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				77BBB01F231499C3006CB608 /* Pickleball Gamer.app */,
+				77BBB01F231499C3006CB608 /* Pickleball.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -324,7 +324,7 @@
 				775DD31B247DECCE0068209A /* FacebookShare */,
 			);
 			productName = Pickleball;
-			productReference = 77BBB01F231499C3006CB608 /* Pickleball Gamer.app */;
+			productReference = 77BBB01F231499C3006CB608 /* Pickleball.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -641,7 +641,7 @@
 				);
 				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = TRBoulder.Pickleball;
-				PRODUCT_NAME = "Pickleball Gamer";
+				PRODUCT_NAME = Pickleball;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -665,7 +665,7 @@
 				);
 				MARKETING_VERSION = 1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = TRBoulder.Pickleball;
-				PRODUCT_NAME = "Pickleball Gamer";
+				PRODUCT_NAME = Pickleball;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

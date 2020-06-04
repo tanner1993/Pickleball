@@ -10,8 +10,133 @@ import UIKit
 import Firebase
 import FirebaseAuth
 import FBSDKLoginKit
+import CryptoKit
+import AuthenticationServices
+
+@available(iOS 13.0, *)
+extension LoginPage: ASAuthorizationControllerDelegate {
+
+  func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+    if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+      guard let nonce = currentNonce else {
+        fatalError("Invalid state: A login callback was received, but no login request was sent.")
+      }
+      guard let appleIDToken = appleIDCredential.identityToken else {
+        print("Unable to fetch identity token")
+        return
+      }
+      guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+        print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
+        return
+      }
+      // Initialize a Firebase credential.
+      let credential = OAuthProvider.credential(withProviderID: "apple.com",
+      idToken: idTokenString,
+      rawNonce: nonce)
+      // Sign in with Firebase.
+      Auth.auth().signIn(with: credential) { (authResult, error) in
+        if (error != nil) {
+          // Error. If error.code == .MissingOrInvalidNonce, make sure
+          // you're sending the SHA256-hashed nonce as a hex string with
+          // your request to Apple.
+            print(error!.localizedDescription)
+          return
+        }
+        guard let uid = authResult?.user.uid else {
+            return
+        }
+        if self.uids.contains(uid) == false {
+            guard let firstname = appleIDCredential.fullName?.givenName, let lastname = appleIDCredential.fullName?.familyName else {
+              return
+          }
+        let email = appleIDCredential.email ?? "noneProvided"
+          //let fullName = self.playerNow.getUserFirstAndLastName(fullName: name)
+          self.createAccountForFBUser(email: email, fullName: firstname + " " + lastname, uid: uid)
+        } else {
+            self.dismiss(animated: true, completion: nil)
+        }
+      }
+    }
+  }
+
+  func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+    // Handle error.
+    print("Sign in with Apple errored: \(error)")
+  }
+
+}
+
+extension LoginPage: ASAuthorizationControllerPresentationContextProviding {
+    @available(iOS 13.0, *)
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        return view.window!
+    }
+    
+    
+}
 
 class LoginPage: UIViewController, LoginButtonDelegate {
+    
+    fileprivate var currentNonce: String?
+
+    @available(iOS 13, *)
+    @objc func startSignInWithAppleFlow() {
+      let nonce = randomNonceString()
+      currentNonce = nonce
+      let appleIDProvider = ASAuthorizationAppleIDProvider()
+      let request = appleIDProvider.createRequest()
+      request.requestedScopes = [.fullName, .email]
+      request.nonce = sha256(nonce)
+
+      let authorizationController = ASAuthorizationController(authorizationRequests: [request])
+      authorizationController.delegate = self
+        authorizationController.presentationContextProvider = self
+      authorizationController.performRequests()
+    }
+
+    @available(iOS 13, *)
+    private func sha256(_ input: String) -> String {
+      let inputData = Data(input.utf8)
+      let hashedData = SHA256.hash(data: inputData)
+      let hashString = hashedData.compactMap {
+        return String(format: "%02x", $0)
+      }.joined()
+
+      return hashString
+    }
+    
+    private func randomNonceString(length: Int = 32) -> String {
+      precondition(length > 0)
+      let charset: Array<Character> =
+          Array("0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._")
+      var result = ""
+      var remainingLength = length
+
+      while remainingLength > 0 {
+        let randoms: [UInt8] = (0 ..< 16).map { _ in
+          var random: UInt8 = 0
+          let errorCode = SecRandomCopyBytes(kSecRandomDefault, 1, &random)
+          if errorCode != errSecSuccess {
+            fatalError("Unable to generate nonce. SecRandomCopyBytes failed with OSStatus \(errorCode)")
+          }
+          return random
+        }
+
+        randoms.forEach { random in
+          if remainingLength == 0 {
+            return
+          }
+
+          if random < charset.count {
+            result.append(charset[Int(random)])
+            remainingLength -= 1
+          }
+        }
+      }
+
+      return result
+    }
+    
     func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
         do {
             try Auth.auth().signOut()
@@ -335,9 +460,9 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         
         observeUsernamesEmails()
         setupContainerView()
-        setupLoginRegSeg()
-        setupLoginImageView()
-        setupRegisterButton()
+//        setupLoginRegSeg()
+//        setupLoginImageView()
+//        setupRegisterButton()
         setupKeyboardObservers()
         facebookLogin.permissions = ["public_profile", "email"]
         facebookLogin.delegate = self
@@ -374,14 +499,14 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
         let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
         let height =  (keyboardFrame?.height)! - 150
-        inputsContainerViewCenterYAnchor?.constant = -height
+        inputsContainerViewCenterYAnchor?.constant = 20
         UIView.animate(withDuration: keyboardDuration!) {
             self.view.layoutIfNeeded()
         }
     }
     
     @objc func handleKeyboardWillHide(notification: NSNotification) {
-        inputsContainerViewCenterYAnchor?.constant = 65
+        inputsContainerViewCenterYAnchor?.constant = 80
         let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
         UIView.animate(withDuration: keyboardDuration!) {
             self.view.layoutIfNeeded()
@@ -533,27 +658,27 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         return emailPred.evaluate(with: email)
     }
     
-    func setupLoginRegSeg() {
-        view.addSubview(loginRegSegControl)
-        loginRegSegControl.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        loginRegSegControl.bottomAnchor.constraint(equalTo: inputsContainerView.topAnchor, constant: -12).isActive = true
-        loginRegSegControl.widthAnchor.constraint(equalTo: inputsContainerView.widthAnchor, multiplier: 0.5).isActive = true
-        loginRegSegControl.heightAnchor.constraint(equalToConstant: 36).isActive = true
-    }
-    
-    func setupLoginImageView() {
-        view.addSubview(loginImageView)
-        loginImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        loginImageView.bottomAnchor.constraint(equalTo: loginRegSegControl.topAnchor, constant: -15).isActive = true
-        loginImageView.widthAnchor.constraint(equalToConstant: 200).isActive = true
-        loginImageView.heightAnchor.constraint(equalToConstant: 150).isActive = true
-        
-        view.addSubview(brandImageView)
-        brandImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        brandImageView.bottomAnchor.constraint(equalTo: loginImageView.topAnchor, constant: -5).isActive = true
-        brandImageView.widthAnchor.constraint(equalToConstant: 250).isActive = true
-        brandImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
-    }
+//    func setupLoginRegSeg() {
+//        view.addSubview(loginRegSegControl)
+//        loginRegSegControl.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        loginRegSegControl.bottomAnchor.constraint(equalTo: inputsContainerView.topAnchor, constant: -12).isActive = true
+//        loginRegSegControl.widthAnchor.constraint(equalTo: inputsContainerView.widthAnchor, multiplier: 0.5).isActive = true
+//        loginRegSegControl.heightAnchor.constraint(equalToConstant: 36).isActive = true
+//    }
+//
+//    func setupLoginImageView() {
+//        view.addSubview(loginImageView)
+//        loginImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        loginImageView.bottomAnchor.constraint(equalTo: loginRegSegControl.topAnchor, constant: -15).isActive = true
+//        loginImageView.widthAnchor.constraint(equalToConstant: 200).isActive = true
+//        loginImageView.heightAnchor.constraint(equalToConstant: 150).isActive = true
+//
+//        view.addSubview(brandImageView)
+//        brandImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        brandImageView.bottomAnchor.constraint(equalTo: loginImageView.topAnchor, constant: -5).isActive = true
+//        brandImageView.widthAnchor.constraint(equalToConstant: 250).isActive = true
+//        brandImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//    }
     
     var inputsContainerViewHeightAnchor: NSLayoutConstraint?
     var nameTextFieldHeightAnchor: NSLayoutConstraint?
@@ -572,10 +697,25 @@ class LoginPage: UIViewController, LoginButtonDelegate {
     }()
     
     func setupContainerView() {
+        
+        view.addSubview(brandImageView)
+        brandImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        inputsContainerViewCenterYAnchor = brandImageView.topAnchor.constraint(equalTo: view.topAnchor, constant: 80)
+        inputsContainerViewCenterYAnchor?.isActive = true
+        brandImageView.widthAnchor.constraint(equalToConstant: 250).isActive = true
+        brandImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        view.addSubview(loginRegSegControl)
+        loginRegSegControl.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        loginRegSegControl.topAnchor.constraint(equalTo: brandImageView.bottomAnchor, constant: 12).isActive = true
+        loginRegSegControl.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5).isActive = true
+        loginRegSegControl.heightAnchor.constraint(equalToConstant: 36).isActive = true
+        
         view.addSubview(inputsContainerView)
         inputsContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        inputsContainerViewCenterYAnchor = inputsContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 45)
-        inputsContainerViewCenterYAnchor?.isActive = true
+//        inputsContainerViewCenterYAnchor = inputsContainerView.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: 45)
+//        inputsContainerViewCenterYAnchor?.isActive = true
+        inputsContainerView.topAnchor.constraint(equalTo: loginRegSegControl.bottomAnchor, constant: 12).isActive = true
         inputsContainerView.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
         inputsContainerViewHeightAnchor = inputsContainerView.heightAnchor.constraint(equalToConstant: 150)
         inputsContainerViewHeightAnchor?.isActive = true
@@ -627,20 +767,6 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         passwordTextFieldHeightAnchor = passwordTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/3)
         passwordTextFieldHeightAnchor?.isActive = true
         
-        view.addSubview(whiteBox)
-        whiteBox.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        whiteBox.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        whiteBox.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        whiteBox.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
-        
-        whiteBox.addSubview(activityView)
-        activityView.topAnchor.constraint(equalTo: whiteBox.topAnchor).isActive = true
-        activityView.leftAnchor.constraint(equalTo: whiteBox.leftAnchor).isActive = true
-        activityView.widthAnchor.constraint(equalTo: whiteBox.widthAnchor).isActive = true
-        activityView.heightAnchor.constraint(equalTo: whiteBox.heightAnchor).isActive = true
-    }
-    
-    func setupRegisterButton() {
         view.addSubview(registerButton)
         registerButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         registerButton.topAnchor.constraint(equalTo: inputsContainerView.bottomAnchor, constant: 12).isActive = true
@@ -654,12 +780,85 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         passwordReset.heightAnchor.constraint(equalToConstant: 25).isActive = true
         passwordReset.isHidden = true
         
+        view.addSubview(facebookRecommended)
+        facebookRecommended.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        facebookRecommended.topAnchor.constraint(equalTo: passwordReset.bottomAnchor, constant: 12).isActive = true
+        facebookRecommended.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -12).isActive = true
+        facebookRecommended.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        
         view.addSubview(facebookLogin)
         facebookLogin.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        facebookLogin.topAnchor.constraint(equalTo: passwordReset.bottomAnchor, constant: 12).isActive = true
+        facebookLogin.topAnchor.constraint(equalTo: facebookRecommended.bottomAnchor, constant: 12).isActive = true
 //        facebookLogin.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
 //        facebookLogin.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        if #available(iOS 13.0, *) {
+            let appleButton = ASAuthorizationAppleIDButton()
+            appleButton.translatesAutoresizingMaskIntoConstraints = false
+            appleButton.addTarget(self, action: #selector(startSignInWithAppleFlow), for: .touchUpInside)
+            view.addSubview(appleButton)
+            appleButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+            appleButton.topAnchor.constraint(equalTo: facebookLogin.bottomAnchor, constant: 40).isActive = true
+        } else {
+            // Fallback on earlier versions
+        }
+        
+        view.addSubview(whiteBox)
+        whiteBox.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        whiteBox.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        whiteBox.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        whiteBox.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        
+        whiteBox.addSubview(activityView)
+        activityView.topAnchor.constraint(equalTo: whiteBox.topAnchor).isActive = true
+        activityView.leftAnchor.constraint(equalTo: whiteBox.leftAnchor).isActive = true
+        activityView.widthAnchor.constraint(equalTo: whiteBox.widthAnchor).isActive = true
+        activityView.heightAnchor.constraint(equalTo: whiteBox.heightAnchor).isActive = true
     }
+    
+    let facebookRecommended: UILabel = {
+        let lb = UILabel()
+        lb.text = "Login with Facebook is recommended"
+        lb.translatesAutoresizingMaskIntoConstraints = false
+        lb.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        lb.textAlignment = .center
+        lb.adjustsFontSizeToFitWidth = true
+        lb.textColor = .white
+        return lb
+    }()
+    
+//    func setupRegisterButton() {
+//        view.addSubview(registerButton)
+//        registerButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        registerButton.topAnchor.constraint(equalTo: inputsContainerView.bottomAnchor, constant: 12).isActive = true
+//        registerButton.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
+//        registerButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//
+//        view.addSubview(passwordReset)
+//        passwordReset.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        passwordReset.topAnchor.constraint(equalTo: registerButton.bottomAnchor, constant: 12).isActive = true
+//        passwordReset.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
+//        passwordReset.heightAnchor.constraint(equalToConstant: 25).isActive = true
+//        passwordReset.isHidden = true
+//
+//        view.addSubview(facebookLogin)
+//        facebookLogin.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        facebookLogin.topAnchor.constraint(equalTo: passwordReset.bottomAnchor, constant: 12).isActive = true
+////        facebookLogin.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
+////        facebookLogin.heightAnchor.constraint(equalToConstant: 50).isActive = true
+//
+//        if #available(iOS 13.0, *) {
+//            let appleButton = ASAuthorizationAppleIDButton()
+//            appleButton.translatesAutoresizingMaskIntoConstraints = false
+//            appleButton.addTarget(self, action: #selector(startSignInWithAppleFlow), for: .touchUpInside)
+//            view.addSubview(appleButton)
+//            appleButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//            appleButton.topAnchor.constraint(equalTo: facebookLogin.bottomAnchor, constant: 12).isActive = true
+//        } else {
+//            // Fallback on earlier versions
+//        }
+//    }
+    
     
     override public var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
