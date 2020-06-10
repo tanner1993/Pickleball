@@ -63,6 +63,7 @@ class Play: UIViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        UIApplication.shared.applicationIconBadgeNumber = 0
         matchIds.removeAll()
         prepMatchList()
     }

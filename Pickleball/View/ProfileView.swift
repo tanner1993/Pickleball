@@ -82,7 +82,7 @@ class ProfileView: UIView {
         
             
         scrollView.addSubview(haloLevel)
-        let haloLevelLoc = calculateButtonPosition(x: 375, y: 236.5, w: 250, h: 200, wib: 750, hib: 1100, wia: Float(frame.width), hia: Width / ratio)
+        let haloLevelLoc = calculateButtonPosition(x: 375, y: 236.5, w: 250, h: 175, wib: 750, hib: 1100, wia: Float(frame.width), hia: Width / ratio)
         
         haloLevel.centerYAnchor.constraint(equalTo: scrollView.topAnchor, constant: CGFloat(haloLevelLoc.Y)).isActive = true
         haloLevel.centerXAnchor.constraint(equalTo: scrollView.leftAnchor, constant: CGFloat(haloLevelLoc.X)).isActive = true
@@ -92,7 +92,7 @@ class ProfileView: UIView {
         scrollView.addSubview(haloLevelTitle)
         //let haloLevelTitleLoc = calculateButtonPosition(x: 550, y: 255, w: 200, h: 50, wib: 750, hib: 1100, wia: 375, hia: 550)
 
-        haloLevelTitle.topAnchor.constraint(equalTo: haloLevel.bottomAnchor, constant: 2).isActive = true
+        haloLevelTitle.topAnchor.constraint(equalTo: haloLevel.bottomAnchor, constant: -2).isActive = true
         haloLevelTitle.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor).isActive = true
         haloLevelTitle.heightAnchor.constraint(equalToConstant: 25).isActive = true
         haloLevelTitle.widthAnchor.constraint(equalToConstant: 125).isActive = true

@@ -506,6 +506,9 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
                         if friendId != self.teammateId && friendId != self.opp1Id && friendId != self.opp2Id {
                             self.friends.append(player)
                         }
+                        self.friends = self.friends.sorted { p1, p2 in
+                            return (p1.name!) < (p2.name!)
+                        }
                     }
                     DispatchQueue.main.async { self.collectionView.reloadData() }
                 }

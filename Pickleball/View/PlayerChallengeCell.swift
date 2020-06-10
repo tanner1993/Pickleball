@@ -58,7 +58,7 @@ class PlayerChallengeCell: BaseCell {
         label.text = ""
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.adjustsFontSizeToFitWidth = true
-        label.textAlignment = .left
+        label.textAlignment = .center
         return label
     }()
     
@@ -190,7 +190,7 @@ class PlayerChallengeCell: BaseCell {
         playerLocation.topAnchor.constraint(equalTo: playerUserName.bottomAnchor).isActive = true
         playerLocation.rightAnchor.constraint(equalTo: rightAnchor, constant: -8).isActive = true
         playerLocation.heightAnchor.constraint(equalToConstant: 30).isActive = true
-        playerLocation.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        playerLocation.leftAnchor.constraint(equalTo: leftAnchor, constant: 90).isActive = true
         
         addSubview(appLevel)
         appLevel.topAnchor.constraint(equalTo: playerLocation.bottomAnchor, constant: 4).isActive = true
@@ -200,7 +200,6 @@ class PlayerChallengeCell: BaseCell {
         
         addSubview(skillLevel)
         skillLevel.topAnchor.constraint(equalTo: playerUserName.bottomAnchor).isActive = true
-        //skillLevel.rightAnchor.constraint(equalTo: centerXAnchor, constant: -50).isActive = true
         skillLevel.centerXAnchor.constraint(equalTo: appLevel.centerXAnchor).isActive = true
         skillLevel.heightAnchor.constraint(equalToConstant: 30).isActive = true
         skillLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true

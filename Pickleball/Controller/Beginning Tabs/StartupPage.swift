@@ -615,6 +615,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
        }
     
     override func viewDidAppear(_ animated: Bool) {
+        UIApplication.shared.applicationIconBadgeNumber = 0
         if playerId == "none" {
             checkLevelUp()
         }

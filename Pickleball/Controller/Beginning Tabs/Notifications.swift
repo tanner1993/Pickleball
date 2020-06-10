@@ -86,6 +86,7 @@ class Notifications: UITableViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        UIApplication.shared.applicationIconBadgeNumber = 0
         if let tabItems = self.tabBarController?.tabBar.items {
             let tabItem = tabItems[4]
             tabItem.badgeValue = .none

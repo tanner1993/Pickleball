@@ -36,31 +36,39 @@ extension LoginPage: ASAuthorizationControllerDelegate {
       // Sign in with Firebase.
       Auth.auth().signIn(with: credential) { (authResult, error) in
         if (error != nil) {
-          // Error. If error.code == .MissingOrInvalidNonce, make sure
-          // you're sending the SHA256-hashed nonce as a hex string with
-          // your request to Apple.
+            if let error = error {
+                let newalert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: UIAlertController.Style.alert)
+                newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+                self.present(newalert, animated: true, completion: nil)
+            }
             print(error!.localizedDescription)
           return
         }
         guard let uid = authResult?.user.uid else {
             return
         }
-        if self.uids.contains(uid) == false {
-            guard let firstname = appleIDCredential.fullName?.givenName, let lastname = appleIDCredential.fullName?.familyName else {
-              return
-          }
-        let email = appleIDCredential.email ?? "noneProvided"
-          //let fullName = self.playerNow.getUserFirstAndLastName(fullName: name)
-          self.createAccountForFBUser(email: email, fullName: firstname + " " + lastname, uid: uid)
-        } else {
-            self.dismiss(animated: true, completion: nil)
-        }
+        let ref = Database.database().reference().child("users").child(uid)
+
+        ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if snapshot.exists() {
+                self.dismiss(animated: true, completion: nil)
+            } else {
+                guard let firstname = appleIDCredential.fullName?.givenName, let lastname = appleIDCredential.fullName?.familyName else {
+                      return
+                  }
+                let email = appleIDCredential.email ?? "noneProvided"
+                  //let fullName = self.playerNow.getUserFirstAndLastName(fullName: name)
+                  self.createAccountForFBUser(email: email, fullName: firstname + " " + lastname, uid: uid)
+            }
+        })
       }
     }
   }
 
   func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-    // Handle error.
+        let newalert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+        self.present(newalert, animated: true, completion: nil)
     print("Sign in with Apple errored: \(error)")
   }
 
@@ -164,6 +172,9 @@ class LoginPage: UIViewController, LoginButtonDelegate {
     
     func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
         if let error = error {
+            let newalert = UIAlertController(title: "Error", message: error.localizedDescription, preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
           print(error.localizedDescription)
           return
         }
@@ -242,18 +253,22 @@ class LoginPage: UIViewController, LoginButtonDelegate {
               guard let uid = authResult?.user.uid else {
                   return
               }
-              if self.uids.contains(uid) == false {
-                guard let name = authResult?.user.displayName, let email = authResult?.user.email else {
-                    return
-                }
-                let fullName = self.playerNow.getUserFirstAndLastName(fullName: name)
-                self.createAccountForFBUser(email: email, fullName: fullName, uid: uid)
-              } else {
-                self.whiteBox.isHidden = true
-                self.activityView.isHidden = true
-                self.activityView.stopAnimating()
-                  self.dismiss(animated: true, completion: nil)
-              }
+                let ref = Database.database().reference().child("users").child(uid)
+
+                ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if snapshot.exists() {
+                        self.whiteBox.isHidden = true
+                        self.activityView.isHidden = true
+                        self.activityView.stopAnimating()
+                          self.dismiss(animated: false, completion: nil)
+                    } else {
+                        guard let name = authResult?.user.displayName, let email = authResult?.user.email else {
+                            return
+                        }
+                        let fullName = self.playerNow.getUserFirstAndLastName(fullName: name)
+                        self.createAccountForFBUser(email: email, fullName: fullName, uid: uid)
+                    }
+                })
             }
         }
     }
@@ -458,7 +473,7 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         
         view.backgroundColor = UIColor(r: 88, g: 148, b: 200)
         
-        observeUsernamesEmails()
+        //observeUsernamesEmails()
         setupContainerView()
 //        setupLoginRegSeg()
 //        setupLoginImageView()
@@ -469,21 +484,19 @@ class LoginPage: UIViewController, LoginButtonDelegate {
     }
     
     
-    func observeUsernamesEmails() {
-        
-        let ref = Database.database().reference().child("users")
-        ref.observe(.childAdded, with: { (snapshot) in
-            if let value = snapshot.value as? NSDictionary {
-                let username = value["username"] as? String ?? "Player not found"
-                self.usernames.append(username)
-                let email = value["email"] as? String ?? "Player not found"
-                self.emails.append(email)
-                let uid = snapshot.key
-                self.uids.append(uid)
-            }
-            
-        }, withCancel: nil)
-    }
+//    func observeUsernamesEmails() {
+//
+//        let ref = Database.database().reference().child("users")
+//        ref.observe(.childAdded, with: { (snapshot) in
+//            if let value = snapshot.value as? NSDictionary {
+//                let email = value["email"] as? String ?? "Player not found"
+//                self.emails.append(email)
+//                let uid = snapshot.key
+//                self.uids.append(uid)
+//            }
+//
+//        }, withCancel: nil)
+//    }
     
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
@@ -496,9 +509,9 @@ class LoginPage: UIViewController, LoginButtonDelegate {
     }
     
     @objc func handleKeyboardWillShow(notification: NSNotification) {
-        let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+        //let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
         let keyboardDuration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double
-        let height =  (keyboardFrame?.height)! - 150
+        //let height =  (keyboardFrame?.height)! - 150
         inputsContainerViewCenterYAnchor?.constant = 20
         UIView.animate(withDuration: keyboardDuration!) {
             self.view.layoutIfNeeded()
@@ -587,6 +600,11 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         Auth.auth().createUser(withEmail: email, password: password, completion: {(authDataResult: AuthDataResult?, error) in
             if error != nil {
                 print(error as Any)
+                if let err = error {
+                    let newalert = UIAlertController(title: "Error", message: err.localizedDescription, preferredStyle: UIAlertController.Style.alert)
+                    newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+                    self.present(newalert, animated: true, completion: nil)
+                }
                 return
             }
             
@@ -780,17 +798,17 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         passwordReset.heightAnchor.constraint(equalToConstant: 25).isActive = true
         passwordReset.isHidden = true
         
-        view.addSubview(facebookRecommended)
-        facebookRecommended.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        facebookRecommended.topAnchor.constraint(equalTo: passwordReset.bottomAnchor, constant: 12).isActive = true
-        facebookRecommended.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -12).isActive = true
-        facebookRecommended.heightAnchor.constraint(equalToConstant: 28).isActive = true
+//        view.addSubview(facebookRecommended)
+//        facebookRecommended.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+//        facebookRecommended.topAnchor.constraint(equalTo: passwordReset.bottomAnchor, constant: 12).isActive = true
+//        facebookRecommended.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -12).isActive = true
+//        facebookRecommended.heightAnchor.constraint(equalToConstant: 28).isActive = true
         
         view.addSubview(facebookLogin)
         facebookLogin.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        facebookLogin.topAnchor.constraint(equalTo: facebookRecommended.bottomAnchor, constant: 12).isActive = true
-//        facebookLogin.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -24).isActive = true
-//        facebookLogin.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        facebookLogin.topAnchor.constraint(equalTo: passwordReset.bottomAnchor, constant: 12).isActive = true
+        facebookLogin.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -48).isActive = true
+        //facebookLogin.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         if #available(iOS 13.0, *) {
             let appleButton = ASAuthorizationAppleIDButton()
@@ -799,6 +817,8 @@ class LoginPage: UIViewController, LoginButtonDelegate {
             view.addSubview(appleButton)
             appleButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
             appleButton.topAnchor.constraint(equalTo: facebookLogin.bottomAnchor, constant: 40).isActive = true
+            appleButton.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -48).isActive = true
+            appleButton.heightAnchor.constraint(equalToConstant: 35).isActive = true
         } else {
             // Fallback on earlier versions
         }

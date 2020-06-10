@@ -20,6 +20,20 @@ class TourneyInfo: UIViewController {
         setupViews()
     }
     
+    let cancelButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Return", for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleCancel), for: .touchUpInside)
+        return button
+    }()
+    
+    @objc func handleCancel() {
+        dismiss(animated: true, completion: nil)
+    }
+    
     func setupViews() {
         scrollView.backgroundColor = .white
         let Width = Float(view.frame.width)
@@ -41,6 +55,12 @@ class TourneyInfo: UIViewController {
         TournamentInfo.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor).isActive = true
         TournamentInfo.widthAnchor.constraint(equalTo: scrollView.widthAnchor, constant: -12).isActive = true
         TournamentInfo.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        scrollView.addSubview(cancelButton)
+        cancelButton.leftAnchor.constraint(equalTo: scrollView.leftAnchor, constant: 4).isActive = true
+        cancelButton.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 5).isActive = true
+        cancelButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        cancelButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         
         scrollView.addSubview(registrationLabel)
         registrationLabel.topAnchor.constraint(equalTo: TournamentInfo.bottomAnchor, constant: 5).isActive = true

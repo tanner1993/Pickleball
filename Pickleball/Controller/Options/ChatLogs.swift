@@ -97,7 +97,7 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         recipientNameRef.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 self.recipientDevice = value["deviceId"] as? String ?? "none"
-                self.recipientName = value["username"] as? String ?? "noname"
+                self.recipientName = value["name"] as? String ?? "noname"
                 let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
                 titleLabel.textColor = .white
                 titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
@@ -193,6 +193,10 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
         guard let uid = Auth.auth().currentUser?.uid, let message = messageField.text else {
             return
         }
+        if message == "" {
+            return
+        }
+        messageField.text = nil
         let ref = Database.database().reference()
         let messages2Ref = ref.child("messages")
         let childRef = messages2Ref.childByAutoId()
@@ -204,14 +208,13 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
             (error:Error?, ref:DatabaseReference) in
             
             if error != nil {
+                self.messageField.text = message
                 let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
                 messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
                 self.present(messageSendFailed, animated: true, completion: nil)
                 print("Data could not be saved: \(String(describing: error)).")
                 return
             }
-            
-            self.messageField.text = nil
             
             let messagesRef = Database.database().reference().child("user_messages")
             let messageId = childRef.key!

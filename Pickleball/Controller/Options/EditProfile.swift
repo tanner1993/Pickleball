@@ -21,7 +21,7 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
     var startupPage: StartupPage?
     
     @objc func handleSaveChanges() {
-        guard let email = emailTextField.text?.lowercased(), let name = nameTextField.text, let lastName = nameTextField2.text, let state = stateTextField.text, let county = countyTextField.text, let month = monthTextField.text, let day = dayTextField.text, let year = yearTextField.text, let skillLevel = skillLevelTextField.text, let sex = sexTextField.text else {
+        guard let name = nameTextField.text, let lastName = nameTextField2.text, let state = stateTextField.text, let county = countyTextField.text, let month = monthTextField.text, let day = dayTextField.text, let year = yearTextField.text, let skillLevel = skillLevelTextField.text, let sex = sexTextField.text else {
             let newalert = UIAlertController(title: "Sorry", message: "One or more fields are incorrect", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
             self.present(newalert, animated: true, completion: nil)
@@ -111,7 +111,6 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let ref = Database.database().reference().child("users")
         ref.observe(.childAdded, with: { (snapshot) in
             if let value = snapshot.value as? NSDictionary {
-                let username = value["username"] as? String ?? "Player not found"
                 let email = value["email"] as? String ?? "Player not found"
                 if snapshot.key != uid {
                     self.emails.append(email)

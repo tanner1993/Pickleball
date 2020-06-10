@@ -48,6 +48,7 @@ class Connect: UICollectionViewController, UICollectionViewDelegateFlowLayout {
     }()
     
     override func viewDidAppear(_ animated: Bool) {
+        UIApplication.shared.applicationIconBadgeNumber = 0
         if let tabItems = self.tabBarController?.tabBar.items {
             let tabItem = tabItems[3]
             tabItem.badgeValue = .none

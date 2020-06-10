@@ -119,7 +119,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                 return player.age_group! == age_group
             })
         }
-        
+        //playersFoundNumber.text = "\(searchResults.count)"
         collectionView.reloadData()
     }
     
@@ -158,6 +158,9 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                         if friendId != self.teammateId && friendId != self.opp1Id && friendId != self.opp2Id {
                             self.friends.append(player)
                         }
+                        self.friends = self.friends.sorted { p1, p2 in
+                            return (p1.name!) < (p2.name!)
+                        }
                     }
                     DispatchQueue.main.async { self.collectionView.reloadData() }
                 }
@@ -175,6 +178,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if collectionView == self.collectionView {
+            playersFoundNumber.text = "\(searchResults.count)"
             return searchResults.count
         } else {
             switch selectedDropDown {
@@ -471,7 +475,30 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         fl.text = "Filters"
         fl.backgroundColor = .white
         fl.textColor = UIColor.init(r: 88, g: 148, b: 200)
-        fl.font = UIFont(name: "AmericanTypewriter-Bold", size: 24)
+        fl.font = UIFont(name: "HelveticaNeue", size: 24)
+        fl.textAlignment = .center
+        fl.translatesAutoresizingMaskIntoConstraints = false
+        return fl
+    }()
+    
+    let playersFound: UILabel = {
+        let fl = UILabel()
+        fl.text = "Players Found:"
+        fl.backgroundColor = .white
+        fl.textColor = .black
+        fl.font = UIFont(name: "HelveticaNeue-Light", size: 24)
+        fl.textAlignment = .center
+        fl.adjustsFontSizeToFitWidth = true
+        fl.translatesAutoresizingMaskIntoConstraints = false
+        return fl
+    }()
+    
+    let playersFoundNumber: UILabel = {
+        let fl = UILabel()
+        fl.backgroundColor = .white
+        fl.adjustsFontSizeToFitWidth = true
+        fl.textColor = UIColor.init(r: 88, g: 148, b: 200)
+        fl.font = UIFont(name: "HelveticaNeue-Light", size: 24)
         fl.textAlignment = .center
         fl.translatesAutoresizingMaskIntoConstraints = false
         return fl
@@ -536,6 +563,8 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         searchButton.isHidden = myFriendsCheck.isOn ? true : false
         separatorView.isHidden = myFriendsCheck.isOn ? true : false
         filtersLabel.isHidden = myFriendsCheck.isOn ? true : false
+        playersFoundNumber.isHidden = myFriendsCheck.isOn ? true : false
+        playersFound.isHidden = myFriendsCheck.isOn ? true : false
         inputContainer.isHidden = myFriendsCheck.isOn ? true : false
         collectionView?.contentInset = myFriendsCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
         collectionView?.scrollIndicatorInsets = myFriendsCheck.isOn ? UIEdgeInsets(top: 50, left: 0, bottom: 0, right: 0) : UIEdgeInsets(top: 336, left: 0, bottom: 0, right: 0)
@@ -593,9 +622,21 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         
         whiteContainerView.addSubview(filtersLabel)
         filtersLabel.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 4).isActive = true
-        filtersLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        filtersLabel.widthAnchor.constraint(equalToConstant: view.frame.width / 2).isActive = true
+        filtersLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 8).isActive = true
+        filtersLabel.widthAnchor.constraint(equalToConstant: view.frame.width / 2 - 8).isActive = true
         filtersLabel.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        whiteContainerView.addSubview(playersFound)
+        playersFound.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 4).isActive = true
+        playersFound.leftAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        playersFound.widthAnchor.constraint(equalToConstant: view.frame.width / 2 - 50).isActive = true
+        playersFound.heightAnchor.constraint(equalToConstant: 30).isActive = true
+        
+        whiteContainerView.addSubview(playersFoundNumber)
+        playersFoundNumber.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 4).isActive = true
+        playersFoundNumber.leftAnchor.constraint(equalTo: playersFound.rightAnchor).isActive = true
+        playersFoundNumber.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
+        playersFoundNumber.heightAnchor.constraint(equalToConstant: 30).isActive = true
         
         let inputBox = createInputContainer(topAnchor: whiteContainerView, anchorConstant: 0, numberInputs: 5, vertSepDistance: 150, inputs: inputsArray, inputTypes: [1, 1, 1, 1, 1])
         
@@ -674,6 +715,11 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                     if player.id != self.teammateId && player.id != self.opp1Id && player.id != self.opp2Id && player.id != Auth.auth().currentUser?.uid {
                         self.players.append(player)
                     }
+                    DispatchQueue.main.async {
+                        self.searchResults = self.players
+                        self.collectionView.reloadData()
+                        //self.playersFoundNumber.text = "\(self.searchResults.count)"
+                    }
                 }
             }
         }
@@ -749,6 +795,7 @@ extension FindFriends: UISearchBarDelegate {
             return player.name!.localizedCaseInsensitiveContains(text)
         })
         //handleFilter()
+        //self.playersFoundNumber.text = "\(self.searchResults.count)"
         collectionView.reloadData()
         
     }

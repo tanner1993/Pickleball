@@ -55,7 +55,7 @@ class Player: NSObject {
         var players = [Player]()
         let rootRef = Database.database().reference()
         let query = rootRef.child("users").queryOrdered(byChild: "county").queryEqual(toValue: county)
-        query.observe(.value) { (snapshot) in
+        query.observeSingleEvent(of: .value) { (snapshot) in
             for child in snapshot.children.allObjects as! [DataSnapshot] {
                 if let value = child.value as? NSDictionary {
                     let player = Player()
