@@ -88,7 +88,7 @@ class FeedMatchCell: UITableViewCell {
             guard let uid = Auth.auth().currentUser?.uid else {
                 return
             }
-            if uid == match.team_1_player_1 && match.active == 0 {
+            if uid == match.team_1_player_1 && (match.active == 0 || match.active == 1) {
                 editButton.isHidden = false
             } else {
                 editButton.isHidden = true

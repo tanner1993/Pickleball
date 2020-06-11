@@ -180,23 +180,29 @@ class MatchFeed: UITableViewController {
                 cell.appLevel.text = levelTracker[match.team_1_player_1 ?? "nope"]
             }
             if match.doubles == true {
+                if match.team_1_player_2 == "Guest" {
+                    cell.challengerTeam2.setTitle("Guest Player", for: .normal)
+                    cell.appLevel2.text = ""
+                    cell.challengerTeam2.isUserInteractionEnabled = false
+                } else {
+                    if nameTracker[match.team_1_player_2 ?? "nope"] == nil {
+                        let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
+                        player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                            if let value = snapshot.value as? [String: AnyObject] {
+                                cell.challengerTeam2.setTitle(self.getFirstAndLastInitial(name: value["name"] as? String ?? "none"), for: .normal)
+                                self.nameTracker[match.team_1_player_2 ?? "nope"] = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
+                                let exp = value["exp"] as? Int ?? 0
+                                cell.appLevel2.text = "\(self.player.haloLevel(exp: exp))"
+                                self.levelTracker[match.team_1_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
+                            }
+                        })
+                    } else {
+                        cell.challengerTeam2.setTitle(nameTracker[match.team_1_player_2 ?? "nope"], for: .normal)
+                        cell.appLevel2.text = levelTracker[match.team_1_player_2 ?? "nope"]
+                    }
+                }
                 cell.challengerTeam2.isHidden = false
                 cell.appLevel2.isHidden = false
-                if nameTracker[match.team_1_player_2 ?? "nope"] == nil {
-                    let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
-                    player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
-                        if let value = snapshot.value as? [String: AnyObject] {
-                            cell.challengerTeam2.setTitle(self.getFirstAndLastInitial(name: value["name"] as? String ?? "none"), for: .normal)
-                            self.nameTracker[match.team_1_player_2 ?? "nope"] = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-                            let exp = value["exp"] as? Int ?? 0
-                            cell.appLevel2.text = "\(self.player.haloLevel(exp: exp))"
-                            self.levelTracker[match.team_1_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
-                        }
-                    })
-                } else {
-                    cell.challengerTeam2.setTitle(nameTracker[match.team_1_player_2 ?? "nope"], for: .normal)
-                    cell.appLevel2.text = levelTracker[match.team_1_player_2 ?? "nope"]
-                }
             } else {
                 cell.challengerTeam2.isHidden = true
                 cell.appLevel2.isHidden = true
@@ -219,23 +225,29 @@ class MatchFeed: UITableViewController {
             }
             
             if match.doubles == true {
+                if match.team_2_player_2 == "Guest" {
+                    cell.challengedTeam2.setTitle("Guest Player", for: .normal)
+                    cell.challengedTeam2.isUserInteractionEnabled = false
+                    cell.appLevel4.text = ""
+                } else {
+                    if nameTracker[match.team_2_player_2 ?? "nope"] == nil {
+                        let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
+                        player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
+                            if let value = snapshot.value as? [String: AnyObject] {
+                                cell.challengedTeam2.setTitle(self.getFirstAndLastInitial(name: value["name"] as? String ?? "none"), for: .normal)
+                                self.nameTracker[match.team_2_player_2 ?? "nope"] = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
+                                let exp = value["exp"] as? Int ?? 0
+                                cell.appLevel4.text = "\(self.player.haloLevel(exp: exp))"
+                                self.levelTracker[match.team_2_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
+                            }
+                        })
+                    } else {
+                        cell.challengedTeam2.setTitle(nameTracker[match.team_2_player_2 ?? "nope"], for: .normal)
+                        cell.appLevel4.text = levelTracker[match.team_2_player_2 ?? "nope"]
+                    }
+                }
                 cell.challengedTeam2.isHidden = false
                 cell.appLevel4.isHidden = false
-                if nameTracker[match.team_2_player_2 ?? "nope"] == nil {
-                    let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
-                    player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
-                        if let value = snapshot.value as? [String: AnyObject] {
-                            cell.challengedTeam2.setTitle(self.getFirstAndLastInitial(name: value["name"] as? String ?? "none"), for: .normal)
-                            self.nameTracker[match.team_2_player_2 ?? "nope"] = self.getFirstAndLastInitial(name: value["name"] as? String ?? "none")
-                            let exp = value["exp"] as? Int ?? 0
-                            cell.appLevel4.text = "\(self.player.haloLevel(exp: exp))"
-                            self.levelTracker[match.team_2_player_2 ?? "nope"] = "\(self.player.haloLevel(exp: exp))"
-                        }
-                    })
-                } else {
-                    cell.challengedTeam2.setTitle(nameTracker[match.team_2_player_2 ?? "nope"], for: .normal)
-                    cell.appLevel4.text = levelTracker[match.team_2_player_2 ?? "nope"]
-                }
             } else {
                 cell.challengedTeam2.isHidden = true
                 cell.appLevel4.isHidden = true

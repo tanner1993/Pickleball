@@ -87,6 +87,17 @@ class MatchView: UIViewController {
         matchViewOrganizer.cantLoadImageButton.addTarget(self, action: #selector(cantShareDisplay), for: .touchUpInside)
     }
     
+    @objc func handleSelectPlayer(sender: UIButton) {
+        let layout = UICollectionViewFlowLayout()
+        let playerList = FindFriends(collectionViewLayout: layout)
+        playerList.sender = sender.tag
+        playerList.matchView = self
+        playerList.teammateId = match.team_1_player_2!
+        playerList.opp1Id = match.team_2_player_1!
+        playerList.opp2Id = sender.tag == 12 ? match.team_1_player_1! : match.team_2_player_2!
+        present(playerList, animated: true, completion: nil)
+    }
+    
     @objc func cantShareDisplay() {
         let createMatchConfirmed = UIAlertController(title: "Sorry", message: "You will need to link your account to a Facebook profile on the Login page before you can share to Facebook", preferredStyle: .alert)
         createMatchConfirmed.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
@@ -275,9 +286,9 @@ class MatchView: UIViewController {
         }
     }
     
-    func checkIfMatchReady() -> Int {
+    func checkIfMatchReady(confirmerSnap: [Int]) -> Int {
         for index in 0...3 {
-            if match.team1_scores![index] != 1 {
+            if confirmerSnap[index] != 1 {
                 return 0
             }
         }
@@ -397,6 +408,17 @@ class MatchView: UIViewController {
             matchViewOrganizer.game3OppScore.isUserInteractionEnabled = false
             matchViewOrganizer.game4OppScore.isUserInteractionEnabled = false
             matchViewOrganizer.game5OppScore.isUserInteractionEnabled = false
+            
+            if match.team_1_player_2 == "Guest" && uid == match.team_1_player_1 {
+                matchViewOrganizer.userPlayer2.isHidden = true
+                matchViewOrganizer.guestTeammateButton.isHidden = false
+                matchViewOrganizer.guestTeammateButton.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
+            }
+            if match.team_2_player_2 == "Guest" && uid == match.team_2_player_1 {
+                matchViewOrganizer.oppPlayer2.isHidden = true
+                matchViewOrganizer.guestOpponentButton.isHidden = false
+                matchViewOrganizer.guestOpponentButton.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
+            }
         }
         let currentTime = Date().timeIntervalSince1970
         if active == 0 && confirmers[whichPerson] == 1 && tourneyId != "none" && (startTime + 86400) < currentTime {
@@ -577,43 +599,51 @@ class MatchView: UIViewController {
         })
         
         if match.doubles! {
-            player.getPlayerNameAndSkill(playerId: idList[1], completion: { (result) in
-                guard let playerResult = result else {
-                    print("failed to get result")
-                    return
-                }
-                self.matchViewOrganizer.userPlayer2.text = playerResult.name!
-                self.matchViewOrganizer.userPlayer2Skill.text = "\(playerResult.skill_level!)"
-                self.matchViewOrganizer.userPlayer2Level.text = "\(playerResult.halo_level!)"
-                self.team1_P2_Exp = playerResult.exp!
-                self.team1_P2_Lev = playerResult.halo_level!
-                if self.match.active == 3 && self.match.winner == 1 {
-                    if self.matchViewOrganizer.winnerConfirmed.text!.count > 5 {
-                        self.matchViewOrganizer.winnerConfirmed.text = playerResult.name! + " and " + self.matchViewOrganizer.winnerConfirmed.text!
-                    } else {
-                        self.matchViewOrganizer.winnerConfirmed.text = playerResult.name! + self.matchViewOrganizer.winnerConfirmed.text!
+            if idList[1] == "Guest" {
+                self.matchViewOrganizer.userPlayer2.text = "Guest Player"
+            } else {
+                player.getPlayerNameAndSkill(playerId: idList[1], completion: { (result) in
+                    guard let playerResult = result else {
+                        print("failed to get result")
+                        return
                     }
-                }
-            })
+                    self.matchViewOrganizer.userPlayer2.text = playerResult.name!
+                    self.matchViewOrganizer.userPlayer2Skill.text = "\(playerResult.skill_level!)"
+                    self.matchViewOrganizer.userPlayer2Level.text = "\(playerResult.halo_level!)"
+                    self.team1_P2_Exp = playerResult.exp!
+                    self.team1_P2_Lev = playerResult.halo_level!
+                    if self.match.active == 3 && self.match.winner == 1 {
+                        if self.matchViewOrganizer.winnerConfirmed.text!.count > 5 {
+                            self.matchViewOrganizer.winnerConfirmed.text = playerResult.name! + " and " + self.matchViewOrganizer.winnerConfirmed.text!
+                        } else {
+                            self.matchViewOrganizer.winnerConfirmed.text = playerResult.name! + self.matchViewOrganizer.winnerConfirmed.text!
+                        }
+                    }
+                })
+            }
             
-            player.getPlayerNameAndSkill(playerId: idList[3], completion: { (result) in
-                guard let playerResult = result else {
-                    print("failed to get result")
-                    return
-                }
-                self.matchViewOrganizer.oppPlayer2.text = playerResult.name!
-                self.matchViewOrganizer.oppPlayer2Skill.text = "\(playerResult.skill_level!)"
-                self.matchViewOrganizer.oppPlayer2Level.text = "\(playerResult.halo_level!)"
-                self.team2_P2_Exp = playerResult.exp!
-                self.team2_P2_Lev = playerResult.halo_level!
-                if self.match.active == 3 && self.match.winner == 2 {
-                    if self.matchViewOrganizer.winnerConfirmed.text!.count > 5 {
-                        self.matchViewOrganizer.winnerConfirmed.text = playerResult.name! + " and " + self.matchViewOrganizer.winnerConfirmed.text!
-                    } else {
-                        self.matchViewOrganizer.winnerConfirmed.text = playerResult.name! + self.matchViewOrganizer.winnerConfirmed.text!
+            if idList[3] == "Guest" {
+                self.matchViewOrganizer.oppPlayer2.text = "Guest Player"
+            } else {
+                player.getPlayerNameAndSkill(playerId: idList[3], completion: { (result) in
+                    guard let playerResult = result else {
+                        print("failed to get result")
+                        return
                     }
-                }
-            })
+                    self.matchViewOrganizer.oppPlayer2.text = playerResult.name!
+                    self.matchViewOrganizer.oppPlayer2Skill.text = "\(playerResult.skill_level!)"
+                    self.matchViewOrganizer.oppPlayer2Level.text = "\(playerResult.halo_level!)"
+                    self.team2_P2_Exp = playerResult.exp!
+                    self.team2_P2_Lev = playerResult.halo_level!
+                    if self.match.active == 3 && self.match.winner == 2 {
+                        if self.matchViewOrganizer.winnerConfirmed.text!.count > 5 {
+                            self.matchViewOrganizer.winnerConfirmed.text = playerResult.name! + " and " + self.matchViewOrganizer.winnerConfirmed.text!
+                        } else {
+                            self.matchViewOrganizer.winnerConfirmed.text = playerResult.name! + self.matchViewOrganizer.winnerConfirmed.text!
+                        }
+                    }
+                })
+            }
         }
         
     }
@@ -747,14 +777,19 @@ class MatchView: UIViewController {
     }
     
     func performConfirmActive0(whichOne: Int) {
-        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
-        var matchReady = -1
         if match.doubles == true {
             if tourneyId == "none" {
                 let ref = Database.database().reference().child("matches").child(matchId).child("team1_scores")
-                match.team1_scores![whichOne] = 1
-                matchFeed?.matches[whichItem].team1_scores![whichOne] = 1
-                matchFeed?.tableView.reloadData()
+                ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        var confirmerSnap = value as? [Int] ?? [1, 0, 0, 0, 0]
+                        confirmerSnap[whichOne] = 1
+                        self.match.team1_scores = confirmerSnap
+                        self.matchFeed?.matches[self.whichItem].team1_scores = confirmerSnap
+                        self.matchFeed?.tableView.reloadData()
+                        self.matchReadyFunc(confirmerSnap: confirmerSnap)
+                    }
+                })
                 switch whichOne {
                 case 1:
                     matchViewOrganizer.confirmCheck2.isHidden = false
@@ -765,87 +800,108 @@ class MatchView: UIViewController {
                 default:
                     print("failed to confirm")
                 }
-                ref.setValue(match.team1_scores)
-                matchReady = checkIfMatchReady()
             } else {
                 matchViewOrganizer.confirmCheck3.isHidden = false
                 matchViewOrganizer.confirmCheck4.isHidden = false
-                matchReady = 1
+                matchReadyFunc(confirmerSnap: [1, 1, 1, 1, 0])
             }
         } else {
-            matchReady = 1
+            //matchReady = 1
+            matchReadyFunc(confirmerSnap: [1, 1, 1, 1, 0])
             matchViewOrganizer.confirmCheck3.isHidden = false
         }
-        if matchReady == 0 {
-            matchViewOrganizer.confirmMatchScores.isHidden = true
-            matchViewOrganizer.rejectMatchScores.isHidden = true
-            matchViewOrganizer.matchStatusLabel.text = "Waiting for opponents to confirm match"
-            matchViewOrganizer.matchStatusLabel.numberOfLines = 2
-            matchViewOrganizer.matchStatusLabel.isHidden = false
-        } else {
-            matchViewOrganizer.whiteCover.isHidden = true
-            guard let uid = Auth.auth().currentUser?.uid else {
+    }
+    
+    func notFullyConfirmed(confirmerSnap: [Int]) {
+        matchViewOrganizer.confirmMatchScores.isHidden = true
+        matchViewOrganizer.rejectMatchScores.isHidden = true
+        matchViewOrganizer.matchStatusLabel.text = "Waiting for opponents to confirm match"
+        matchViewOrganizer.matchStatusLabel.numberOfLines = 2
+        matchViewOrganizer.matchStatusLabel.isHidden = false
+        let ref = Database.database().reference().child("matches").child(matchId).child("team1_scores")
+        ref.setValue(confirmerSnap)
+    }
+    
+    func matchReadyFunc(confirmerSnap: [Int]) {
+        let checker = checkIfMatchReady(confirmerSnap: confirmerSnap)
+        if checker == 0 {
+            notFullyConfirmed(confirmerSnap: confirmerSnap)
+            return
+        }
+        matchViewOrganizer.guestTeammateButton.isHidden = true
+        matchViewOrganizer.guestOpponentButton.isHidden = true
+        matchViewOrganizer.userPlayer2.isHidden = false
+        matchViewOrganizer.oppPlayer2.isHidden = false
+        matchViewOrganizer.confirmCheck2.isHidden = false
+        matchViewOrganizer.confirmCheck3.isHidden = false
+        matchViewOrganizer.confirmCheck4.isHidden = false
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
+        matchViewOrganizer.whiteCover.isHidden = true
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let matchActiveRef = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
+        match.team1_scores = [0, 0, 0, 0, 0]
+        let timeOfChallenge = Date().timeIntervalSince1970
+        let childUpdates = ["/\("team1_scores")/": match.team1_scores ?? [0,0,0,0,0], "/\("active")/": 1, "/\("time")/": timeOfChallenge] as [String : Any]
+        matchActiveRef.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if error != nil {
+                let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(messageSendFailed, animated: true, completion: nil)
+                print("Data could not be saved: \(String(describing: error)).")
                 return
             }
-            let matchActiveRef = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
-            match.team1_scores = [0, 0, 0, 0, 0]
-            let timeOfChallenge = Date().timeIntervalSince1970
-            let childUpdates = ["/\("team1_scores")/": match.team1_scores ?? [0,0,0,0,0], "/\("active")/": 1, "/\("time")/": timeOfChallenge] as [String : Any]
-            matchActiveRef.updateChildValues(childUpdates, withCompletionBlock: {
-                (error:Error?, ref:DatabaseReference) in
-                
-                if error != nil {
-                    let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
-                    messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-                    self.present(messageSendFailed, animated: true, completion: nil)
-                    print("Data could not be saved: \(String(describing: error)).")
-                    return
-                }
-                
-                self.match.active = 1
-                self.matchFeed?.matches[self.whichItem].active = 1
-                self.matchFeed?.tableView.reloadData()
-                self.setupNavbarTitle(status: 1)
-                
-                print("Crazy data 2 saved!")
-                if self.tourneyId == "none" {
-                    if self.match.doubles == true {
+            
+            self.match.active = 1
+            self.matchFeed?.matches[self.whichItem].active = 1
+            self.matchFeed?.tableView.reloadData()
+            self.setupNavbarTitle(status: 1)
+            
+            print("Crazy data 2 saved!")
+            if self.tourneyId == "none" {
+                if self.match.doubles == true {
+                    if self.match.team_1_player_2 != "Guest" {
                         uid != self.match.team_1_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
+                    }
+                    if self.match.team_2_player_2 != "Guest" {
                         uid != self.match.team_2_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
                     }
-                    uid != self.match.team_1_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
-                    uid != self.match.team_2_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
-                } else {
-                    self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
                 }
-                self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.text ?? "none", message: "fully confirmed the match, now you can log the scores whenever you're finished playing", title: "Match Confirmed")
-                
-            })
+                uid != self.match.team_1_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
+                uid != self.match.team_2_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
+            } else {
+                self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
+            }
+            self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.text ?? "none", message: "fully confirmed the match, now you can log the scores whenever you're finished playing", title: "Match Confirmed")
             
-            matchViewOrganizer.rejectMatchScores.isHidden = true
-            matchViewOrganizer.confirmMatchScores.setTitle("Submit Scores to Opponent for Review", for: .normal)
-            matchViewOrganizer.confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
-            matchViewOrganizer.confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
-            matchViewOrganizer.confirmMatchScores.titleLabel?.numberOfLines = 2
-            matchViewOrganizer.game1UserScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game2UserScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game3UserScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game4UserScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game5UserScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game1OppScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game2OppScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game3OppScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game4OppScore.isUserInteractionEnabled = true
-            matchViewOrganizer.game5OppScore.isUserInteractionEnabled = true
-            
-            
-            matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = false
-            matchViewOrganizer.confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W)
-            matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = true
-            matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = false
-            matchViewOrganizer.confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X)
-            matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = true
-        }
+        })
+        
+        matchViewOrganizer.rejectMatchScores.isHidden = true
+        matchViewOrganizer.confirmMatchScores.setTitle("Submit Scores to Opponent for Review", for: .normal)
+        matchViewOrganizer.confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
+        matchViewOrganizer.confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+        matchViewOrganizer.confirmMatchScores.titleLabel?.numberOfLines = 2
+        matchViewOrganizer.game1UserScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game2UserScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game3UserScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game4UserScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game5UserScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game1OppScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game2OppScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game3OppScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game4OppScore.isUserInteractionEnabled = true
+        matchViewOrganizer.game5OppScore.isUserInteractionEnabled = true
+        
+        
+        matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = false
+        matchViewOrganizer.confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W)
+        matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = true
+        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = false
+        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X)
+        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = true
     }
     
     func performConfirmActive1() {
@@ -902,8 +958,12 @@ class MatchView: UIViewController {
                 
                 if self.tourneyId == "none" {
                     if self.match.doubles == true {
-                        uid != self.match.team_1_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
-                        uid != self.match.team_2_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
+                        if self.match.team_1_player_2 != "Guest" {
+                            uid != self.match.team_1_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
+                        }
+                        if self.match.team_2_player_2 != "Guest" {
+                            uid != self.match.team_2_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
+                        }
                     }
                     uid != self.match.team_1_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
                     uid != self.match.team_2_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
@@ -1000,8 +1060,12 @@ class MatchView: UIViewController {
             }
             if self.tourneyId == "none" {
                 if self.match.doubles == true {
-                    uid != self.match.team_1_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
-                    uid != self.match.team_2_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
+                    if self.match.team_1_player_2 != "Guest" {
+                        uid != self.match.team_1_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_2!).child(self.matchId).setValue(1) : print("nope")
+                    }
+                    if self.match.team_2_player_2 != "Guest" {
+                        uid != self.match.team_2_player_2 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_2!).child(self.matchId).setValue(1) : print("nope")
+                    }
                 }
                 uid != self.match.team_1_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
                 uid != self.match.team_2_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
@@ -1035,8 +1099,12 @@ class MatchView: UIViewController {
     func updatePlayerStats() {
         updateExperience()
         if match.doubles == true {
-            player.updatePlayerStats(playerId: match.team_1_player_2!, winner: match.winner!, userIsTeam1: true)
-            player.updatePlayerStats(playerId: match.team_2_player_2!, winner: match.winner!, userIsTeam1: false)
+            if self.match.team_1_player_2 != "Guest" {
+                player.updatePlayerStats(playerId: match.team_1_player_2!, winner: match.winner!, userIsTeam1: true)
+            }
+            if self.match.team_2_player_2 != "Guest" {
+                player.updatePlayerStats(playerId: match.team_2_player_2!, winner: match.winner!, userIsTeam1: false)
+            }
         }
         player.updatePlayerStats(playerId: match.team_1_player_1!, winner: match.winner!, userIsTeam1: true)
         player.updatePlayerStats(playerId: match.team_2_player_1!, winner: match.winner!, userIsTeam1: false)
@@ -1313,6 +1381,12 @@ class MatchView: UIViewController {
     }
     
     func updateExperience() {
+        if match.team_1_player_2 == "Guest" {
+            team1_P2_Lev = team1_P1_Lev
+        }
+        if match.team_2_player_2 == "Guest" {
+            team2_P2_Lev = team2_P1_Lev
+        }
         let team1Level = match.doubles == true ? Int((team1_P1_Lev + team1_P2_Lev)/2) : team1_P1_Lev
         let team2Level = match.doubles == true ? Int((team2_P1_Lev + team2_P2_Lev)/2) : team2_P1_Lev
         let winningTeam = match.winner!
@@ -1332,12 +1406,34 @@ class MatchView: UIViewController {
             team2ChangeExp = team2ChangeExpFlat * 3/2
         }
         if match.doubles == true {
-            levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team1_P2_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp, team2_P2_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!])
+            if match.team_1_player_2 == "Guest" && match.team_2_player_2 == "Guest" {
+                levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_2_player_1!])
+            } else if match.team_1_player_2 == "Guest" {
+                levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp, team2_P2_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_2_player_1!, match.team_2_player_2!])
+            } else if match.team_2_player_2 == "Guest" {
+                levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team1_P2_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!])
+            } else {
+                levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team1_P2_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp, team2_P2_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!])
+            }
         } else {
             levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_2_player_1!])
         }
         let usersRef = Database.database().reference().child("users")
-        let childUpdates = match.doubles == true ? ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any] : ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
+        var childUpdates = [String: Any]()
+        if match.doubles == true {
+            if match.team_1_player_2 == "Guest" && match.team_2_player_2 == "Guest" {
+                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
+            } else if match.team_1_player_2 == "Guest" {
+                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any]
+            } else if match.team_2_player_2 == "Guest" {
+                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
+            } else {
+                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any]
+            }
+        } else {
+            childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
+        }
+//        let childUpdates = match.doubles == true ? ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any] : ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
         usersRef.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             

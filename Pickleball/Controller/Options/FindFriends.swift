@@ -23,6 +23,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     var buttonsCreated = 0
     var sender = 0
     var createMatch: CreateMatch?
+    var matchView: MatchView?
     var teammateId = "none"
     var opp1Id = "none"
     var opp2Id = "none"
@@ -246,6 +247,8 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                 
             } else if sender == 2 || sender == 3 || sender == 4 {
                 returnPlayerDetails(whichOne: indexPath.item)
+            } else if sender == 11 || sender == 12 {
+                uploadNewPlayer(whichOne: indexPath.item)
             } else {
                 if tourneyId != "none" {
                     if simpleInvite == 0 {
@@ -272,6 +275,41 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             }
             dismissMenu()
         }
+    }
+    
+    func uploadNewPlayer(whichOne: Int) {
+        var values = [String: Any]()
+        var confirmers = matchView!.match.team1_scores!
+        if sender == 11 {
+            confirmers[1] = 0
+            values = ["team_1_player_2": searchResults[whichOne].id ?? "none", "team1_scores": confirmers] as [String : Any]
+            matchView?.matchViewOrganizer.confirmCheck2.isHidden = true
+            matchView?.matchViewOrganizer.guestTeammateButton.isHidden = true
+            matchView?.matchViewOrganizer.userPlayer2.isHidden = false
+            self.matchView?.matchFeed?.matches[matchView!.whichItem].team_1_player_2 = searchResults[whichOne].id ?? "none"
+            self.matchView?.matchFeed?.matches[matchView!.whichItem].team1_scores = confirmers
+        } else if sender == 12 {
+            confirmers[3] = 0
+            values = ["team_2_player_2": searchResults[whichOne].id ?? "none", "team1_scores": confirmers] as [String : Any]
+            matchView?.matchViewOrganizer.confirmCheck4.isHidden = true
+            matchView?.matchViewOrganizer.guestOpponentButton.isHidden = true
+            matchView?.matchViewOrganizer.oppPlayer2.isHidden = false
+            self.matchView?.matchFeed?.matches[matchView!.whichItem].team_2_player_2 = searchResults[whichOne].id ?? "none"
+            self.matchView?.matchFeed?.matches[matchView!.whichItem].team1_scores = confirmers
+        }
+        let ref = Database.database().reference().child("matches").child(matchView!.matchId)
+        ref.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+        })
+        let idList = [matchView!.match.team_1_player_1!,  sender == 11 ? searchResults[whichOne].id ?? "none" : matchView!.match.team_1_player_2!, matchView!.match.team_2_player_1!, sender == 12 ? searchResults[whichOne].id ?? "none" : matchView!.match.team_2_player_2!]
+        matchView?.getPlayerNames(idList: idList)
+        matchView?.matchFeed?.tableView.reloadData()
+        dismiss(animated: true, completion: nil)
     }
     
     func returnPlayerDetails(whichOne: Int) {
@@ -790,10 +828,14 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
 extension FindFriends: UISearchBarDelegate {
     public func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
-        searchResults = players.filter({ (player) -> Bool in
-            guard let text = searchBar.text else {return false}
-            return player.name!.localizedCaseInsensitiveContains(text)
-        })
+        if searchBar.text != "" {
+            searchResults = players.filter({ (player) -> Bool in
+                guard let text = searchBar.text else {return false}
+                return player.name!.localizedCaseInsensitiveContains(text)
+            })
+        } else {
+            searchResults = players
+        }
         //handleFilter()
         //self.playersFoundNumber.text = "\(self.searchResults.count)"
         collectionView.reloadData()

@@ -544,7 +544,11 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                     self.tourneys.append(tourney)
                 }
                 
-                DispatchQueue.main.async { self.tableView.reloadData() }
+                DispatchQueue.main.async {
+                    self.searchResults = self.tourneys
+                    self.tableView.reloadData()
+                    
+                }
             }
         })
     }
@@ -617,10 +621,14 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
 extension TourneySearch: UISearchBarDelegate {
     public func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
-        searchResults = tourneys.filter({ (tourney) -> Bool in
-            guard let text = searchBar.text else {return false}
-            return tourney.name!.localizedCaseInsensitiveContains(text)
-        })
+        if searchBar.text != "" {
+            searchResults = tourneys.filter({ (tourney) -> Bool in
+                guard let text = searchBar.text else {return false}
+                return tourney.name!.localizedCaseInsensitiveContains(text)
+            })
+        } else {
+            searchResults = tourneys
+        }
         //handleFilter()
         tableView.reloadData()
         

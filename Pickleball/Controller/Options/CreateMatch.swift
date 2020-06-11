@@ -100,14 +100,30 @@ class CreateMatch: UIViewController {
     }
     
     @objc func handleSelectPlayer(sender: UIButton) {
-        let layout = UICollectionViewFlowLayout()
-        let playerList = FindFriends(collectionViewLayout: layout)
-        playerList.sender = sender.tag
-        playerList.createMatch = self
-        playerList.teammateId = teammate.id
-        playerList.opp1Id = opponent1.id
-        playerList.opp2Id = opponent2.id
-        present(playerList, animated: true, completion: nil)
+        if sender.tag == 5 {
+            teammateLabel.text = "Guest Player"
+            selectTeammateButton.setTitle("", for: .normal)
+            teammate.id = "Guest"
+            teammate.name = "Guest Player"
+            teammate.skillLevel = "Guest"
+            teammate.deviceId = "Guest"
+        } else if sender.tag == 6 {
+            opponentLabel2.text = "Guest Player"
+            selectOpponentButton2.setTitle("", for: .normal)
+            opponent2.id = "Guest"
+            opponent2.name = "Guest Player"
+            opponent2.skillLevel = "Guest"
+            opponent2.deviceId = "Guest"
+        } else {
+            let layout = UICollectionViewFlowLayout()
+            let playerList = FindFriends(collectionViewLayout: layout)
+            playerList.sender = sender.tag
+            playerList.createMatch = self
+            playerList.teammateId = teammate.id
+            playerList.opp1Id = opponent1.id
+            playerList.opp2Id = opponent2.id
+            present(playerList, animated: true, completion: nil)
+        }
     }
     
     @objc func handleCreateMatch() {
@@ -145,8 +161,12 @@ class CreateMatch: UIViewController {
             style = 0
         }
         var values = [String : Any]()
+        var teammateGuestValue = 0
+        var opponentGuestValue = 0
+        teammateGuestValue = teammate.id == "Guest" ? 1 : 0
+        opponentGuestValue = opponent2.id == "Guest" ? 1 : 0
         if singlesDoublesControl.selectedSegmentIndex == 1 {
-            values = ["active": 0, "team_1_player_1": uid, "team_1_player_2": teammate.id, "team_2_player_1": opponent1.id, "team_2_player_2": opponent2.id, "team1_scores": [1, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge, "style": style]
+            values = ["active": 0, "team_1_player_1": uid, "team_1_player_2": teammate.id, "team_2_player_1": opponent1.id, "team_2_player_2": opponent2.id, "team1_scores": [1, teammateGuestValue, 0, opponentGuestValue, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge, "style": style]
         } else {
             values = ["active": 0, "team_1_player_1": uid, "team_2_player_1": opponent1.id, "team1_scores": [1, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge, "style": style]
         }
@@ -165,7 +185,15 @@ class CreateMatch: UIViewController {
             
             var childUpdates = [String : Any]()
             if self.singlesDoublesControl.selectedSegmentIndex == 1 {
-                childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.teammate.id)/\(notificationId)/": 1, "/\(self.opponent1.id)/\(notificationId)/": 1, "/\(self.opponent2.id)/\(notificationId)/": 1]
+                if self.teammate.id == "Guest" && self.opponent2.id == "Guest" {
+                    childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.opponent1.id)/\(notificationId)/": 1]
+                } else if self.teammate.id == "Guest" {
+                    childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.opponent1.id)/\(notificationId)/": 1, "/\(self.opponent2.id)/\(notificationId)/": 1]
+                } else if self.opponent2.id == "Guest" {
+                    childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.teammate.id)/\(notificationId)/": 1, "/\(self.opponent1.id)/\(notificationId)/": 1]
+                } else {
+                    childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.teammate.id)/\(notificationId)/": 1, "/\(self.opponent1.id)/\(notificationId)/": 1, "/\(self.opponent2.id)/\(notificationId)/": 1]
+                }
             } else {
                 childUpdates = ["/\(uid)/\(notificationId)/": 0, "/\(self.opponent1.id)/\(notificationId)/": 1]
             }
@@ -200,7 +228,7 @@ class CreateMatch: UIViewController {
                 matchT.team_1_player_2 = self.teammate.id
                 matchT.team_2_player_1 = self.opponent1.id
                 matchT.team_2_player_2 = self.opponent2.id
-                matchT.team1_scores = [1, 0, 0, 0, 0]
+                matchT.team1_scores = [1, teammateGuestValue, 0, opponentGuestValue, 0]
                 matchT.team2_scores = [0, 0, 0, 0, 0]
                 matchT.matchId = matchId
                 matchT.time = timeOfChallenge
@@ -332,8 +360,23 @@ class CreateMatch: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
         label.textColor = .black
         return label
+    }()
+    
+    let guestTeammateButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("USE\nGUEST", for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.titleLabel?.textAlignment = .center
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.tag = 5
+        button.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
+        return button
     }()
     
     let selectOpponentButton1: UIButton = {
@@ -352,6 +395,7 @@ class CreateMatch: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
         label.textColor = .black
         return label
     }()
@@ -367,11 +411,26 @@ class CreateMatch: UIViewController {
         return button
     }()
     
+    let guestOpponentButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("USE\nGUEST", for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.titleLabel?.textAlignment = .center
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.tag = 6
+        button.addTarget(self, action: #selector(handleSelectPlayer), for: .touchUpInside)
+        return button
+    }()
+    
     let opponentLabel2: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
         label.textAlignment = .center
+        label.adjustsFontSizeToFitWidth = true
         label.textColor = .black
         return label
     }()
@@ -416,6 +475,8 @@ class CreateMatch: UIViewController {
         teammateLabel.isHidden = singlesDoublesControl.selectedSegmentIndex == 1 ? false : true
         selectOpponentButton2.isHidden = singlesDoublesControl.selectedSegmentIndex == 1 ? false : true
         opponentLabel2.isHidden = singlesDoublesControl.selectedSegmentIndex == 1 ? false : true
+        guestTeammateButton.isHidden = singlesDoublesControl.selectedSegmentIndex == 1 ? false : true
+        guestOpponentButton.isHidden = singlesDoublesControl.selectedSegmentIndex == 1 ? false : true
         separatorView1.isHidden = singlesDoublesControl.selectedSegmentIndex == 1 ? false : true
         separatorView2.isHidden = singlesDoublesControl.selectedSegmentIndex == 1 ? false : true
     }
@@ -481,10 +542,16 @@ class CreateMatch: UIViewController {
         activityView.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         inputsContainerViewTeam1.addSubview(selectTeammateButton)
-        selectTeammateButton.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
+        selectTeammateButton.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor, constant: 3).isActive = true
         selectTeammateButton.bottomAnchor.constraint(equalTo: inputsContainerViewTeam1.bottomAnchor).isActive = true
-        selectTeammateButton.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor).isActive = true
+        selectTeammateButton.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor, constant: -80).isActive = true
         selectTeammateButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        inputsContainerViewTeam1.addSubview(guestTeammateButton)
+        guestTeammateButton.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor, constant: -2).isActive = true
+        guestTeammateButton.bottomAnchor.constraint(equalTo: inputsContainerViewTeam1.bottomAnchor).isActive = true
+        guestTeammateButton.leftAnchor.constraint(equalTo: selectTeammateButton.rightAnchor).isActive = true
+        guestTeammateButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         inputsContainerViewTeam1.addSubview(separatorView1)
         separatorView1.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
@@ -520,10 +587,16 @@ class CreateMatch: UIViewController {
         separatorView2.heightAnchor.constraint(equalToConstant: 1).isActive = true
         
         inputsContainerViewTeam2.addSubview(selectOpponentButton2)
-        selectOpponentButton2.leftAnchor.constraint(equalTo: inputsContainerViewTeam2.leftAnchor).isActive = true
-        selectOpponentButton2.topAnchor.constraint(equalTo: selectOpponentButton1.bottomAnchor).isActive = true
-        selectOpponentButton2.rightAnchor.constraint(equalTo: inputsContainerViewTeam2.rightAnchor).isActive = true
+        selectOpponentButton2.leftAnchor.constraint(equalTo: inputsContainerViewTeam2.leftAnchor, constant: 3).isActive = true
+        selectOpponentButton2.bottomAnchor.constraint(equalTo: inputsContainerViewTeam2.bottomAnchor).isActive = true
+        selectOpponentButton2.rightAnchor.constraint(equalTo: inputsContainerViewTeam2.rightAnchor, constant: -80).isActive = true
         selectOpponentButton2.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+        inputsContainerViewTeam2.addSubview(guestOpponentButton)
+        guestOpponentButton.rightAnchor.constraint(equalTo: inputsContainerViewTeam2.rightAnchor, constant: -2).isActive = true
+        guestOpponentButton.bottomAnchor.constraint(equalTo: inputsContainerViewTeam2.bottomAnchor).isActive = true
+        guestOpponentButton.leftAnchor.constraint(equalTo: selectOpponentButton2.rightAnchor).isActive = true
+        guestOpponentButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         view.addSubview(matchesLabel)
         matchesLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true

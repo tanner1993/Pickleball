@@ -84,6 +84,32 @@ class MatchViewOrganizer: UIView {
             label.textAlignment = .center
             return label
         }()
+    
+    let guestTeammateButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.isHidden = true
+        button.setTitle("Switch from guest?", for: .normal)
+        button.titleLabel?.textAlignment = .center
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.tag = 11
+        return button
+    }()
+    
+    let guestOpponentButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.isHidden = true
+        button.setTitle("Switch from guest?", for: .normal)
+        button.titleLabel?.textAlignment = .center
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.tag = 12
+        return button
+    }()
         
         let userPlayer2Skill: UILabel = {
             let label = UILabel()
@@ -497,6 +523,12 @@ class MatchViewOrganizer: UIView {
         userPlayer2.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
         userPlayer2.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.W)).isActive = true
         
+        addSubview(guestTeammateButton)
+        guestTeammateButton.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(userPlayer2Loc.Y)).isActive = true
+        guestTeammateButton.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(userPlayer2Loc.X) + 30).isActive = true
+        guestTeammateButton.heightAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.H)).isActive = true
+        guestTeammateButton.widthAnchor.constraint(equalToConstant: CGFloat(userPlayer2Loc.W) + 60).isActive = true
+        
         addSubview(userPlayer2Skill)
         userPlayer2Skill.centerYAnchor.constraint(equalTo: userPlayer2.centerYAnchor).isActive = true
         userPlayer2Skill.leftAnchor.constraint(equalTo: backgroundImage.centerXAnchor, constant: 4).isActive = true
@@ -516,6 +548,12 @@ class MatchViewOrganizer: UIView {
         oppPlayer2.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer2Loc.X)).isActive = true
         oppPlayer2.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
         oppPlayer2.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.W)).isActive = true
+        
+        addSubview(guestOpponentButton)
+        guestOpponentButton.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(oppPlayer2Loc.Y)).isActive = true
+        guestOpponentButton.centerXAnchor.constraint(equalTo: backgroundImage.leftAnchor, constant: CGFloat(oppPlayer2Loc.X) + 30).isActive = true
+        guestOpponentButton.heightAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.H)).isActive = true
+        guestOpponentButton.widthAnchor.constraint(equalToConstant: CGFloat(oppPlayer2Loc.W) + 60).isActive = true
         
         addSubview(oppPlayer2Skill)
         oppPlayer2Skill.centerYAnchor.constraint(equalTo: oppPlayer2.centerYAnchor).isActive = true
