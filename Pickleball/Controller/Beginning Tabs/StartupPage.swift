@@ -222,7 +222,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         createNewMatch.opponent1.deviceId = playersDeviceId
         createNewMatch.getPlayerDetails()
         createNewMatch.selectOpponentButton1.isEnabled = false
-        createNewMatch.singlesDoublesControl.selectedSegmentIndex = 0
+        createNewMatch.singlesDoublesControl.selectedSegmentIndex = 1
         createNewMatch.startupPage = self
         navigationController?.present(createNewMatch, animated: true, completion: nil)
     }

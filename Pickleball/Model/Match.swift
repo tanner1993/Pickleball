@@ -26,6 +26,7 @@ class Match2: NSObject {
     var doubles: Bool?
     var seen: Bool?
     var timeOfScores: Double?
+    var court: String?
     
     func whichPlayerAmI() -> Int {
         guard let uid = Auth.auth().currentUser?.uid else {

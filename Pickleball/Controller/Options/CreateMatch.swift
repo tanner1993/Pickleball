@@ -619,7 +619,7 @@ class CreateMatch: UIViewController {
         inputsContainerViewTeam1.addSubview(teammateLabel)
         teammateLabel.leftAnchor.constraint(equalTo: inputsContainerViewTeam1.leftAnchor).isActive = true
         teammateLabel.bottomAnchor.constraint(equalTo: inputsContainerViewTeam1.bottomAnchor).isActive = true
-        teammateLabel.rightAnchor.constraint(equalTo: inputsContainerViewTeam1.rightAnchor).isActive = true
+        teammateLabel.rightAnchor.constraint(equalTo: selectTeammateButton.rightAnchor).isActive = true
         teammateLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
 
         inputsContainerViewTeam2.addSubview(opponentLabel1)
@@ -633,7 +633,7 @@ class CreateMatch: UIViewController {
         inputsContainerViewTeam2.addSubview(opponentLabel2)
         opponentLabel2.leftAnchor.constraint(equalTo: inputsContainerViewTeam2.leftAnchor).isActive = true
         opponentLabel2.topAnchor.constraint(equalTo: selectOpponentButton1.bottomAnchor).isActive = true
-        opponentLabel2.rightAnchor.constraint(equalTo: inputsContainerViewTeam2.rightAnchor).isActive = true
+        opponentLabel2.rightAnchor.constraint(equalTo: selectOpponentButton2.rightAnchor).isActive = true
         opponentLabel2.heightAnchor.constraint(equalToConstant: 50).isActive = true
         
         if singlesDoublesControl.selectedSegmentIndex == 0 {

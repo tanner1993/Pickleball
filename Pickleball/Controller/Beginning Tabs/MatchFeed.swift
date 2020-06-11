@@ -161,8 +161,28 @@ class MatchFeed: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! FeedMatchCell
             if sender == 0 {
                 cell.headerLabel.isHidden = true
+                cell.selectCourtButton.isHidden = true
+                cell.courtLabel.isHidden = false
+                cell.whiteBoxTopAnchor?.isActive = false
+                cell.whiteBoxTopAnchor = cell.whiteBox.topAnchor.constraint(equalTo: cell.timeStamp.bottomAnchor)
+                cell.whiteBoxTopAnchor?.isActive = true
             } else {
+                cell.whiteBoxTopAnchor?.isActive = false
+                cell.whiteBoxTopAnchor = cell.whiteBox.topAnchor.constraint(equalTo: cell.headerLabel.bottomAnchor)
+                cell.whiteBoxTopAnchor?.isActive = true
+                cell.courtLabel.isHidden = true
                 cell.headerLabel.isHidden = false
+                if match.active == 3 {
+                    cell.headerLabelRightAnchor?.isActive = false
+                    cell.headerLabelRightAnchor = cell.headerLabel.rightAnchor.constraint(equalTo: cell.centerXAnchor, constant: -8)
+                    cell.headerLabelRightAnchor?.isActive = true
+                    cell.selectCourtButton.isHidden = false
+                } else {
+                    cell.selectCourtButton.isHidden = true
+                    cell.headerLabelRightAnchor?.isActive = false
+                    cell.headerLabelRightAnchor = cell.headerLabel.rightAnchor.constraint(equalTo: cell.rightAnchor, constant: -4)
+                    cell.headerLabelRightAnchor?.isActive = true
+                }
             }
             if nameTracker[match.team_1_player_1 ?? "nope"] == nil {
                 let player1ref = Database.database().reference().child("users").child(match.team_1_player_1 ?? "nope")
@@ -277,6 +297,9 @@ class MatchFeed: UITableViewController {
             cell.editButton.addTarget(self, action: #selector(handleDelete), for: .touchUpInside)
             cell.editButton.tag = indexPath.item
             
+            cell.selectCourtButton.addTarget(self, action: #selector(openCourtInfo), for: .touchUpInside)
+            cell.selectCourtButton.tag = indexPath.item
+            
             cell.challengerTeam1.tag = indexPath.item
             cell.challengerTeam1.addTarget(self, action: #selector(self.handleViewPlayer), for: .touchUpInside)
             cell.challengerTeam2.tag = indexPath.item
@@ -290,6 +313,73 @@ class MatchFeed: UITableViewController {
             cell.backgroundColor = UIColor.white
             return cell
         }
+    }
+    
+    let selectCourtInfo = SelectCourtInfo()
+    let infoBackgroundHeight = 440
+    let blackView = UIView()
+    var matchCourtIndex = Int()
+    
+    @objc func openCourtInfo(sender: UIButton) {
+        matchCourtIndex = sender.tag
+        if let window = UIApplication.shared.keyWindow {
+            blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+            blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu4)))
+            window.addSubview(blackView)
+            window.addSubview(selectCourtInfo)
+            selectCourtInfo.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(infoBackgroundHeight))
+            selectCourtInfo.layer.cornerRadius = 10
+            selectCourtInfo.layer.masksToBounds = true
+            selectCourtInfo.courtSelectionLabel.text = "Enter in the court you played at if you'd like others to know!"
+            selectCourtInfo.updateCourt.addTarget(self, action: #selector(handleUpdateCourt), for: .touchUpInside)
+            selectCourtInfo.dontShowCourt.addTarget(self, action: #selector(handleDontShowCourt), for: .touchUpInside)
+            blackView.frame = window.frame
+            blackView.alpha = 0
+
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                self.blackView.alpha = 1
+             self.selectCourtInfo.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.infoBackgroundHeight + 140), width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }, completion: nil)
+
+        }
+    }
+    
+    @objc func dismissMenu4() {
+        UIView.animate(withDuration: 0.5, animations: {
+            self.blackView.alpha = 0
+            if let window = UIApplication.shared.keyWindow {
+             self.selectCourtInfo.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }
+        })
+        selectCourtInfo.courtNameTextField.resignFirstResponder()
+    }
+    
+    @objc func handleUpdateCourt() {
+        guard let courtName = selectCourtInfo.courtNameTextField.text else {
+            return
+        }
+        if courtName.count < 3 || courtName.count > 25 {
+            let newalert = UIAlertController(title: "Sorry", message: "Invalid Court Name. Must be between 3 and 25 characters", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+            return
+        } else {
+            Database.database().reference().child("matches").child(matches[matchCourtIndex].matchId!).child("court").setValue(courtName)
+            matches[matchCourtIndex].court = courtName
+            tableView.reloadData()
+//            profileView.selectCourtButton.setTitle(courtName, for: .normal)
+//            profileView.selectCourtButton.setTitleColor(.black, for: .normal)
+        }
+        dismissMenu4()
+    }
+    
+    @objc func handleDontShowCourt() {
+        Database.database().reference().child("matches").child(matches[matchCourtIndex].matchId!).child("court").setValue("none")
+        matches[matchCourtIndex].court = "none"
+        tableView.reloadData()
+//        profileView.selectCourtButton.setTitle("No Court Selected", for: .normal)
+//        profileView.selectCourtButton.setTitleColor(UIColor(r: 150, g: 150, b: 150), for: .normal)
+        dismissMenu4()
     }
     
     func getFirstAndLastInitial(name: String) -> String {
@@ -373,7 +463,7 @@ class MatchFeed: UITableViewController {
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if sender == 0 {
-            return view.frame.width / 1.875 + 26
+            return view.frame.width / 1.875 + 66
         } else {
             return view.frame.width / 1.875 + 66
         }
@@ -482,6 +572,8 @@ class MatchFeed: UITableViewController {
                     let time = value["time"] as? Double ?? Date().timeIntervalSince1970
                     let style = value["style"] as? Int ?? 0
                     let forfeit = value["forfeit"] as? Int ?? 0
+                    let court = value["court"] as? String ?? "none"
+                    matchT.court = court
                     matchT.active = active
                     matchT.winner = winner
                     matchT.submitter = submitter
@@ -524,6 +616,8 @@ class MatchFeed: UITableViewController {
                     let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                     let time = value["time"] as? Double ?? Date().timeIntervalSince1970
                     let forfeit = value["forfeit"] as? Int ?? 0
+                    let court = value["court"] as? String ?? "none"
+                    matchT.court = court
                     matchT.active = active
                     matchT.winner = winner
                     matchT.submitter = submitter

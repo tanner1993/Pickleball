@@ -88,6 +88,15 @@ class FeedMatchCell: UITableViewCell {
             guard let uid = Auth.auth().currentUser?.uid else {
                 return
             }
+            if match.court == "none" {
+                selectCourtButton.setTitle("Select Court", for: .normal)
+                selectCourtButton.setTitleColor(UIColor(r: 150, g: 150, b: 150), for: .normal)
+                courtLabel.text = "Court played at: None Selected"
+            } else {
+                selectCourtButton.setTitle(match.court ?? "None Selected", for: .normal)
+                selectCourtButton.setTitleColor(.black, for: .normal)
+                courtLabel.text = "Court played at: \(match.court ?? "None Selected")"
+            }
             if uid == match.team_1_player_1 && (match.active == 0 || match.active == 1) {
                 editButton.isHidden = false
             } else {
@@ -656,6 +665,7 @@ class FeedMatchCell: UITableViewCell {
     
     let headerLabel: UILabel = {
         let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Bold", size: 24)
         label.textAlignment = .center
@@ -707,10 +717,35 @@ class FeedMatchCell: UITableViewCell {
         return label
     }()
     
+    let selectCourtButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.layer.cornerRadius = 10
+        button.isHidden = true
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 25)
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.setTitleColor(UIColor(r: 150, g: 150, b: 150), for: .normal)
+        button.layer.masksToBounds = true
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.backgroundColor = .white
+        return button
+    }()
+    
+    let courtLabel: UILabel = {
+        let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue", size: 24)
+        label.textAlignment = .center
+        return label
+    }()
+    
     var challenger1BottomAnchor: NSLayoutConstraint?
     var challenged1BottomAnchor: NSLayoutConstraint?
     var appLevel1Anchor: NSLayoutConstraint?
     var appLevel3Anchor: NSLayoutConstraint?
+    var headerLabelRightAnchor: NSLayoutConstraint?
+    var whiteBoxTopAnchor: NSLayoutConstraint?
     
     func setupViews() {
         let screenSize = UIScreen.main.bounds
@@ -726,9 +761,16 @@ class FeedMatchCell: UITableViewCell {
         
         addSubview(headerLabel)
         headerLabel.topAnchor.constraint(equalTo: timeStamp.bottomAnchor).isActive = true
-        headerLabel.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        headerLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
         headerLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
-        headerLabel.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        headerLabelRightAnchor = headerLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -4)
+        headerLabelRightAnchor?.isActive = true
+        
+        addSubview(selectCourtButton)
+        selectCourtButton.topAnchor.constraint(equalTo: timeStamp.bottomAnchor).isActive = true
+        selectCourtButton.leftAnchor.constraint(equalTo: centerXAnchor, constant: -4).isActive = true
+        selectCourtButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        selectCourtButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -32).isActive = true
         
         addSubview(editButton)
         editButton.leftAnchor.constraint(equalTo: leftAnchor, constant: 2).isActive = true
@@ -737,7 +779,8 @@ class FeedMatchCell: UITableViewCell {
         editButton.widthAnchor.constraint(equalToConstant: 90).isActive = true
         
         addSubview(whiteBox)
-        whiteBox.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+        whiteBoxTopAnchor = whiteBox.topAnchor.constraint(equalTo: headerLabel.bottomAnchor)
+        whiteBoxTopAnchor?.isActive = true
         whiteBox.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         whiteBox.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
         whiteBox.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
@@ -959,7 +1002,13 @@ class FeedMatchCell: UITableViewCell {
         confirmCheck4.heightAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.H)).isActive = true
         confirmCheck4.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
         
-        whiteBox.addSubview(separatorView)
+        addSubview(courtLabel)
+        courtLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: 2).isActive = true
+        courtLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
+        courtLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        courtLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        
+        addSubview(separatorView)
         separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         separatorView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
         separatorView.heightAnchor.constraint(equalToConstant: 2).isActive = true
