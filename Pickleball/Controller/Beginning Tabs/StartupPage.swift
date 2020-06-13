@@ -705,10 +705,10 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             return
         }
         let ref = Database.database().reference().child("user_messages").child(uid)
-        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+        ref.observe(.childAdded, with: {(snapshot) in
             let recipientId = snapshot.key
             let ref2 = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 1)
-            ref2.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+            ref2.observe(.childAdded, with: {(snapshot) in
                 guard let messageSeen = snapshot.value else {
                     return
                 }

@@ -102,10 +102,21 @@ class ChatLogs: UICollectionViewController, UICollectionViewDelegateFlowLayout {
                 titleLabel.textColor = .white
                 titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
                 titleLabel.text = self.recipientName
+                let labelTap = UITapGestureRecognizer(target: self, action: #selector(self.handleViewPlayer))
+                titleLabel.addGestureRecognizer(labelTap)
+                titleLabel.isUserInteractionEnabled = true
                 self.navigationItem.titleView = titleLabel
             }
         })
         setupKeyboardObservers()
+    }
+    
+    @objc func handleViewPlayer(sender: UIButton) {
+        let playerProfile = StartupPage()
+        playerProfile.hidesBottomBarWhenPushed = true
+        playerProfile.playerId = recipientId
+        playerProfile.isFriend = 2
+        navigationController?.pushViewController(playerProfile, animated: true)
     }
     
     override var inputAccessoryView: UIView? {
