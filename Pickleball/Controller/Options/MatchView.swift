@@ -80,6 +80,10 @@ class MatchView: UIViewController {
         matchViewOrganizer.game3OppScore.inputAccessoryView = numberToolbar
         matchViewOrganizer.game4OppScore.inputAccessoryView = numberToolbar
         matchViewOrganizer.game5OppScore.inputAccessoryView = numberToolbar
+        matchViewOrganizer.userPlayer1.addTarget(self, action: #selector(handleViewPlayer), for: .touchUpInside)
+        matchViewOrganizer.userPlayer2.addTarget(self, action: #selector(handleViewPlayer), for: .touchUpInside)
+        matchViewOrganizer.oppPlayer1.addTarget(self, action: #selector(handleViewPlayer), for: .touchUpInside)
+        matchViewOrganizer.oppPlayer2.addTarget(self, action: #selector(handleViewPlayer), for: .touchUpInside)
         matchViewOrganizer.confirmMatchScores.addTarget(self, action: #selector(handleConfirm), for: .touchUpInside)
         matchViewOrganizer.rejectMatchScores.addTarget(self, action: #selector(handleReject), for: .touchUpInside)
         styleAndDoublesSetup()
@@ -565,7 +569,7 @@ class MatchView: UIViewController {
                 print("failed to get result")
                 return
             }
-            self.matchViewOrganizer.userPlayer1.text = playerResult.name!
+            self.matchViewOrganizer.userPlayer1.setTitle(playerResult.name!, for: .normal)
             self.matchViewOrganizer.userPlayer1Skill.text = "\(playerResult.skill_level!)"
             self.matchViewOrganizer.userPlayer1Level.text = "\(playerResult.halo_level!)"
             self.team1_P1_Exp = playerResult.exp!
@@ -584,7 +588,7 @@ class MatchView: UIViewController {
                 print("failed to get result")
                 return
             }
-            self.matchViewOrganizer.oppPlayer1.text = playerResult.name!
+            self.matchViewOrganizer.oppPlayer1.setTitle(playerResult.name!, for: .normal)
             self.matchViewOrganizer.oppPlayer1Skill.text = "\(playerResult.skill_level!)"
             self.matchViewOrganizer.oppPlayer1Level.text = "\(playerResult.halo_level!)"
             self.team2_P1_Exp = playerResult.exp!
@@ -600,14 +604,18 @@ class MatchView: UIViewController {
         
         if match.doubles! {
             if idList[1] == "Guest" {
-                self.matchViewOrganizer.userPlayer2.text = "Guest Player"
+                self.matchViewOrganizer.userPlayer2.setTitle("Guest Player", for: .normal)
+                self.matchViewOrganizer.userPlayer2.setTitleColor(.black, for: .normal)
+                self.matchViewOrganizer.userPlayer2.isUserInteractionEnabled = false
             } else {
+                self.matchViewOrganizer.userPlayer2.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+                self.matchViewOrganizer.userPlayer2.isUserInteractionEnabled = true
                 player.getPlayerNameAndSkill(playerId: idList[1], completion: { (result) in
                     guard let playerResult = result else {
                         print("failed to get result")
                         return
                     }
-                    self.matchViewOrganizer.userPlayer2.text = playerResult.name!
+                    self.matchViewOrganizer.userPlayer2.setTitle(playerResult.name!, for: .normal)
                     self.matchViewOrganizer.userPlayer2Skill.text = "\(playerResult.skill_level!)"
                     self.matchViewOrganizer.userPlayer2Level.text = "\(playerResult.halo_level!)"
                     self.team1_P2_Exp = playerResult.exp!
@@ -623,14 +631,18 @@ class MatchView: UIViewController {
             }
             
             if idList[3] == "Guest" {
-                self.matchViewOrganizer.oppPlayer2.text = "Guest Player"
+                self.matchViewOrganizer.oppPlayer2.setTitle("Guest Player", for: .normal)
+                self.matchViewOrganizer.oppPlayer2.setTitleColor(.black, for: .normal)
+                self.matchViewOrganizer.oppPlayer2.isUserInteractionEnabled = false
             } else {
+                self.matchViewOrganizer.oppPlayer2.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+                self.matchViewOrganizer.oppPlayer2.isUserInteractionEnabled = true
                 player.getPlayerNameAndSkill(playerId: idList[3], completion: { (result) in
                     guard let playerResult = result else {
                         print("failed to get result")
                         return
                     }
-                    self.matchViewOrganizer.oppPlayer2.text = playerResult.name!
+                    self.matchViewOrganizer.oppPlayer2.setTitle(playerResult.name!, for: .normal)
                     self.matchViewOrganizer.oppPlayer2Skill.text = "\(playerResult.skill_level!)"
                     self.matchViewOrganizer.oppPlayer2Level.text = "\(playerResult.halo_level!)"
                     self.team2_P2_Exp = playerResult.exp!
@@ -646,6 +658,26 @@ class MatchView: UIViewController {
             }
         }
         
+    }
+    
+    @objc func handleViewPlayer(sender: UIButton) {
+        let whichOne = sender.tag
+        let playerProfile = StartupPage()
+        playerProfile.hidesBottomBarWhenPushed = true
+        switch whichOne {
+        case 0:
+            playerProfile.playerId = match.team_1_player_1!
+        case 1:
+            playerProfile.playerId = match.team_1_player_2!
+        case 2:
+            playerProfile.playerId = match.team_2_player_1!
+        case 3:
+            playerProfile.playerId = match.team_2_player_2!
+        default:
+            return
+        }
+        playerProfile.isFriend = 3
+        navigationController?.pushViewController(playerProfile, animated: true)
     }
     
 
@@ -756,13 +788,13 @@ class MatchView: UIViewController {
         var nameOnInvite = String()
         switch uid {
         case match.team_1_player_1:
-            nameOnInvite = matchViewOrganizer.userPlayer1.text!
+            nameOnInvite = matchViewOrganizer.userPlayer1.titleLabel!.text!
         case match.team_1_player_2:
-            nameOnInvite = matchViewOrganizer.userPlayer2.text!
+            nameOnInvite = matchViewOrganizer.userPlayer2.titleLabel!.text!
         case match.team_2_player_1:
-            nameOnInvite = matchViewOrganizer.oppPlayer1.text!
+            nameOnInvite = matchViewOrganizer.oppPlayer1.titleLabel!.text!
         case match.team_2_player_2:
-            nameOnInvite = matchViewOrganizer.oppPlayer2.text!
+            nameOnInvite = matchViewOrganizer.oppPlayer2.titleLabel!.text!
         default:
             print("failedUser")
         }
@@ -875,7 +907,7 @@ class MatchView: UIViewController {
             } else {
                 self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
             }
-            self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.text ?? "none", message: "fully confirmed the match, now you can log the scores whenever you're finished playing", title: "Match Confirmed")
+            self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none", message: "fully confirmed the match, now you can log the scores whenever you're finished playing", title: "Match Confirmed")
             
         })
         
@@ -970,7 +1002,7 @@ class MatchView: UIViewController {
                 } else {
                     self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourneyId, tourneyYetToViewMatch: self.yetToView)
                 }
-                self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.text ?? "none", message: "submitted the scores for the match, now you need to confirm them", title: "Match Scores Entered")
+                self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none", message: "submitted the scores for the match, now you need to confirm them", title: "Match Scores Entered")
                 
                 
             })
@@ -1070,7 +1102,7 @@ class MatchView: UIViewController {
                 uid != self.match.team_1_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_1_player_1!).child(self.matchId).setValue(1) : print("nope")
                 uid != self.match.team_2_player_1 ? Database.database().reference().child("user_matches").child(self.match.team_2_player_1!).child(self.matchId).setValue(1) : print("nope")
             }
-            self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.text ?? "none", message: "confirmed the match scores", title: "Match Scores Confirmed")
+            self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none", message: "confirmed the match scores", title: "Match Scores Confirmed")
             
             
         })
@@ -1078,15 +1110,15 @@ class MatchView: UIViewController {
         matchViewOrganizer.rejectMatchScores.isHidden = true
         matchViewOrganizer.winnerConfirmed.isHidden = false
         if match.doubles == true {
-            let newalert = UIAlertController(title: "Match Complete", message: self.match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.text!) and \(matchViewOrganizer.userPlayer2.text!) win!" : "\(matchViewOrganizer.oppPlayer1.text!) and \(matchViewOrganizer.oppPlayer2.text!) win!", preferredStyle: UIAlertController.Style.alert)
+            let newalert = UIAlertController(title: "Match Complete", message: self.match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") and \(matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none") win!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") and \(matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none") win!", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
             self.present(newalert, animated: true, completion: nil)
-            matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.text!) & \(matchViewOrganizer.userPlayer2.text!) win!" : "\(matchViewOrganizer.oppPlayer1.text!) & \(matchViewOrganizer.oppPlayer2.text!) win!"
+            matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") & \(matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none") win!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") & \(matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none") win!"
         } else {
-            let newalert = UIAlertController(title: "Match Complete", message: self.match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.text!) wins!" : "\(matchViewOrganizer.oppPlayer1.text!) wins!", preferredStyle: UIAlertController.Style.alert)
+            let newalert = UIAlertController(title: "Match Complete", message: self.match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") wins!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") wins!", preferredStyle: UIAlertController.Style.alert)
             newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: resetupviews))
             self.present(newalert, animated: true, completion: nil)
-            matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.text!) wins!" : "\(matchViewOrganizer.oppPlayer1.text!) wins!"
+            matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") wins!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") wins!"
         }
         matchViewOrganizer.winnerConfirmed.numberOfLines = 2
     }
@@ -1405,35 +1437,43 @@ class MatchView: UIViewController {
             team1ChangeExp = team1ChangeExpFlat * 3/2
             team2ChangeExp = team2ChangeExpFlat * 3/2
         }
+        let eachPlayersExpChange = getEachPlayersExpChange(team1ChangeExp: team1ChangeExp, team2ChangeExp: team2ChangeExp)
+        let eachPlayersNewExp = getEachPlayersNewExp(eachPlayersExpEchange: eachPlayersExpChange)
+        print("exp changes:")
+        for index in eachPlayersExpChange {
+            print(index)
+        }
+        for index in eachPlayersNewExp {
+            print(index)
+        }
         if match.doubles == true {
             if match.team_1_player_2 == "Guest" && match.team_2_player_2 == "Guest" {
-                levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_2_player_1!])
+                levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev], newExp: [eachPlayersNewExp[0], eachPlayersNewExp[2]], players: [match.team_1_player_1!, match.team_2_player_1!])
             } else if match.team_1_player_2 == "Guest" {
-                levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp, team2_P2_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_2_player_1!, match.team_2_player_2!])
+                levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [eachPlayersNewExp[0], eachPlayersNewExp[2], eachPlayersNewExp[3]], players: [match.team_1_player_1!, match.team_2_player_1!, match.team_2_player_2!])
             } else if match.team_2_player_2 == "Guest" {
-                levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team1_P2_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!])
+                levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev], newExp: [eachPlayersNewExp[0], eachPlayersNewExp[1], eachPlayersNewExp[2]], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!])
             } else {
-                levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team1_P2_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp, team2_P2_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!])
+                levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [eachPlayersNewExp[0], eachPlayersNewExp[1], eachPlayersNewExp[2], eachPlayersNewExp[3]], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!])
             }
         } else {
-            levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev], newExp: [team1_P1_Exp + team1ChangeExp, team2_P1_Exp + team2ChangeExp], players: [match.team_1_player_1!, match.team_2_player_1!])
+            levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev], newExp: [eachPlayersNewExp[0], eachPlayersNewExp[2]], players: [match.team_1_player_1!, match.team_2_player_1!])
         }
         let usersRef = Database.database().reference().child("users")
         var childUpdates = [String: Any]()
         if match.doubles == true {
             if match.team_1_player_2 == "Guest" && match.team_2_player_2 == "Guest" {
-                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
+                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": eachPlayersNewExp[0], "/\(match.team_2_player_1!)/\("exp")/": eachPlayersNewExp[2]] as [String : Any]
             } else if match.team_1_player_2 == "Guest" {
-                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any]
+                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": eachPlayersNewExp[0], "/\(match.team_2_player_1!)/\("exp")/": eachPlayersNewExp[2], "/\(match.team_2_player_2!)/\("exp")/": eachPlayersNewExp[3]] as [String : Any]
             } else if match.team_2_player_2 == "Guest" {
-                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
+                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": eachPlayersNewExp[0], "/\(match.team_1_player_2!)/\("exp")/": eachPlayersNewExp[1], "/\(match.team_2_player_1!)/\("exp")/": eachPlayersNewExp[2]] as [String : Any]
             } else {
-                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any]
+                childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": eachPlayersNewExp[0], "/\(match.team_1_player_2!)/\("exp")/": eachPlayersNewExp[1], "/\(match.team_2_player_1!)/\("exp")/": eachPlayersNewExp[2], "/\(match.team_2_player_2!)/\("exp")/": eachPlayersNewExp[3]] as [String : Any]
             }
         } else {
-            childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
+            childUpdates = ["/\(match.team_1_player_1!)/\("exp")/": eachPlayersNewExp[0], "/\(match.team_2_player_1!)/\("exp")/": eachPlayersNewExp[2]] as [String : Any]
         }
-//        let childUpdates = match.doubles == true ? ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_1_player_2!)/\("exp")/": team1_P2_Exp < 150 && team1ChangeExp < 0 ? team1_P2_Exp : team1_P2_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp, "/\(match.team_2_player_2!)/\("exp")/": team2_P2_Exp < 150 && team2ChangeExp < 0 ? team2_P2_Exp : team2_P2_Exp + team2ChangeExp] as [String : Any] : ["/\(match.team_1_player_1!)/\("exp")/": team1_P1_Exp < 150 && team1ChangeExp < 0 ? team1_P1_Exp : team1_P1_Exp + team1ChangeExp, "/\(match.team_2_player_1!)/\("exp")/": team2_P1_Exp < 150 && team2ChangeExp < 0 ? team2_P1_Exp : team2_P1_Exp + team2ChangeExp] as [String : Any]
         usersRef.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in
             
@@ -1449,6 +1489,53 @@ class MatchView: UIViewController {
             
             
         })
+    }
+    
+    func getEachPlayersExpChange(team1ChangeExp: Int, team2ChangeExp: Int) -> [Int] {
+        var team11ExpChange = Int()
+        var team12ExpChange = Int()
+        var team21ExpChange = Int()
+        var team22ExpChange = Int()
+        if team1ChangeExp <= 0 {
+            team11ExpChange = team1_P1_Lev < 21 ? Int(Double(team1ChangeExp) * 0.5) : team1ChangeExp
+            team12ExpChange = team1_P2_Lev < 21 ? Int(Double(team1ChangeExp) * 0.6) : team1ChangeExp
+            team21ExpChange = team2ChangeExp
+            team22ExpChange = team2ChangeExp
+        } else {
+            team11ExpChange = team1ChangeExp
+            team12ExpChange = team1ChangeExp
+            team21ExpChange = team2_P1_Lev < 21 ? Int(Double(team2ChangeExp) * 0.5) : team2ChangeExp
+            team22ExpChange = team2_P2_Lev < 21 ? Int(Double(team2ChangeExp) * 0.5) : team2ChangeExp
+        }
+        return [team11ExpChange, team12ExpChange, team21ExpChange, team22ExpChange]
+    }
+    
+    func getEachPlayersNewExp(eachPlayersExpEchange: [Int]) -> [Int] {
+        var team11Exp = Int()
+        var team12Exp = Int()
+        var team21Exp = Int()
+        var team22Exp = Int()
+        if team1_P1_Exp > 150 {
+            team11Exp = (team1_P1_Exp + eachPlayersExpEchange[0]) < 150 ? 150 : (team1_P1_Exp + eachPlayersExpEchange[0])
+        } else {
+            team11Exp = (eachPlayersExpEchange[0] < 0) ? team1_P1_Exp : (team1_P1_Exp + eachPlayersExpEchange[0])
+        }
+        if team1_P2_Exp > 150 {
+            team12Exp = (team1_P2_Exp + eachPlayersExpEchange[1]) < 150 ? 150 : (team1_P2_Exp + eachPlayersExpEchange[1])
+        } else {
+            team12Exp = (eachPlayersExpEchange[1] < 0) ? team1_P2_Exp : (team1_P2_Exp + eachPlayersExpEchange[1])
+        }
+        if team2_P1_Exp > 150 {
+            team21Exp = (team2_P1_Exp + eachPlayersExpEchange[2]) < 150 ? 150 : (team2_P1_Exp + eachPlayersExpEchange[2])
+        } else {
+            team21Exp = (eachPlayersExpEchange[2] < 0) ? team2_P1_Exp : (team2_P1_Exp + eachPlayersExpEchange[2])
+        }
+        if team2_P2_Exp > 150 {
+            team22Exp = (team2_P2_Exp + eachPlayersExpEchange[3]) < 150 ? 150 : (team2_P2_Exp + eachPlayersExpEchange[3])
+        } else {
+            team22Exp = (eachPlayersExpEchange[3] < 0) ? team2_P2_Exp : (team2_P2_Exp + eachPlayersExpEchange[3])
+        }
+        return [team11Exp, team12Exp, team21Exp, team22Exp]
     }
     
     func levelUpDisplay(previousLev: [Int], newExp: [Int], players: [String]) {

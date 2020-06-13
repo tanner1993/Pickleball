@@ -77,9 +77,9 @@ class EditProfile: UIViewController, UICollectionViewDelegate, UICollectionViewD
         let usersref = ref.child("users").child(uid)
         var values = [String : Any]()
         if sender == 0 {
-            values = ["name": fullName, "email": email, "exp": 0, "state": state, "county": county, "skill_level": Float(skillLevel)!, "court": "none", "match_wins": 0, "match_losses": 0, "tourneys_played": 0, "tourneys_won": 0, "birthdate": birthdate, "sex": sex] as [String : Any]
+            values = ["name": fullName, "email": email, "exp": 0, "state": state, "county": county, "skill_level": Float(skillLevel)!, "court": "none", "match_wins": 0, "match_losses": 0, "birthdate": birthdate, "sex": sex] as [String : Any]
         } else {
-            values = ["name": fullName, "email": email, "state": state, "county": county, "skill_level": Float(skillLevel)!, "court": "none", "birthdate": birthdate, "sex": sex] as [String : Any]
+            values = ["name": fullName, "email": email, "state": state, "county": county, "skill_level": Float(skillLevel)!, "birthdate": birthdate, "sex": sex] as [String : Any]
         }
         usersref.updateChildValues(values, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in

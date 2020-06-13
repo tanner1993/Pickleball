@@ -71,6 +71,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         if newUser == 1 {
             print("yessss")
         }
+        print(playerId)
         if playerId == "none" {
             setupNavbarButtons()
             setupCollectionView()
@@ -514,6 +515,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             let oldLevelValue = oldLevel as? Int ?? -1
             if oldLevelValue != 0 && oldLevelValue != -1 {
                 self.handleLevelUp(oldLevel: oldLevelValue)
+                self.updateLevel()
             } else {
                 self.updateLevel()
             }
@@ -740,6 +742,8 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
                 attributedSkill.append(boldSkillString)
                 self.profileView.skillLevelLabel.attributedText = attributedSkill
                 
+                let sex = value["sex"] as? String ?? "Unspecified"
+                self.profileView.sexLabel.text = sex
                 let exp = value["exp"] as? Int ?? 0
                 self.playerExp = exp
                 self.setChart(exp: exp)

@@ -167,6 +167,14 @@ class MatchFeed: UITableViewController {
                 cell.whiteBoxTopAnchor = cell.whiteBox.topAnchor.constraint(equalTo: cell.timeStamp.bottomAnchor)
                 cell.whiteBoxTopAnchor?.isActive = true
             } else {
+                cell.challengerTeam1.isUserInteractionEnabled = false
+                cell.challengerTeam1.setTitleColor(.black, for: .normal)
+                cell.challengerTeam2.isUserInteractionEnabled = false
+                cell.challengerTeam2.setTitleColor(.black, for: .normal)
+                cell.challengedTeam1.isUserInteractionEnabled = false
+                cell.challengedTeam1.setTitleColor(.black, for: .normal)
+                cell.challengedTeam2.isUserInteractionEnabled = false
+                cell.challengedTeam2.setTitleColor(.black, for: .normal)
                 cell.whiteBoxTopAnchor?.isActive = false
                 cell.whiteBoxTopAnchor = cell.whiteBox.topAnchor.constraint(equalTo: cell.headerLabel.bottomAnchor)
                 cell.whiteBoxTopAnchor?.isActive = true
@@ -204,6 +212,7 @@ class MatchFeed: UITableViewController {
                     cell.challengerTeam2.setTitle("Guest Player", for: .normal)
                     cell.appLevel2.text = ""
                     cell.challengerTeam2.isUserInteractionEnabled = false
+                    cell.challengerTeam2.setTitleColor(.black, for: .normal)
                 } else {
                     if nameTracker[match.team_1_player_2 ?? "nope"] == nil {
                         let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
@@ -248,6 +257,7 @@ class MatchFeed: UITableViewController {
                 if match.team_2_player_2 == "Guest" {
                     cell.challengedTeam2.setTitle("Guest Player", for: .normal)
                     cell.challengedTeam2.isUserInteractionEnabled = false
+                    cell.challengedTeam2.setTitleColor(.black, for: .normal)
                     cell.appLevel4.text = ""
                 } else {
                     if nameTracker[match.team_2_player_2 ?? "nope"] == nil {

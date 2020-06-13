@@ -45,14 +45,16 @@ class MatchViewOrganizer: UIView {
             return bi
         }()
 
-        let userPlayer1: UILabel = {
-            let label = UILabel()
-            label.adjustsFontSizeToFitWidth = true
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.text = "Teammate 1"
-            label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
-            label.textAlignment = .center
-            return label
+        let userPlayer1: UIButton = {
+            let button = UIButton(type: .system)
+            button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+            button.setTitleColor(.white, for: .highlighted)
+            button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+            button.titleLabel?.adjustsFontSizeToFitWidth = true
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.tag = 0
+            //button.textAlignment = .center
+            return button
         }()
         
         let userPlayer1Skill: UILabel = {
@@ -75,14 +77,16 @@ class MatchViewOrganizer: UIView {
             return label
         }()
         
-        let userPlayer2: UILabel = {
-            let label = UILabel()
-            label.adjustsFontSizeToFitWidth = true
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.text = "Teammate 1"
-            label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
-            label.textAlignment = .center
-            return label
+        let userPlayer2: UIButton = {
+            let button = UIButton(type: .system)
+            button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+            button.setTitleColor(.white, for: .highlighted)
+            button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+            button.titleLabel?.adjustsFontSizeToFitWidth = true
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.tag = 1
+            //button.textAlignment = .center
+            return button
         }()
     
     let guestTeammateButton: UIButton = {
@@ -131,14 +135,16 @@ class MatchViewOrganizer: UIView {
             return label
         }()
         
-        let oppPlayer1: UILabel = {
-            let label = UILabel()
-            label.adjustsFontSizeToFitWidth = true
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.text = "Teammate 1"
-            label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
-            label.textAlignment = .center
-            return label
+        let oppPlayer1: UIButton = {
+            let button = UIButton(type: .system)
+            button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+            button.setTitleColor(.white, for: .highlighted)
+            button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+            button.titleLabel?.adjustsFontSizeToFitWidth = true
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.tag = 2
+            //button.textAlignment = .center
+            return button
         }()
         
         let oppPlayer1Skill: UILabel = {
@@ -161,14 +167,16 @@ class MatchViewOrganizer: UIView {
             return label
         }()
         
-        let oppPlayer2: UILabel = {
-            let label = UILabel()
-            label.adjustsFontSizeToFitWidth = true
-            label.translatesAutoresizingMaskIntoConstraints = false
-            label.text = "Teammate 1"
-            label.font = UIFont(name: "HelveticaNeue-Light", size: 25)
-            label.textAlignment = .center
-            return label
+        let oppPlayer2: UIButton = {
+            let button = UIButton(type: .system)
+            button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+            button.setTitleColor(.white, for: .highlighted)
+            button.titleLabel?.font = UIFont(name: "HelveticaNeue-Light", size: 25)
+            button.titleLabel?.adjustsFontSizeToFitWidth = true
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.tag = 3
+            //button.textAlignment = .center
+            return button
         }()
         
         let oppPlayer2Skill: UILabel = {

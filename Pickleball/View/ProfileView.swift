@@ -121,6 +121,13 @@ class ProfileView: UIView {
         ageGroup.heightAnchor.constraint(equalToConstant: CGFloat(ageGroupLoc.H)).isActive = true
         ageGroup.widthAnchor.constraint(equalToConstant: CGFloat(ageGroupLoc.W)).isActive = true
         
+        scrollView.addSubview(sexLabel)
+        
+        sexLabel.bottomAnchor.constraint(equalTo: ageGroup.topAnchor, constant: 2).isActive = true
+        sexLabel.leftAnchor.constraint(equalTo: ageGroup.leftAnchor).isActive = true
+        sexLabel.heightAnchor.constraint(equalToConstant: 25).isActive = true
+        sexLabel.widthAnchor.constraint(equalToConstant: 85).isActive = true
+        
 //        scrollView.addSubview(matchesWon)
 //
 //        matchesWon.topAnchor.constraint(equalTo: whiteBoxUpper.bottomAnchor, constant: 8).isActive = true
@@ -354,6 +361,14 @@ class ProfileView: UIView {
     }()
     
     let ageGroup: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        label.textAlignment = .left
+        return label
+    }()
+    
+    let sexLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "HelveticaNeue-Light", size: 20)

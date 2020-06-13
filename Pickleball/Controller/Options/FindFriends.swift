@@ -248,7 +248,7 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             } else if sender == 2 || sender == 3 || sender == 4 {
                 returnPlayerDetails(whichOne: indexPath.item)
             } else if sender == 11 || sender == 12 {
-                uploadNewPlayer(whichOne: indexPath.item)
+                uploadNewPlayerPossibly(whichOne: indexPath.item)
             } else {
                 if tourneyId != "none" {
                     if simpleInvite == 0 {
@@ -277,24 +277,34 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
         }
     }
     
-    func uploadNewPlayer(whichOne: Int) {
+    var whichPlayerForGuest = Int()
+    
+    func uploadNewPlayerPossibly(whichOne: Int) {
+        whichPlayerForGuest = whichOne
+        let newalert = UIAlertController(title: "Are you sure?", message: "Do you want to invite \(searchResults[whichOne].name ?? "none") to this match? It can't be undone", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "No", style: UIAlertAction.Style.default, handler: nil))
+        newalert.addAction(UIAlertAction(title: "Yes I'm sure", style: UIAlertAction.Style.default, handler: uploadNewPlayer))
+        self.present(newalert, animated: true, completion: nil)
+    }
+    
+    func uploadNewPlayer(action: UIAlertAction) {
         var values = [String: Any]()
         var confirmers = matchView!.match.team1_scores!
         if sender == 11 {
             confirmers[1] = 0
-            values = ["team_1_player_2": searchResults[whichOne].id ?? "none", "team1_scores": confirmers] as [String : Any]
+            values = ["team_1_player_2": searchResults[whichPlayerForGuest].id ?? "none", "team1_scores": confirmers] as [String : Any]
             matchView?.matchViewOrganizer.confirmCheck2.isHidden = true
             matchView?.matchViewOrganizer.guestTeammateButton.isHidden = true
             matchView?.matchViewOrganizer.userPlayer2.isHidden = false
-            self.matchView?.matchFeed?.matches[matchView!.whichItem].team_1_player_2 = searchResults[whichOne].id ?? "none"
+            self.matchView?.matchFeed?.matches[matchView!.whichItem].team_1_player_2 = searchResults[whichPlayerForGuest].id ?? "none"
             self.matchView?.matchFeed?.matches[matchView!.whichItem].team1_scores = confirmers
         } else if sender == 12 {
             confirmers[3] = 0
-            values = ["team_2_player_2": searchResults[whichOne].id ?? "none", "team1_scores": confirmers] as [String : Any]
+            values = ["team_2_player_2": searchResults[whichPlayerForGuest].id ?? "none", "team1_scores": confirmers] as [String : Any]
             matchView?.matchViewOrganizer.confirmCheck4.isHidden = true
             matchView?.matchViewOrganizer.guestOpponentButton.isHidden = true
             matchView?.matchViewOrganizer.oppPlayer2.isHidden = false
-            self.matchView?.matchFeed?.matches[matchView!.whichItem].team_2_player_2 = searchResults[whichOne].id ?? "none"
+            self.matchView?.matchFeed?.matches[matchView!.whichItem].team_2_player_2 = searchResults[whichPlayerForGuest].id ?? "none"
             self.matchView?.matchFeed?.matches[matchView!.whichItem].team1_scores = confirmers
         }
         let ref = Database.database().reference().child("matches").child(matchView!.matchId)
@@ -305,8 +315,33 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
                 print("Data could not be saved: \(error).")
                 return
             }
+            let notificationsRef = Database.database().reference().child("user_matches")
+            let childUpdates = ["/\(self.searchResults[self.whichPlayerForGuest].id ?? "none")/\(self.matchView!.matchId)/": 1]
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if error != nil {
+                let messageSendFailed = UIAlertController(title: "Sending Message Failed", message: "Error: \(String(describing: error?.localizedDescription))", preferredStyle: .alert)
+                messageSendFailed.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(messageSendFailed, animated: true, completion: nil)
+                print("Data could not be saved: \(String(describing: error)).")
+                return
+            }
+            
+            print("Crazy data 2 saved!")
+                guard let uid = Auth.auth().currentUser?.uid else {
+                    return
+                }
+            Database.database().reference().child("users").child(uid).child("name").observeSingleEvent(of: .value, with: {(snapshot) in
+                if let value = snapshot.value {
+                    let nameOnInvite = value as? String ?? "none"
+                    let pusher = PushNotificationHandler()
+                    pusher.setupPushNotification(deviceId: self.searchResults[self.whichPlayerForGuest].deviceId ?? "none", message: "\(nameOnInvite) invited you to play in a match with them", title: "Match Invite")
+                }
+            })
+            })
         })
-        let idList = [matchView!.match.team_1_player_1!,  sender == 11 ? searchResults[whichOne].id ?? "none" : matchView!.match.team_1_player_2!, matchView!.match.team_2_player_1!, sender == 12 ? searchResults[whichOne].id ?? "none" : matchView!.match.team_2_player_2!]
+        let idList = [matchView!.match.team_1_player_1!,  sender == 11 ? searchResults[whichPlayerForGuest].id ?? "none" : matchView!.match.team_1_player_2!, matchView!.match.team_2_player_1!, sender == 12 ? searchResults[whichPlayerForGuest].id ?? "none" : matchView!.match.team_2_player_2!]
         matchView?.getPlayerNames(idList: idList)
         matchView?.matchFeed?.tableView.reloadData()
         dismiss(animated: true, completion: nil)
