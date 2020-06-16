@@ -231,6 +231,7 @@ class FriendList: UICollectionViewController, UICollectionViewDelegateFlowLayout
         } else {
             activityIndicatorView.stopAnimating()
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! FriendListCell
+            cell.friends.isHidden = true
             cell.messageButton.tag = indexPath.item
             cell.messageButton.addTarget(self, action: #selector(sendMessage), for: .touchUpInside)
             if whoSent != 0 || tourneyId != "none" {

@@ -51,7 +51,9 @@
 		7760977B240EF21100AD30F5 /* CreateMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977A240EF21100AD30F5 /* CreateMatch.swift */; };
 		7760977D241000C400AD30F5 /* MatchNotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977C241000C400AD30F5 /* MatchNotificationCell.swift */; };
 		7760977F2410534D00AD30F5 /* MatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977E2410534D00AD30F5 /* MatchView.swift */; };
-		777590B924982C5900EA3E7E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 777590B824982C5900EA3E7E /* GoogleService-Info.plist */; };
+		777590BB249874B700EA3E7E /* LikeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777590BA249874B700EA3E7E /* LikeList.swift */; };
+		777590BD249930E700EA3E7E /* SimplePlayerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777590BC249930E700EA3E7E /* SimplePlayerCell.swift */; };
+		777590BF2499721B00EA3E7E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 777590BE2499721B00EA3E7E /* GoogleService-Info.plist */; };
 		77931F8423C65C8A00724247 /* CreateTourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77931F8323C65C8A00724247 /* CreateTourney.swift */; };
 		77940C4223C7AE6A000061D4 /* TourneySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77940C4123C7AE6A000061D4 /* TourneySearch.swift */; };
 		77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB022231499C3006CB608 /* AppDelegate.swift */; };
@@ -111,7 +113,9 @@
 		7760977A240EF21100AD30F5 /* CreateMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMatch.swift; sourceTree = "<group>"; };
 		7760977C241000C400AD30F5 /* MatchNotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationCell.swift; sourceTree = "<group>"; };
 		7760977E2410534D00AD30F5 /* MatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchView.swift; sourceTree = "<group>"; };
-		777590B824982C5900EA3E7E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		777590BA249874B700EA3E7E /* LikeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikeList.swift; sourceTree = "<group>"; };
+		777590BC249930E700EA3E7E /* SimplePlayerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimplePlayerCell.swift; sourceTree = "<group>"; };
+		777590BE2499721B00EA3E7E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		77931F8323C65C8A00724247 /* CreateTourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTourney.swift; sourceTree = "<group>"; };
 		77940C4123C7AE6A000061D4 /* TourneySearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneySearch.swift; sourceTree = "<group>"; };
 		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -216,7 +220,7 @@
 				77BBB03D231EE56E006CB608 /* Helpers */,
 				77BBB03C231EE566006CB608 /* Model */,
 				77BBB029231499C5006CB608 /* Assets.xcassets */,
-				777590B824982C5900EA3E7E /* GoogleService-Info.plist */,
+				777590BE2499721B00EA3E7E /* GoogleService-Info.plist */,
 				77BBB022231499C3006CB608 /* AppDelegate.swift */,
 				77BBB026231499C3006CB608 /* Main.storyboard */,
 				77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */,
@@ -248,6 +252,8 @@
 				7745A2DB2477205A00FC1FBF /* PlayerChallengeCell.swift */,
 				7745A2DD2478965700FC1FBF /* SelectCourtInfo.swift */,
 				7745A2DF247C978700FC1FBF /* PieBackgroundPopup.swift */,
+				777590BA249874B700EA3E7E /* LikeList.swift */,
+				777590BC249930E700EA3E7E /* SimplePlayerCell.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -377,8 +383,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				777590B924982C5900EA3E7E /* GoogleService-Info.plist in Resources */,
 				77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */,
+				777590BF2499721B00EA3E7E /* GoogleService-Info.plist in Resources */,
 				77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */,
 				77BBB028231499C3006CB608 /* Main.storyboard in Resources */,
 			);
@@ -463,6 +469,8 @@
 				77549E1C24742CC60043FD44 /* ChangeStatusInfo.swift in Sources */,
 				7757C4762427F372006E059A /* WelcomePage.swift in Sources */,
 				77BBB0392319E5C5006CB608 /* TourneyStandings.swift in Sources */,
+				777590BD249930E700EA3E7E /* SimplePlayerCell.swift in Sources */,
+				777590BB249874B700EA3E7E /* LikeList.swift in Sources */,
 				77BBB03F231EE5BE006CB608 /* TourneyMenuBar.swift in Sources */,
 				7755A849244A00A700A5CA45 /* Play.swift in Sources */,
 				7739865D23BBEF6D00195253 /* Connect.swift in Sources */,
@@ -639,7 +647,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = TRBoulder.Pickleball;
 				PRODUCT_NAME = Pickleball;
 				SWIFT_VERSION = 5.0;
@@ -663,7 +671,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.8;
+				MARKETING_VERSION = 1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = TRBoulder.Pickleball;
 				PRODUCT_NAME = Pickleball;
 				SWIFT_VERSION = 5.0;

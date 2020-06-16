@@ -206,6 +206,21 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             cell.messageButton.isHidden = true
             cell.playerLocation.isHidden = false
             cell.player = searchResults[indexPath.item]
+            guard let uid = Auth.auth().currentUser?.uid else {
+                return cell
+            }
+            let friendsRef = Database.database().reference().child("friends").child(uid).child(searchResults[indexPath.item].id!)
+            friendsRef.observeSingleEvent(of: .value, with: {(snapshot) in
+                guard let friendCheck = snapshot.value else {
+                    return
+                }
+                let friendCheckNum = friendCheck as? Int ?? -1
+                if friendCheckNum == 1 {
+                    cell.friends.isHidden = false
+                } else {
+                    cell.friends.isHidden = true
+                }
+            })
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! ProfileMenuCell

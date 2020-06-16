@@ -91,12 +91,18 @@ class FeedMatchCell: UITableViewCell {
             if match.court == "none" {
                 selectCourtButton.setTitle("Select Court", for: .normal)
                 selectCourtButton.setTitleColor(UIColor(r: 150, g: 150, b: 150), for: .normal)
-                courtLabel.text = "Court played at: None Selected"
+                courtLabel.text = "Court Unknown"
             } else {
                 selectCourtButton.setTitle(match.court ?? "None Selected", for: .normal)
                 selectCourtButton.setTitleColor(.black, for: .normal)
-                courtLabel.text = "Court played at: \(match.court ?? "None Selected")"
+                courtLabel.text = "\(match.court ?? "Court Unknown")"
             }
+            if match.liked == true {
+                likeImage.image = UIImage(named: "Liked")
+            } else {
+                likeImage.image = UIImage(named: "Unliked")
+            }
+            likesLabel.text = "\(match.likes?.count ?? 0) Likes"
             if uid == match.team_1_player_1 && (match.active == 0 || match.active == 1) {
                 editButton.isHidden = false
             } else {
@@ -740,6 +746,35 @@ class FeedMatchCell: UITableViewCell {
         return label
     }()
     
+    let likeImage: UIImageView = {
+        let image = UIImageView()
+        image.image = UIImage(named: "Unliked")
+        image.contentMode = .scaleAspectFit
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
+    
+    let likedButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    let likesLabel: UILabel = {
+        let label = UILabel()
+        label.adjustsFontSizeToFitWidth = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .left
+        return label
+    }()
+    
+    let openLikesButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     var challenger1BottomAnchor: NSLayoutConstraint?
     var challenged1BottomAnchor: NSLayoutConstraint?
     var appLevel1Anchor: NSLayoutConstraint?
@@ -1003,10 +1038,34 @@ class FeedMatchCell: UITableViewCell {
         confirmCheck4.widthAnchor.constraint(equalToConstant: CGFloat(confirmCheck1Loc.W)).isActive = true
         
         addSubview(courtLabel)
-        courtLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: 2).isActive = true
-        courtLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: 4).isActive = true
+        courtLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -2).isActive = true
+        courtLabel.leftAnchor.constraint(equalTo: centerXAnchor, constant: -16).isActive = true
         courtLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
         courtLabel.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        
+        addSubview(likeImage)
+        likeImage.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -2).isActive = true
+        likeImage.leftAnchor.constraint(equalTo: leftAnchor, constant: 12).isActive = true
+        likeImage.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        likeImage.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        addSubview(likedButton)
+        likedButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -2).isActive = true
+        likedButton.leftAnchor.constraint(equalTo: leftAnchor, constant: 12).isActive = true
+        likedButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        likedButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        
+        addSubview(likesLabel)
+        likesLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -2).isActive = true
+        likesLabel.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        likesLabel.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        likesLabel.leftAnchor.constraint(equalTo: likeImage.rightAnchor, constant: 6).isActive = true
+        
+        addSubview(openLikesButton)
+        openLikesButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -2).isActive = true
+        openLikesButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        openLikesButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        openLikesButton.leftAnchor.constraint(equalTo: likeImage.rightAnchor, constant: 6).isActive = true
         
         addSubview(separatorView)
         separatorView.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true

@@ -104,15 +104,19 @@ class FriendListCell: BaseCell {
 //        return image
 //    }()
     
-//    let playerName: UILabel = {
-//        let label = UILabel()
-//        label.isHidden = true
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        label.text = "playerName"
-//        label.font = UIFont(name: "HelveticaNeue", size: 19)
-//        label.textAlignment = .left
-//        return label
-//    }()
+    let friends: UILabel = {
+        let label = UILabel()
+        label.isHidden = true
+        label.layer.cornerRadius = 4
+        label.layer.masksToBounds = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.text = " Friends "
+        label.backgroundColor = UIColor.init(r: 120, g: 207, b: 138)
+        label.textColor = .white
+        label.font = UIFont(name: "HelveticaNeue", size: 19)
+        label.textAlignment = .center
+        return label
+    }()
     
     let playerUserName: UILabel = {
         let label = UILabel()
@@ -231,11 +235,11 @@ class FriendListCell: BaseCell {
         appLevel.widthAnchor.constraint(equalToConstant: 40).isActive = true
         
         
-//        addSubview(friendImage)
-//        friendImage.topAnchor.constraint(equalTo: playerUserName.topAnchor, constant: 10).isActive = true
-//        friendImage.leftAnchor.constraint(equalTo: playerUserName.rightAnchor, constant: 2).isActive = true
-//        friendImage.heightAnchor.constraint(equalToConstant: 20).isActive = true
-//        friendImage.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        addSubview(friends)
+        friends.topAnchor.constraint(equalTo: playerUserName.topAnchor, constant: 10).isActive = true
+        friends.widthAnchor.constraint(equalToConstant: 87).isActive = true
+        friends.heightAnchor.constraint(equalToConstant: 23).isActive = true
+        friends.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
         
         addSubview(playerLocation)
         playerLocation.topAnchor.constraint(equalTo: appLevel.topAnchor).isActive = true

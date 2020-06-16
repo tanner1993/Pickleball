@@ -27,6 +27,8 @@ class Match2: NSObject {
     var seen: Bool?
     var timeOfScores: Double?
     var court: String?
+    var liked: Bool?
+    var likes: [String]?
     
     func whichPlayerAmI() -> Int {
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -44,6 +46,47 @@ class Match2: NSObject {
         default:
             return 0
         }
+    }
+    
+    func uploadLike() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("matches").child(matchId!).child("likes")
+        ref.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value {
+                var likesUpload = value as? [String] ?? [String]()
+                if likesUpload.contains(uid) == false {
+                    likesUpload.append(uid)
+                    self.likes?.append(uid)
+                    if likesUpload.count == 5 {
+                        self.notifyPlayerOfLikes()
+                    }
+                    ref.setValue(likesUpload)
+                } else {
+                    likesUpload.remove(at: likesUpload.firstIndex(of: uid)!)
+                    self.likes!.remove(at: self.likes!.firstIndex(of: uid)!)
+                    ref.setValue(likesUpload)
+                }
+            }
+        })
+    }
+    
+    func notifyPlayerOfLikes() {
+        Database.database().reference().child("users").child(team_1_player_1!).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value {
+                let deviceId = value as? String ?? "none"
+                let pusher = PushNotificationHandler()
+                pusher.setupPushNotification(deviceId: deviceId, message: "5 players have already liked a match you logged", title: "Match Play")
+            }
+        })
+        Database.database().reference().child("users").child(team_2_player_1!).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value {
+                let deviceId = value as? String ?? "none"
+                let pusher = PushNotificationHandler()
+                pusher.setupPushNotification(deviceId: deviceId, message: "5 players have already liked a match you logged", title: "Match Play")
+            }
+        })
     }
     
     func sendTourneyNotifications(uid: String, tourneyId: String, tourneyYetToViewMatch: [String]) {

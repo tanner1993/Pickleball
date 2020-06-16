@@ -41,6 +41,11 @@ class MatchFeed: UITableViewController {
         view.backgroundColor = .white
         if sender == 0 {
             fetchMatches()
+            tableView.refreshControl = refreshControlMatch
+            refreshControlMatch.addTarget(self, action: #selector(refreshFeed), for: .valueChanged)
+            refreshControlMatch.tintColor = UIColor.init(r: 88, g: 148, b: 200)
+            let attrbReg = [NSAttributedString.Key.font : UIFont(name: "HelveticaNeue-Bold", size: 20), NSAttributedString.Key.foregroundColor : UIColor.init(r: 88, g: 148, b: 200)]
+            refreshControlMatch.attributedTitle = NSAttributedString(string: "Refreshing match feed...", attributes: attrbReg as [NSAttributedString.Key : Any])
         } else {
             fetchMyMatches()
         }
@@ -55,6 +60,13 @@ class MatchFeed: UITableViewController {
             tableView?.scrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: 45, right: 0)
             setupFindOpponents()
         }
+    }
+    
+    let refreshControlMatch = UIRefreshControl()
+    
+    @objc func refreshFeed() {
+        matches.removeAll()
+        fetchMatches()
     }
     
     func setupFindOpponents() {
@@ -167,6 +179,10 @@ class MatchFeed: UITableViewController {
                 cell.whiteBoxTopAnchor = cell.whiteBox.topAnchor.constraint(equalTo: cell.timeStamp.bottomAnchor)
                 cell.whiteBoxTopAnchor?.isActive = true
             } else {
+                cell.likesLabel.isHidden = true
+                cell.likeImage.isHidden = true
+                cell.likedButton.isHidden = true
+                cell.openLikesButton.isHidden = true
                 cell.challengerTeam1.isUserInteractionEnabled = false
                 cell.challengerTeam1.setTitleColor(.black, for: .normal)
                 cell.challengerTeam2.isUserInteractionEnabled = false
@@ -306,6 +322,10 @@ class MatchFeed: UITableViewController {
             
             cell.editButton.addTarget(self, action: #selector(handleDelete), for: .touchUpInside)
             cell.editButton.tag = indexPath.item
+            cell.likedButton.addTarget(self, action: #selector(handleLikedMatch), for: .touchUpInside)
+            cell.likedButton.tag = indexPath.item
+            cell.openLikesButton.tag = indexPath.item
+            cell.openLikesButton.addTarget(self, action: #selector(openLikes), for: .touchUpInside)
             
             cell.selectCourtButton.addTarget(self, action: #selector(openCourtInfo), for: .touchUpInside)
             cell.selectCourtButton.tag = indexPath.item
@@ -410,6 +430,56 @@ class MatchFeed: UITableViewController {
             }
         }
         return initials
+    }
+    
+    @objc func handleLikedMatch(sender: UIButton) {
+        let indexPathMatch = IndexPath(row: sender.tag, section: 0)
+        let matchCell = tableView.cellForRow(at: indexPathMatch) as! FeedMatchCell
+        if matches[sender.tag].liked == false {
+            matchCell.likeImage.image = UIImage(named: "Liked")
+            matchCell.likesLabel.text = "\((matches[sender.tag].likes?.count ?? 0) + 1) Likes"
+            matches[sender.tag].liked = true
+            matches[sender.tag].uploadLike()
+        } else {
+            matchCell.likeImage.image = UIImage(named: "Unliked")
+            matches[sender.tag].liked = false
+            matchCell.likesLabel.text = "\((matches[sender.tag].likes?.count ?? 0) - 1) Likes"
+            matches[sender.tag].uploadLike()
+        }
+    }
+    
+    //let likesList = LikeList(frame: CGRect(x: 0, y: 0, width: (UIApplication.shared.keyWindow?.frame.width)! - 48, height: 440))
+    let likesList = LikeList()
+    
+    @objc func openLikes(sender: UIButton) {
+        if let window = UIApplication.shared.keyWindow {
+            blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+            blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu3)))
+            window.addSubview(blackView)
+            window.addSubview(likesList)
+            likesList.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(infoBackgroundHeight))
+            likesList.layer.cornerRadius = 10
+            likesList.layer.masksToBounds = true
+            likesList.likes = matches[sender.tag].likes!
+            likesList.likeTableView.reloadData()
+            blackView.frame = window.frame
+            blackView.alpha = 0
+
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                self.blackView.alpha = 1
+             self.likesList.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.infoBackgroundHeight + 140), width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }, completion: nil)
+
+        }
+    }
+    
+    @objc func dismissMenu3() {
+        UIView.animate(withDuration: 0.5, animations: {
+            self.blackView.alpha = 0
+            if let window = UIApplication.shared.keyWindow {
+             self.likesList.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }
+        })
     }
     
     @objc func handleDelete(sender: UIButton) {
@@ -566,9 +636,13 @@ class MatchFeed: UITableViewController {
 //    }
     
     func fetchMatches() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
         let ref = Database.database().reference().child("matches").queryOrdered(byChild: "active").queryEqual(toValue: 3).queryLimited(toLast: 10)
-        ref.observe(.childAdded, with: { (snapshot) in
-                if let value = snapshot.value as? NSDictionary {
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            for child in snapshot.children.allObjects as! [DataSnapshot] {
+                if let value = child.value as? NSDictionary {
                     let matchT = Match2()
                     let active = value["active"] as? Int ?? 0
                     let submitter = value["submitter"] as? Int ?? 0
@@ -583,6 +657,9 @@ class MatchFeed: UITableViewController {
                     let style = value["style"] as? Int ?? 0
                     let forfeit = value["forfeit"] as? Int ?? 0
                     let court = value["court"] as? String ?? "none"
+                    let likes = value["likes"] as? [String] ?? [String]()
+                    matchT.likes = likes
+                    matchT.liked = likes.contains(uid) ? true : false
                     matchT.court = court
                     matchT.active = active
                     matchT.winner = winner
@@ -593,7 +670,7 @@ class MatchFeed: UITableViewController {
                     matchT.team_2_player_2 = team_2_player_2
                     matchT.team1_scores = team1_scores
                     matchT.team2_scores = team2_scores
-                    matchT.matchId = snapshot.key
+                    matchT.matchId = child.key
                     matchT.time = time
                     matchT.style = style
                     matchT.forfeit = forfeit
@@ -602,8 +679,14 @@ class MatchFeed: UITableViewController {
                     self.matches = self.matches.sorted { p1, p2 in
                         return (p1.time!) > (p2.time!)
                     }
-                    DispatchQueue.main.async { self.tableView.reloadData()}
+                    DispatchQueue.main.async {
+                        self.refreshControlMatch.endRefreshing()
+                        self.activityIndicatorView.stopAnimating()
+                        self.tableView.reloadData()
+                        
+                    }
                 }
+            }
         }, withCancel: nil)
     }
     

@@ -325,7 +325,7 @@ class MatchView: UIViewController {
         self.matchFeed?.matches[self.whichItem].active = 2
         self.setupNavbarTitle(status: 2)
         self.matchFeed?.matches[self.whichItem].winner = self.match.winner!
-        self.matchFeed?.matches[self.whichItem].submitter = self.userIsTeam1 ? 1 : 2
+        self.matchFeed?.matches[self.whichItem].submitter = self.match.submitter!
         self.matchFeed?.matches[self.whichItem].team1_scores = self.match.team1_scores!
         self.matchFeed?.matches[self.whichItem].team2_scores = self.match.team2_scores!
         self.matchFeed?.tableView.reloadData()
@@ -340,27 +340,35 @@ class MatchView: UIViewController {
             matchViewOrganizer.confirmCheck1.isHidden = true
             matchViewOrganizer.confirmCheck2.isHidden = true
         }
-        matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = false
-        matchViewOrganizer.confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W / 2)
-        matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = true
-        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = false
-        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X + (confirmMatchScoresLoc.W / 4))
-        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = true
-        matchViewOrganizer.rejectMatchScores.isHidden = false
-        matchViewOrganizer.rejectMatchScoresWidthAnchor?.isActive = false
-        matchViewOrganizer.rejectMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W / 2)
-        matchViewOrganizer.rejectMatchScoresWidthAnchor?.isActive = true
-        matchViewOrganizer.rejectMatchScoresCenterXAnchor?.isActive = false
-        matchViewOrganizer.rejectMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X - (confirmMatchScoresLoc.W / 4))
-        matchViewOrganizer.rejectMatchScoresCenterXAnchor?.isActive = true
-        matchViewOrganizer.confirmMatchScores.setTitle("Yes these scores are right, finish the match", for: .normal)
-        matchViewOrganizer.confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
-        matchViewOrganizer.confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
-        matchViewOrganizer.confirmMatchScores.titleLabel?.numberOfLines = 3
-        matchViewOrganizer.rejectMatchScores.setTitle("No I want to edit the scores", for: .normal)
-        matchViewOrganizer.rejectMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
-        matchViewOrganizer.rejectMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
-        matchViewOrganizer.rejectMatchScores.titleLabel?.numberOfLines = 3
+        if userIsTeam1 && self.match.submitter! == 1 || userIsTeam1 == false && self.match.submitter! == 2 {
+            matchViewOrganizer.confirmMatchScores.isHidden = true
+            matchViewOrganizer.rejectMatchScores.isHidden = true
+            matchViewOrganizer.matchStatusLabel.isHidden = false
+            matchViewOrganizer.matchStatusLabel.text = "Waiting for opponent to accept submitted scores"
+            matchViewOrganizer.matchStatusLabel.numberOfLines = 2
+        } else {
+            matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = false
+            matchViewOrganizer.confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W / 2)
+            matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = true
+            matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = false
+            matchViewOrganizer.confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X + (confirmMatchScoresLoc.W / 4))
+            matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = true
+            matchViewOrganizer.rejectMatchScores.isHidden = false
+            matchViewOrganizer.rejectMatchScoresWidthAnchor?.isActive = false
+            matchViewOrganizer.rejectMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W / 2)
+            matchViewOrganizer.rejectMatchScoresWidthAnchor?.isActive = true
+            matchViewOrganizer.rejectMatchScoresCenterXAnchor?.isActive = false
+            matchViewOrganizer.rejectMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X - (confirmMatchScoresLoc.W / 4))
+            matchViewOrganizer.rejectMatchScoresCenterXAnchor?.isActive = true
+            matchViewOrganizer.confirmMatchScores.setTitle("Yes these scores are right, finish the match", for: .normal)
+            matchViewOrganizer.confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+            matchViewOrganizer.confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+            matchViewOrganizer.confirmMatchScores.titleLabel?.numberOfLines = 3
+            matchViewOrganizer.rejectMatchScores.setTitle("No I want to edit the scores", for: .normal)
+            matchViewOrganizer.rejectMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+            matchViewOrganizer.rejectMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+            matchViewOrganizer.rejectMatchScores.titleLabel?.numberOfLines = 3
+        }
         disableScores(team1Scores: match.team1_scores!, team2Scores: match.team2_scores!)
     }
     
@@ -387,7 +395,11 @@ class MatchView: UIViewController {
         matchViewOrganizer.winnerConfirmed.isHidden = false
         matchViewOrganizer.winnerConfirmed.numberOfLines = 2
         if match.doubles == true {
-            matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") & \(matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none") win!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") & \(matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none") win!"
+            var userPlayer2Text = String()
+            userPlayer2Text = match.team_1_player_2 == "Guest" ? "Guest" : matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none"
+            var oppPlayer2Text = String()
+            oppPlayer2Text = match.team_2_player_2 == "Guest" ? "Guest" : matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none"
+            matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") & \(userPlayer2Text) win!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") & \(oppPlayer2Text) win!"
         } else {
             matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") wins!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") wins!"
         }

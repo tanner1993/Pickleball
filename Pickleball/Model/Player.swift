@@ -31,7 +31,6 @@ class Player: NSObject {
     var deviceId: String?
     var challenge: Bool?
     
-    
     func getUserFirstAndLastName(fullName: String) -> String {
         var firstName = String()
         var lastName = String()
