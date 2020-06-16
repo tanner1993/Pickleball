@@ -51,7 +51,7 @@
 		7760977B240EF21100AD30F5 /* CreateMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977A240EF21100AD30F5 /* CreateMatch.swift */; };
 		7760977D241000C400AD30F5 /* MatchNotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977C241000C400AD30F5 /* MatchNotificationCell.swift */; };
 		7760977F2410534D00AD30F5 /* MatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977E2410534D00AD30F5 /* MatchView.swift */; };
-		777590B72494503600EA3E7E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 777590B62494503600EA3E7E /* GoogleService-Info.plist */; };
+		777590B924982C5900EA3E7E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 777590B824982C5900EA3E7E /* GoogleService-Info.plist */; };
 		77931F8423C65C8A00724247 /* CreateTourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77931F8323C65C8A00724247 /* CreateTourney.swift */; };
 		77940C4223C7AE6A000061D4 /* TourneySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77940C4123C7AE6A000061D4 /* TourneySearch.swift */; };
 		77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB022231499C3006CB608 /* AppDelegate.swift */; };
@@ -111,7 +111,7 @@
 		7760977A240EF21100AD30F5 /* CreateMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMatch.swift; sourceTree = "<group>"; };
 		7760977C241000C400AD30F5 /* MatchNotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationCell.swift; sourceTree = "<group>"; };
 		7760977E2410534D00AD30F5 /* MatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchView.swift; sourceTree = "<group>"; };
-		777590B62494503600EA3E7E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		777590B824982C5900EA3E7E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		77931F8323C65C8A00724247 /* CreateTourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTourney.swift; sourceTree = "<group>"; };
 		77940C4123C7AE6A000061D4 /* TourneySearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneySearch.swift; sourceTree = "<group>"; };
 		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -216,7 +216,7 @@
 				77BBB03D231EE56E006CB608 /* Helpers */,
 				77BBB03C231EE566006CB608 /* Model */,
 				77BBB029231499C5006CB608 /* Assets.xcassets */,
-				777590B62494503600EA3E7E /* GoogleService-Info.plist */,
+				777590B824982C5900EA3E7E /* GoogleService-Info.plist */,
 				77BBB022231499C3006CB608 /* AppDelegate.swift */,
 				77BBB026231499C3006CB608 /* Main.storyboard */,
 				77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */,
@@ -377,8 +377,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				777590B924982C5900EA3E7E /* GoogleService-Info.plist in Resources */,
 				77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */,
-				777590B72494503600EA3E7E /* GoogleService-Info.plist in Resources */,
 				77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */,
 				77BBB028231499C3006CB608 /* Main.storyboard in Resources */,
 			);

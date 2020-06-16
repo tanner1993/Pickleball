@@ -60,6 +60,7 @@ class MatchView: UIViewController {
         if tourneyId != "none" {
             fetchMatch()
         } else {
+            watchMatch()
             furtherSetup()
         }
         setupKeyboardObservers()
@@ -271,6 +272,125 @@ class MatchView: UIViewController {
             self.getPlayerNames(idList: idList)
             self.setupCorrectBottom(active: matchResult.active!, submitter: matchResult.submitter!, confirmers: matchResult.team1_scores!, team2: matchResult.team2_scores!, idList: idList, startTime: matchResult.time!, forfeit: matchResult.forfeit!)
         })
+    }
+    
+    func watchMatch() {
+        //let idList = [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!]
+        tourneyFun.watchMatch(tourneyId: tourneyId, matchId: matchId, completion: { (result) in
+            guard let activeResult = result else {
+                print("failed to get rresult")
+                return
+            }
+            if activeResult != self.match.active {
+                if activeResult == 1 {
+                    //self.matchReadyFunc(confirmerSnap: [1,1,1,1,0])
+                    self.match.active = 1
+                    self.setupActive1Reload()
+                } else if activeResult == 2 {
+                    self.tourneyFun.fetchMatch(tourneyId: self.tourneyId, matchId: self.matchId, completion: { (result) in
+                        guard let matchResult = result else {
+                            print("failed to get rresult")
+                            return
+                        }
+                        self.match.team1_scores = matchResult.team1_scores
+                        self.match.team2_scores = matchResult.team2_scores
+                        self.match.submitter = matchResult.submitter
+                        self.match.winner = matchResult.winner
+                        self.match.active = 2
+                        self.setupActive2Reload()
+                    })
+                } else if activeResult == 3 {
+                    self.setupActive3Reload()
+                }
+            }
+        })
+    }
+    
+    override func willMove(toParent parent: UIViewController?) {
+        print("Moving")
+        if parent == nil {
+            let matchReference = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId).child("active") : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId).child("active")
+            matchReference.removeAllObservers()
+        }
+    }
+    
+    func setupActive1Reload() {
+        active0Changes()
+        matchFeed?.matches[self.whichItem].active = 1
+        matchFeed?.tableView.reloadData()
+    }
+    
+    func setupActive2Reload() {
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
+        self.matchFeed?.matches[self.whichItem].active = 2
+        self.setupNavbarTitle(status: 2)
+        self.matchFeed?.matches[self.whichItem].winner = self.match.winner!
+        self.matchFeed?.matches[self.whichItem].submitter = self.userIsTeam1 ? 1 : 2
+        self.matchFeed?.matches[self.whichItem].team1_scores = self.match.team1_scores!
+        self.matchFeed?.matches[self.whichItem].team2_scores = self.match.team2_scores!
+        self.matchFeed?.tableView.reloadData()
+        if match.submitter == 1 {
+            matchViewOrganizer.confirmCheck1.isHidden = false
+            matchViewOrganizer.confirmCheck2.isHidden = match.doubles! ? false : true
+            matchViewOrganizer.confirmCheck3.isHidden = true
+            matchViewOrganizer.confirmCheck4.isHidden = true
+        } else {
+            matchViewOrganizer.confirmCheck3.isHidden = false
+            matchViewOrganizer.confirmCheck4.isHidden = match.doubles! ? false : true
+            matchViewOrganizer.confirmCheck1.isHidden = true
+            matchViewOrganizer.confirmCheck2.isHidden = true
+        }
+        matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = false
+        matchViewOrganizer.confirmMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W / 2)
+        matchViewOrganizer.confirmMatchScoresWidthAnchor?.isActive = true
+        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = false
+        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X + (confirmMatchScoresLoc.W / 4))
+        matchViewOrganizer.confirmMatchScoresCenterXAnchor?.isActive = true
+        matchViewOrganizer.rejectMatchScores.isHidden = false
+        matchViewOrganizer.rejectMatchScoresWidthAnchor?.isActive = false
+        matchViewOrganizer.rejectMatchScoresWidthAnchor?.constant = CGFloat(confirmMatchScoresLoc.W / 2)
+        matchViewOrganizer.rejectMatchScoresWidthAnchor?.isActive = true
+        matchViewOrganizer.rejectMatchScoresCenterXAnchor?.isActive = false
+        matchViewOrganizer.rejectMatchScoresCenterXAnchor?.constant = CGFloat(confirmMatchScoresLoc.X - (confirmMatchScoresLoc.W / 4))
+        matchViewOrganizer.rejectMatchScoresCenterXAnchor?.isActive = true
+        matchViewOrganizer.confirmMatchScores.setTitle("Yes these scores are right, finish the match", for: .normal)
+        matchViewOrganizer.confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+        matchViewOrganizer.confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+        matchViewOrganizer.confirmMatchScores.titleLabel?.numberOfLines = 3
+        matchViewOrganizer.rejectMatchScores.setTitle("No I want to edit the scores", for: .normal)
+        matchViewOrganizer.rejectMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+        matchViewOrganizer.rejectMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
+        matchViewOrganizer.rejectMatchScores.titleLabel?.numberOfLines = 3
+        disableScores(team1Scores: match.team1_scores!, team2Scores: match.team2_scores!)
+    }
+    
+    func setupActive3Reload() {
+        match.active = 3
+        matchFeed?.matches[self.whichItem].active = 3
+        matchFeed?.tableView.reloadData()
+        setupNavbarTitle(status: 3)
+        matchViewOrganizer.confirmCheck1.isHidden = false
+        matchViewOrganizer.confirmCheck2.isHidden = self.match.doubles! ? false : true
+        matchViewOrganizer.confirmCheck3.isHidden = false
+        matchViewOrganizer.confirmCheck4.isHidden = self.match.doubles! ? false : true
+        matchViewOrganizer.matchStyleLabel.isHidden = true
+        if AccessToken.isCurrentAccessTokenActive {
+            matchViewOrganizer.loadImageButton.isHidden = false
+            matchViewOrganizer.shareButton.isHidden = false
+        } else {
+            matchViewOrganizer.cantLoadImageButton.isHidden = false
+        }
+        matchViewOrganizer.shareFriendsLabel.isHidden = false
+        matchViewOrganizer.confirmMatchScores.isHidden = true
+        matchViewOrganizer.rejectMatchScores.isHidden = true
+        matchViewOrganizer.matchStatusLabel.isHidden = true
+        matchViewOrganizer.winnerConfirmed.isHidden = false
+        matchViewOrganizer.winnerConfirmed.numberOfLines = 2
+        if match.doubles == true {
+            matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") & \(matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none") win!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") & \(matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none") win!"
+        } else {
+            matchViewOrganizer.winnerConfirmed.text = match.winner == 1 ? "\(matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none") wins!" : "\(matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none") wins!"
+        }
     }
     
     @objc func handleTimeExpired(action: UIAlertAction) {
@@ -860,18 +980,10 @@ class MatchView: UIViewController {
             notFullyConfirmed(confirmerSnap: confirmerSnap)
             return
         }
-        matchViewOrganizer.guestTeammateButton.isHidden = true
-        matchViewOrganizer.guestOpponentButton.isHidden = true
-        matchViewOrganizer.userPlayer2.isHidden = false
-        matchViewOrganizer.oppPlayer2.isHidden = false
-        matchViewOrganizer.confirmCheck2.isHidden = false
-        matchViewOrganizer.confirmCheck3.isHidden = false
-        matchViewOrganizer.confirmCheck4.isHidden = false
-        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
-        matchViewOrganizer.whiteCover.isHidden = true
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
+        self.match.active = 1
         let matchActiveRef = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
         match.team1_scores = [0, 0, 0, 0, 0]
         let timeOfChallenge = Date().timeIntervalSince1970
@@ -887,10 +999,8 @@ class MatchView: UIViewController {
                 return
             }
             
-            self.match.active = 1
             self.matchFeed?.matches[self.whichItem].active = 1
             self.matchFeed?.tableView.reloadData()
-            self.setupNavbarTitle(status: 1)
             
             print("Crazy data 2 saved!")
             if self.tourneyId == "none" {
@@ -910,8 +1020,27 @@ class MatchView: UIViewController {
             self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none", message: "fully confirmed the match, now you can log the scores whenever you're finished playing", title: "Match Confirmed")
             
         })
-        
+        active0Changes()
+    }
+    
+    func active0Changes() {
+        self.setupNavbarTitle(status: 1)
+        matchViewOrganizer.guestTeammateButton.isHidden = true
+        matchViewOrganizer.guestOpponentButton.isHidden = true
+        matchViewOrganizer.userPlayer2.isHidden = false
+        matchViewOrganizer.oppPlayer2.isHidden = false
+        if match.doubles == true {
+            matchViewOrganizer.confirmCheck2.isHidden = false
+            matchViewOrganizer.confirmCheck3.isHidden = false
+            matchViewOrganizer.confirmCheck4.isHidden = false
+        } else {
+            matchViewOrganizer.confirmCheck3.isHidden = false
+        }
+        matchViewOrganizer.whiteCover.isHidden = true
+        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
         matchViewOrganizer.rejectMatchScores.isHidden = true
+        matchViewOrganizer.confirmMatchScores.isHidden = false
+        matchViewOrganizer.matchStatusLabel.isHidden = true
         matchViewOrganizer.confirmMatchScores.setTitle("Submit Scores to Opponent for Review", for: .normal)
         matchViewOrganizer.confirmMatchScores.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 25)
         matchViewOrganizer.confirmMatchScores.titleLabel?.lineBreakMode = .byWordWrapping
@@ -954,6 +1083,7 @@ class MatchView: UIViewController {
         switch scoresValidation {
         case 0:
             let timeOfScores = Date().timeIntervalSince1970
+            self.match.active = 2
             let values = ["winner": match.winner!, "active": 2, "submitter": userIsTeam1 ? 1 : 2, "team_1_player_1": match.team_1_player_1!, "team_1_player_2": match.team_1_player_2!, "team_2_player_1": match.team_2_player_1!, "team_2_player_2": match.team_2_player_2!, "team1_scores": match.team1_scores!, "team2_scores": match.team2_scores!, "style": match.style!, "timeOfScores": timeOfScores] as [String : Any]
             let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
             ref.updateChildValues(values, withCompletionBlock: {
@@ -965,7 +1095,6 @@ class MatchView: UIViewController {
                 }
                 
                 print("Data saved successfully!")
-                self.match.active = 2
                 self.matchFeed?.matches[self.whichItem].active = 2
                 self.setupNavbarTitle(status: 2)
                 //self.match.winner = self.winner
@@ -1049,6 +1178,7 @@ class MatchView: UIViewController {
     
     func performConfirmActive2() {
 //        let confirmMatchScoresLoc = calculateButtonPosition(x: 375, y: 1084, w: 712, h: 126, wib: 750, hib: 1164, wia: Float(view.frame.width), hia: Float(view.frame.width) / 0.644)
+        self.match.active = 3
         let time = Date().timeIntervalSince1970
         let values = ["active": 3, "time": time] as [String : Any]
         let ref = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
@@ -1061,7 +1191,6 @@ class MatchView: UIViewController {
             }
             
             print("Data saved successfully!")
-            self.match.active = 3
             self.matchFeed?.matches[self.whichItem].active = 3
             self.matchFeed?.tableView.reloadData()
             self.setupNavbarTitle(status: 3)

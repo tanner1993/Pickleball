@@ -83,7 +83,7 @@ class Tourney: NSObject {
     }
     
     func fetchMatch(tourneyId: String, matchId: String, completion: @escaping (Match2?) -> ()) {
-        let matchReference = Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
+        let matchReference = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
         
         matchReference.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
@@ -121,6 +121,19 @@ class Tourney: NSObject {
                 matchT.doubles = team_1_player_2 == "Player not found" ? false : true
                 matchT.timeOfScores = timeOfScores
                 completion(matchT)
+            }
+            
+        }, withCancel: nil)
+    }
+    
+    func watchMatch(tourneyId: String, matchId: String, completion: @escaping (Int?) -> ()) {
+        let matchReference = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId).child("active") : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId).child("active")
+        
+        matchReference.observe(.value, with: {(snapshot) in
+            print(snapshot)
+            if let value = snapshot.value as? Int {
+                let active = value
+                completion(active)
             }
             
         }, withCancel: nil)
