@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7707ED27249C02320017356A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7707ED26249C02310017356A /* GoogleService-Info.plist */; };
 		7718BD6E2322CC710004777C /* FeedCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD6D2322CC710004777C /* FeedCell.swift */; };
 		7718BD702322D4EC0004777C /* MatchCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD6F2322D4EC0004777C /* MatchCell.swift */; };
 		7718BD722323019E0004777C /* RecentMatchesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7718BD712323019E0004777C /* RecentMatchesCell.swift */; };
@@ -53,7 +54,6 @@
 		7760977F2410534D00AD30F5 /* MatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977E2410534D00AD30F5 /* MatchView.swift */; };
 		777590BB249874B700EA3E7E /* LikeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777590BA249874B700EA3E7E /* LikeList.swift */; };
 		777590BD249930E700EA3E7E /* SimplePlayerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777590BC249930E700EA3E7E /* SimplePlayerCell.swift */; };
-		777590BF2499721B00EA3E7E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 777590BE2499721B00EA3E7E /* GoogleService-Info.plist */; };
 		77931F8423C65C8A00724247 /* CreateTourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77931F8323C65C8A00724247 /* CreateTourney.swift */; };
 		77940C4223C7AE6A000061D4 /* TourneySearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77940C4123C7AE6A000061D4 /* TourneySearch.swift */; };
 		77BBB023231499C3006CB608 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BBB022231499C3006CB608 /* AppDelegate.swift */; };
@@ -71,6 +71,7 @@
 
 /* Begin PBXFileReference section */
 		3347B652A33F2B40130F448A /* Pods-Pickleball.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pickleball.release.xcconfig"; path = "Target Support Files/Pods-Pickleball/Pods-Pickleball.release.xcconfig"; sourceTree = "<group>"; };
+		7707ED26249C02310017356A /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7718BD6D2322CC710004777C /* FeedCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCell.swift; sourceTree = "<group>"; };
 		7718BD6F2322D4EC0004777C /* MatchCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchCell.swift; sourceTree = "<group>"; };
 		7718BD712323019E0004777C /* RecentMatchesCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentMatchesCell.swift; sourceTree = "<group>"; };
@@ -115,7 +116,6 @@
 		7760977E2410534D00AD30F5 /* MatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchView.swift; sourceTree = "<group>"; };
 		777590BA249874B700EA3E7E /* LikeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikeList.swift; sourceTree = "<group>"; };
 		777590BC249930E700EA3E7E /* SimplePlayerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimplePlayerCell.swift; sourceTree = "<group>"; };
-		777590BE2499721B00EA3E7E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		77931F8323C65C8A00724247 /* CreateTourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTourney.swift; sourceTree = "<group>"; };
 		77940C4123C7AE6A000061D4 /* TourneySearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourneySearch.swift; sourceTree = "<group>"; };
 		77BBB01F231499C3006CB608 /* Pickleball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pickleball.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -220,7 +220,7 @@
 				77BBB03D231EE56E006CB608 /* Helpers */,
 				77BBB03C231EE566006CB608 /* Model */,
 				77BBB029231499C5006CB608 /* Assets.xcassets */,
-				777590BE2499721B00EA3E7E /* GoogleService-Info.plist */,
+				7707ED26249C02310017356A /* GoogleService-Info.plist */,
 				77BBB022231499C3006CB608 /* AppDelegate.swift */,
 				77BBB026231499C3006CB608 /* Main.storyboard */,
 				77BBB02B231499C5006CB608 /* LaunchScreen.storyboard */,
@@ -384,7 +384,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				77BBB02D231499C5006CB608 /* LaunchScreen.storyboard in Resources */,
-				777590BF2499721B00EA3E7E /* GoogleService-Info.plist in Resources */,
+				7707ED27249C02320017356A /* GoogleService-Info.plist in Resources */,
 				77BBB02A231499C5006CB608 /* Assets.xcassets in Resources */,
 				77BBB028231499C3006CB608 /* Main.storyboard in Resources */,
 			);

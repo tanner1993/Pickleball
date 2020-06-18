@@ -252,12 +252,57 @@ class MatchView: UIViewController {
             titleLabel.text = "Confirm Scores"
         case 3:
             titleLabel.text = "Match Complete"
+            let rematchButton = UIBarButtonItem(title: "REMATCH?", style: .plain, target: self, action: #selector(handleRematch))
+            self.navigationItem.rightBarButtonItem = rematchButton
         default:
             print("failed title")
         }
         titleLabel.textColor = .white
         titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
         self.navigationItem.titleView = titleLabel
+    }
+    
+    @objc func handleRematch() {
+        let newalert = UIAlertController(title: "Do you want to rematch?", message: "How many games do you want to play?", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.default, handler: nil))
+        newalert.addAction(UIAlertAction(title: "Single Match", style: UIAlertAction.Style.default, handler: rematchSingle))
+        newalert.addAction(UIAlertAction(title: "Best 2 out of 3", style: UIAlertAction.Style.default, handler: rematchThree))
+        newalert.addAction(UIAlertAction(title: "Best 3 out of 5", style: UIAlertAction.Style.default, handler: rematchFive))
+        self.present(newalert, animated: true, completion: nil)
+    }
+    
+    func rematchSingle(action: UIAlertAction) {
+        match.createRematch(rematchStyle: 0, completion:{ (result) in
+            guard let rematch = result else {
+                print("failed to get rresult")
+                return
+            }
+            self.matchFeed?.matches.insert(rematch, at: 0)
+            self.matchFeed?.tableView.reloadData()
+            self.navigationController?.popViewController(animated: true)
+        })
+    }
+    func rematchThree(action: UIAlertAction) {
+        match.createRematch(rematchStyle: 1, completion:{ (result) in
+            guard let rematch = result else {
+                print("failed to get rresult")
+                return
+            }
+            self.matchFeed?.matches.insert(rematch, at: 0)
+            self.matchFeed?.tableView.reloadData()
+            self.navigationController?.popViewController(animated: true)
+        })
+    }
+    func rematchFive(action: UIAlertAction) {
+        match.createRematch(rematchStyle: 2, completion:{ (result) in
+            guard let rematch = result else {
+                print("failed to get rresult")
+                return
+            }
+            self.matchFeed?.matches.insert(rematch, at: 0)
+            self.matchFeed?.tableView.reloadData()
+            self.navigationController?.popViewController(animated: true)
+        })
     }
     
     func fetchMatch() {

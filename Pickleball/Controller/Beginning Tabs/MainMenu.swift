@@ -17,6 +17,7 @@ class MainMenu: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTabBarController()
+        self.selectedIndex = 2
     }
     
     

@@ -40,6 +40,10 @@ class MatchFeed: UITableViewController {
         }
         view.backgroundColor = .white
         if sender == 0 {
+            fetchNotifications()
+            fetchMessages()
+            fetchTourneyNotifications()
+            fetchMatchNotifications()
             fetchMatches()
             tableView.refreshControl = refreshControlMatch
             refreshControlMatch.addTarget(self, action: #selector(refreshFeed), for: .valueChanged)
@@ -230,6 +234,8 @@ class MatchFeed: UITableViewController {
                     cell.challengerTeam2.isUserInteractionEnabled = false
                     cell.challengerTeam2.setTitleColor(.black, for: .normal)
                 } else {
+                    cell.challengerTeam2.isUserInteractionEnabled = sender == 0 ? true : false
+                    cell.challengerTeam2.setTitleColor(sender == 0 ? UIColor.init(r: 88, g: 148, b: 200) : .black, for: .normal)
                     if nameTracker[match.team_1_player_2 ?? "nope"] == nil {
                         let player2ref = Database.database().reference().child("users").child(match.team_1_player_2 ?? "nope")
                         player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
@@ -276,6 +282,8 @@ class MatchFeed: UITableViewController {
                     cell.challengedTeam2.setTitleColor(.black, for: .normal)
                     cell.appLevel4.text = ""
                 } else {
+                    cell.challengedTeam2.isUserInteractionEnabled = sender == 0 ? true : false
+                    cell.challengedTeam2.setTitleColor(sender == 0 ? UIColor.init(r: 88, g: 148, b: 200) : .black, for: .normal)
                     if nameTracker[match.team_2_player_2 ?? "nope"] == nil {
                         let player2ref2 = Database.database().reference().child("users").child(match.team_2_player_2 ?? "nope")
                         player2ref2.observeSingleEvent(of: .value, with: {(snapshot) in
@@ -752,6 +760,102 @@ class MatchFeed: UITableViewController {
             Database.database().reference().child("user_matches").child(index).child(matchToDelete.matchId!).removeValue()
         }
         Database.database().reference().child("matches").child(matchToDelete.matchId!).removeValue()
+    }
+    
+    func fetchTourneyNotifications() {
+        var foundTourney = false
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_tourneys").child(uid)
+        ref.observe(.childAdded, with: {(snapshot) in
+            guard let notificationSeen = snapshot.value else {
+                return
+            }
+            let notifNumber = notificationSeen as? Int ?? -1
+            if notifNumber == 1 && foundTourney == false {
+                foundTourney = true
+                if let tabItems = self.tabBarController?.tabBar.items {
+                    let tabItem = tabItems[1]
+                    if tabItem.badgeValue == "M" {
+                        tabItem.badgeValue = "2"
+                    } else {
+                        tabItem.badgeValue = "T"
+                    }
+                }
+            }
+            
+        })
+    }
+    
+    func fetchMatchNotifications() {
+        var foundMatch = false
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_matches").child(uid)
+        ref.observe(.childAdded, with: {(snapshot) in
+            guard let notificationSeen = snapshot.value else {
+                return
+            }
+            let notifNumber = notificationSeen as? Int ?? -1
+            print(notifNumber)
+            if notifNumber == 1 && foundMatch == false {
+                foundMatch = true
+                if let tabItems = self.tabBarController?.tabBar.items {
+                    let tabItem = tabItems[1]
+                    if tabItem.badgeValue == "T" {
+                        tabItem.badgeValue = "2"
+                    } else {
+                        tabItem.badgeValue = "M"
+                    }
+                }
+            }
+            
+        })
+    }
+    
+    
+    func fetchNotifications() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_notifications").child(uid).queryLimited(toLast: 1)
+        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+            guard let notificationSeen = snapshot.value else {
+                return
+            }
+            let notifNumber = notificationSeen as? Int ?? -1
+            if notifNumber == 1 {
+                if let tabItems = self.tabBarController?.tabBar.items {
+                    let tabItem = tabItems[4]
+                    tabItem.badgeValue = "1"
+                }
+            }
+        })
+    }
+    
+    func fetchMessages() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let ref = Database.database().reference().child("user_messages").child(uid)
+        ref.observe(.childAdded, with: {(snapshot) in
+            let recipientId = snapshot.key
+            let ref2 = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 1)
+            ref2.observe(.childAdded, with: {(snapshot) in
+                guard let messageSeen = snapshot.value else {
+                    return
+                }
+                let messageSeenNum = messageSeen as? Int ?? -1
+                if messageSeenNum == 1 {
+                    if let tabItems = self.tabBarController?.tabBar.items {
+                        let tabItem = tabItems[3]
+                        tabItem.badgeValue = "1"
+                    }
+                }
+            })
+        })
     }
 
 }

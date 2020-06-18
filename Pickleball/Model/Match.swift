@@ -48,6 +48,80 @@ class Match2: NSObject {
         }
     }
     
+    func createRematch(rematchStyle: Int, completion: @escaping (Match2?) -> ()) {
+        let timeOfChallenge = Date().timeIntervalSince1970
+        let ref = Database.database().reference().child("matches")
+        let createMatchRef = ref.childByAutoId()
+        var values = [String : Any]()
+        if self.doubles! {
+            values = ["active": 1, "team_1_player_1": self.team_1_player_1!, "team_1_player_2": self.team_1_player_2!, "team_2_player_1": self.team_2_player_1!, "team_2_player_2": self.team_2_player_2!, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge, "style": rematchStyle]
+        } else {
+            values = ["active": 1, "team_1_player_1": self.team_1_player_1!, "team_2_player_1": self.team_2_player_1!, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge, "style": rematchStyle]
+        }
+        createMatchRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            guard let rematchId = createMatchRef.key else {
+                return
+            }
+                let notificationId = rematchId
+            let notificationsRef = Database.database().reference().child("user_matches")
+            
+            var childUpdates = [String : Any]()
+            if self.doubles! {
+                if self.team_1_player_2 == "Guest" && self.team_2_player_2 == "Guest" {
+                    childUpdates = ["/\(self.team_1_player_1!)/\(notificationId)/": 1, "/\(self.team_2_player_1!)/\(notificationId)/": 1]
+                } else if self.team_1_player_2 == "Guest" {
+                    childUpdates = ["/\(self.team_1_player_1!)/\(notificationId)/": 1, "/\(self.team_2_player_1!)/\(notificationId)/": 1, "/\(self.team_2_player_2!)/\(notificationId)/": 1]
+                } else if self.team_2_player_2 == "Guest" {
+                    childUpdates = ["/\(self.team_1_player_1!)/\(notificationId)/": 1, "/\(self.team_1_player_2!)/\(notificationId)/": 1, "/\(self.team_2_player_1!)/\(notificationId)/": 1]
+                } else {
+                    childUpdates = ["/\(self.team_1_player_1!)/\(notificationId)/": 1, "/\(self.team_1_player_2!)/\(notificationId)/": 1, "/\(self.team_2_player_1!)/\(notificationId)/": 1, "/\(self.team_2_player_2!)/\(notificationId)/": 1]
+                }
+            } else {
+                childUpdates = ["/\(self.team_1_player_1!)/\(notificationId)/": 1, "/\(self.team_2_player_1!)/\(notificationId)/": 1]
+            }
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                
+                print("Crazy data 2 saved!")
+                let matchT = Match2()
+                matchT.active = 1
+                matchT.winner = 0
+                matchT.submitter = 0
+                matchT.team_1_player_1 = self.team_1_player_1!
+                matchT.team_1_player_2 = self.team_1_player_2!
+                matchT.team_2_player_1 = self.team_2_player_1!
+                matchT.team_2_player_2 = self.team_2_player_2!
+                matchT.team1_scores = [0, 0, 0, 0, 0]
+                matchT.team2_scores = [0, 0, 0, 0, 0]
+                matchT.matchId = rematchId
+                matchT.time = timeOfChallenge
+                matchT.style = rematchStyle
+                matchT.forfeit = 0
+                if self.doubles! {
+                    matchT.doubles = true
+                } else {
+                    matchT.doubles = false
+                    matchT.team_1_player_2 = "Player not found"
+                    matchT.team_2_player_2 = "Player not found"
+                }
+                completion(matchT)
+                
+            })
+            
+        })
+    }
+    
     func uploadLike() {
         guard let uid = Auth.auth().currentUser?.uid else {
             return

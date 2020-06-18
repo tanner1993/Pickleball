@@ -75,10 +75,10 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         if playerId == "none" {
             setupNavbarButtons()
             setupCollectionView()
-            fetchNotifications()
-            fetchMessages()
-            fetchTourneyNotifications()
-            fetchMatchNotifications()
+//            fetchNotifications()
+//            fetchMessages()
+//            fetchTourneyNotifications()
+//            fetchMatchNotifications()
             observePlayerProfile()
         } else if playerId == uid {
             observePlayerProfile()
@@ -627,101 +627,101 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
         dismiss(animated: true, completion: nil)
     }
     
-    func fetchTourneyNotifications() {
-        var foundTourney = false
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        let ref = Database.database().reference().child("user_tourneys").child(uid)
-        ref.observe(.childAdded, with: {(snapshot) in
-            guard let notificationSeen = snapshot.value else {
-                return
-            }
-            let notifNumber = notificationSeen as? Int ?? -1
-            if notifNumber == 1 && foundTourney == false {
-                foundTourney = true
-                if let tabItems = self.tabBarController?.tabBar.items {
-                    let tabItem = tabItems[1]
-                    if tabItem.badgeValue == "M" {
-                        tabItem.badgeValue = "2"
-                    } else {
-                        tabItem.badgeValue = "T"
-                    }
-                }
-            }
-            
-        })
-    }
-    
-    func fetchMatchNotifications() {
-        var foundMatch = false
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        let ref = Database.database().reference().child("user_matches").child(uid)
-        ref.observe(.childAdded, with: {(snapshot) in
-            guard let notificationSeen = snapshot.value else {
-                return
-            }
-            let notifNumber = notificationSeen as? Int ?? -1
-            print(notifNumber)
-            if notifNumber == 1 && foundMatch == false {
-                foundMatch = true
-                if let tabItems = self.tabBarController?.tabBar.items {
-                    let tabItem = tabItems[1]
-                    if tabItem.badgeValue == "T" {
-                        tabItem.badgeValue = "2"
-                    } else {
-                        tabItem.badgeValue = "M"
-                    }
-                }
-            }
-            
-        })
-    }
-    
-    
-    func fetchNotifications() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        let ref = Database.database().reference().child("user_notifications").child(uid).queryLimited(toLast: 1)
-        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
-            guard let notificationSeen = snapshot.value else {
-                return
-            }
-            let notifNumber = notificationSeen as? Int ?? -1
-            if notifNumber == 1 {
-                if let tabItems = self.tabBarController?.tabBar.items {
-                    let tabItem = tabItems[4]
-                    tabItem.badgeValue = "1"
-                }
-            }
-        })
-    }
-    
-    func fetchMessages() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            return
-        }
-        let ref = Database.database().reference().child("user_messages").child(uid)
-        ref.observe(.childAdded, with: {(snapshot) in
-            let recipientId = snapshot.key
-            let ref2 = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 1)
-            ref2.observe(.childAdded, with: {(snapshot) in
-                guard let messageSeen = snapshot.value else {
-                    return
-                }
-                let messageSeenNum = messageSeen as? Int ?? -1
-                if messageSeenNum == 1 {
-                    if let tabItems = self.tabBarController?.tabBar.items {
-                        let tabItem = tabItems[3]
-                        tabItem.badgeValue = "1"
-                    }
-                }
-            })
-        })
-    }
+//    func fetchTourneyNotifications() {
+//        var foundTourney = false
+//        guard let uid = Auth.auth().currentUser?.uid else {
+//            return
+//        }
+//        let ref = Database.database().reference().child("user_tourneys").child(uid)
+//        ref.observe(.childAdded, with: {(snapshot) in
+//            guard let notificationSeen = snapshot.value else {
+//                return
+//            }
+//            let notifNumber = notificationSeen as? Int ?? -1
+//            if notifNumber == 1 && foundTourney == false {
+//                foundTourney = true
+//                if let tabItems = self.tabBarController?.tabBar.items {
+//                    let tabItem = tabItems[1]
+//                    if tabItem.badgeValue == "M" {
+//                        tabItem.badgeValue = "2"
+//                    } else {
+//                        tabItem.badgeValue = "T"
+//                    }
+//                }
+//            }
+//            
+//        })
+//    }
+//    
+//    func fetchMatchNotifications() {
+//        var foundMatch = false
+//        guard let uid = Auth.auth().currentUser?.uid else {
+//            return
+//        }
+//        let ref = Database.database().reference().child("user_matches").child(uid)
+//        ref.observe(.childAdded, with: {(snapshot) in
+//            guard let notificationSeen = snapshot.value else {
+//                return
+//            }
+//            let notifNumber = notificationSeen as? Int ?? -1
+//            print(notifNumber)
+//            if notifNumber == 1 && foundMatch == false {
+//                foundMatch = true
+//                if let tabItems = self.tabBarController?.tabBar.items {
+//                    let tabItem = tabItems[1]
+//                    if tabItem.badgeValue == "T" {
+//                        tabItem.badgeValue = "2"
+//                    } else {
+//                        tabItem.badgeValue = "M"
+//                    }
+//                }
+//            }
+//            
+//        })
+//    }
+//    
+//    
+//    func fetchNotifications() {
+//        guard let uid = Auth.auth().currentUser?.uid else {
+//            return
+//        }
+//        let ref = Database.database().reference().child("user_notifications").child(uid).queryLimited(toLast: 1)
+//        ref.observeSingleEvent(of: .childAdded, with: {(snapshot) in
+//            guard let notificationSeen = snapshot.value else {
+//                return
+//            }
+//            let notifNumber = notificationSeen as? Int ?? -1
+//            if notifNumber == 1 {
+//                if let tabItems = self.tabBarController?.tabBar.items {
+//                    let tabItem = tabItems[4]
+//                    tabItem.badgeValue = "1"
+//                }
+//            }
+//        })
+//    }
+//    
+//    func fetchMessages() {
+//        guard let uid = Auth.auth().currentUser?.uid else {
+//            return
+//        }
+//        let ref = Database.database().reference().child("user_messages").child(uid)
+//        ref.observe(.childAdded, with: {(snapshot) in
+//            let recipientId = snapshot.key
+//            let ref2 = Database.database().reference().child("user_messages").child(uid).child(recipientId).queryLimited(toLast: 1)
+//            ref2.observe(.childAdded, with: {(snapshot) in
+//                guard let messageSeen = snapshot.value else {
+//                    return
+//                }
+//                let messageSeenNum = messageSeen as? Int ?? -1
+//                if messageSeenNum == 1 {
+//                    if let tabItems = self.tabBarController?.tabBar.items {
+//                        let tabItem = tabItems[3]
+//                        tabItem.badgeValue = "1"
+//                    }
+//                }
+//            })
+//        })
+//    }
     
     var playerExp = Int()
     
