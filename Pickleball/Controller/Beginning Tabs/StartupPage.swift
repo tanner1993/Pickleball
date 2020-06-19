@@ -90,6 +90,7 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
             setupNavbarButtons()
             observePlayerProfile()
         }
+        setupSendMessageButton()
         if findFriendSender != 0 {
             navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Return", style: .plain, target: self, action: #selector(handleCancel))
         }
@@ -107,6 +108,25 @@ class StartupPage: UIViewController, UICollectionViewDelegate, UICollectionViewD
     }
     
     var challengeYesOrNo = Bool()
+    
+    func setupSendMessageButton() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if playerId == "none" || playerId == uid {
+            profileView.sendMessageButton.isHidden = true
+        } else {
+            profileView.sendMessageButton.addTarget(self, action: #selector(presentChatLogs), for: .touchUpInside)
+        }
+    }
+    
+    @objc func presentChatLogs() {
+        let layout = UICollectionViewFlowLayout()
+        let chatLogs = ChatLogs(collectionViewLayout: layout)
+        //chatLogs.hidesBottomBarWhenPushed = true
+        chatLogs.recipientId = playerId
+        navigationController?.pushViewController(chatLogs, animated: true)
+    }
     
     func setupChangeStatusButton(challenge: Bool) {
         challengeYesOrNo = challenge

@@ -220,6 +220,11 @@ class ProfileView: UIView {
 //        recentMatchesTableView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
 //        recentMatchesTableView.heightAnchor.constraint(equalToConstant: 250).isActive = true
 //        recentMatchesTableView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
+        scrollView.addSubview(sendMessageButton)
+        sendMessageButton.topAnchor.constraint(equalTo: topAnchor, constant: 4).isActive = true
+        sendMessageButton.rightAnchor.constraint(equalTo: rightAnchor, constant: -4).isActive = true
+        sendMessageButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        sendMessageButton.widthAnchor.constraint(equalToConstant: 100).isActive = true
         
         scrollView.sendSubviewToBack(whiteBoxUpper)
             
@@ -288,6 +293,17 @@ class ProfileView: UIView {
         view.backgroundColor = .white
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
+    }()
+    
+    let sendMessageButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.titleLabel?.font = UIFont(name: "HelveticaNeue", size: 20)
+        button.setTitle("Send\nMessage", for: .normal)
+        button.titleLabel?.textAlignment = .center
+        button.titleLabel?.numberOfLines = 2
+        button.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
     }()
     
     let pieChart: PieChartView = {
