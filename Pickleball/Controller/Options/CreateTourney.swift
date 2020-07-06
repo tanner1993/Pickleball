@@ -1239,7 +1239,7 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
     let states = ["Utah"]
     let counties = ["Beaver", "Box Elder", "Cache", "Carbon", "Daggett", "Davis", "Duchesne", "Emery", "Garfield", "Grand", "Iron", "Juab", "Kane", "Millard", "Morgan", "Piute", "Rich", "Salt Lake", "San Juan", "Sanpete", "Sevier", "Summit", "Tooele", "Uintah", "Utah", "Wasatch", "Washington", "Wayne", "Weber"]
     
-    let types = ["Ladder"]
+    let types = ["Ladder", "Round Robin"]
     let skillLevels = [2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
     let sexes = ["Mens", "Womens", "Mixed", "Any"]
     

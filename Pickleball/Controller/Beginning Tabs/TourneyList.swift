@@ -407,20 +407,38 @@ class TourneyList: UITableViewController {
             tourneyInfo.typeOfInfo = 1
             navigationController?.present(tourneyInfo, animated: true, completion: nil)
         } else {
+            handleViewTourney(whichRowSelected: indexPath.row)
+        }
+    }
+    
+    func handleViewTourney(whichRowSelected: Int) {
+        if myTourneys[whichRowSelected].type == "Ladder" {
             let layout = UICollectionViewFlowLayout()
             let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
             tourneyStandingsPage.hidesBottomBarWhenPushed = true
-            tourneyStandingsPage.tourneyListIndex = indexPath.row
-            tourneyStandingsPage.thisTourney = myTourneys[indexPath.row]
-            let teams = myTourneys[indexPath.row].teams ?? [Team]()
+            tourneyStandingsPage.tourneyListIndex = whichRowSelected
+            tourneyStandingsPage.thisTourney = myTourneys[whichRowSelected]
+            let teams = myTourneys[whichRowSelected].teams ?? [Team]()
             let sortedTeams = teams.sorted { p1, p2 in
                 return (p1.rank!) < (p2.rank!)
             }
             tourneyStandingsPage.teams = sortedTeams
             tourneyStandingsPage.tourneyListPage = self
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
-            disableNotification(tourneyIndex: indexPath.item)
+        } else {
+            let layout = UICollectionViewFlowLayout()
+            let roundRobinPage = RoundRobinStandings(collectionViewLayout: layout)
+            roundRobinPage.hidesBottomBarWhenPushed = true
+            roundRobinPage.roundRobinTourney = myTourneys[whichRowSelected]
+            let teams = myTourneys[whichRowSelected].teams ?? [Team]()
+            let sortedTeams = teams.sorted { p1, p2 in
+                return (p1.rank!) < (p2.rank!)
+            }
+            roundRobinPage.teams = sortedTeams
+            roundRobinPage.tourneyListPage = self
+            navigationController?.pushViewController(roundRobinPage, animated: true)
         }
+        disableNotification(tourneyIndex: whichRowSelected)
     }
     
     func disableNotification(tourneyIndex: Int) {

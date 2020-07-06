@@ -267,12 +267,14 @@ class CreateMatch: UIViewController {
     let createMatchButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Send Match Invitations", for: .normal)
+        button.layer.shadowOpacity = 0.4
         button.titleLabel?.numberOfLines = 2
         button.titleLabel?.textAlignment = .center
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 28)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(handleCreateMatch), for: .touchUpInside)
+        button.setTitleShadowColor(.black, for: .normal)
         return button
     }()
     

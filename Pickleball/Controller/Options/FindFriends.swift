@@ -34,6 +34,8 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
     var tourneyOpenInvites = [String]()
     var tourneySimpleInvites = [String]()
     var tourneyStandings = TourneyStandings()
+    var roundRobinStandings = RoundRobinStandings()
+    var tourneyType = String()
     var startTime: Double = 0
     var whichTourney = Int()
     var tourneyList: TourneyList?
