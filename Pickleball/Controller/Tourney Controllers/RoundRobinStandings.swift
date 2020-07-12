@@ -32,7 +32,11 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
             return
         }
         if tourneyOpenInvites.contains(uid) != true {
-            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .plain, target: self, action: #selector(handleEnterTourney))
+            if teams.count >= 6 {
+                
+            } else {
+                navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .plain, target: self, action: #selector(handleEnterTourney))
+            }
         } else if tourneyOpenInvites.contains(uid) && roundRobinTourney.active ?? 1 == 0 {
             
         }
@@ -104,17 +108,10 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
         }
         
         collectionView?.register(FeedCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView?.register(ProfileMenuCell.self, forCellWithReuseIdentifier: cellId2)
+        collectionView?.register(WeekStackView.self, forCellWithReuseIdentifier: cellId2)
         
         
         collectionView?.backgroundColor = UIColor.init(displayP3Red: 211/255, green: 211/255, blue: 211/255, alpha: 1)
-//        if view.frame.width > 375 {
-//            collectionView?.contentInset = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
-//            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
-//        } else {
-//            collectionView?.contentInset = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
-//            collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 35, left: 0, bottom: 0, right: 0)
-//        }
         if UIDevice.current.hasNotch {
             collectionView?.contentInset = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
             collectionView?.scrollIndicatorInsets = UIEdgeInsets(top: 64, left: 0, bottom: 0, right: 0)
@@ -166,6 +163,8 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
         
     }
     
+    //MARK: - Collection View
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         return 0
     }
@@ -176,12 +175,16 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.item == 1 {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! ProfileMenuCell
-            cell.menuItem.text = "Week 1"
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! WeekStackView
+            for (index, element) in [cell.week1Button, cell.week2Button, cell.week3Button, cell.week4Button, cell.week5Button].enumerated() {
+                element.addTarget(self, action: #selector(openWeekMatches), for: .touchUpInside)
+                element.tag = index + 1
+            }
+            cell.week1Button.addTarget(self, action: #selector(openWeekMatches), for: .touchUpInside)
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
-            //cell.teams = teams
+            cell.teams = teams
             //cell.delegate = self
             cell.active = roundRobinTourney.active ?? 0
             cell.tourneyIdentifier = roundRobinTourney.id
@@ -193,6 +196,15 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: view.frame.width, height: view.frame.height - 35)
+    }
+    
+    //MARK: - Targets
+    
+    @objc func openWeekMatches(sender: UIButton) {
+        let weeklyMatches = WeeklyMatches()
+        weeklyMatches.tourney = roundRobinTourney
+        weeklyMatches.week = sender.tag
+        navigationController?.pushViewController(weeklyMatches, animated: true)
     }
 
 }

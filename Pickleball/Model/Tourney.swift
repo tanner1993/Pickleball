@@ -234,4 +234,132 @@ class Tourney: NSObject {
             
         })
     }
+    
+    func setupRoundRobinWeekChallenges() {
+        let currentTime = Double(Date().timeIntervalSince1970)
+        if currentTime > start_date! {
+            Database.database().reference().child("tourneys").child(id!).child("active").setValue((active! + 1))
+            let newStartDate = start_date! + (7 * 86400)
+            Database.database().reference().child("tourneys").child(id!).child("start_date").setValue(newStartDate)
+            switch active {
+            case 0:
+                active = 1
+                createRoundRobinMatch(team1Ind: 1, team2Ind: 2)
+                createRoundRobinMatch(team1Ind: 3, team2Ind: 4)
+                createRoundRobinMatch(team1Ind: 5, team2Ind: 6)
+            case 1:
+                active = 2
+                createRoundRobinMatch(team1Ind: 1, team2Ind: 3)
+                createRoundRobinMatch(team1Ind: 2, team2Ind: 5)
+                createRoundRobinMatch(team1Ind: 4, team2Ind: 6)
+            case 2:
+                active = 3
+                createRoundRobinMatch(team1Ind: 1, team2Ind: 4)
+                createRoundRobinMatch(team1Ind: 2, team2Ind: 6)
+                createRoundRobinMatch(team1Ind: 3, team2Ind: 5)
+            case 3:
+                active = 4
+                createRoundRobinMatch(team1Ind: 1, team2Ind: 5)
+                createRoundRobinMatch(team1Ind: 2, team2Ind: 4)
+                createRoundRobinMatch(team1Ind: 3, team2Ind: 6)
+            case 4:
+                active = 5
+                createRoundRobinMatch(team1Ind: 1, team2Ind: 6)
+                createRoundRobinMatch(team1Ind: 2, team2Ind: 3)
+                createRoundRobinMatch(team1Ind: 4, team2Ind: 5)
+            case 5:
+                active = 6
+                print("complete")
+            default:
+                print("failed")
+
+            }
+        }
+        
+    }
+    
+    func createRoundRobinMatch(team1Ind: Int, team2Ind: Int) {
+        let team1 = teams![team1Ind - 1]
+        let team2 = teams![team2Ind - 1]
+        let timeOfChallenge = Date().timeIntervalSince1970
+        let ref = Database.database().reference().child("tourneys").child(id ?? "none").child("matches").child("week\(active ?? 0)")
+        let createMatchRef = ref.childByAutoId()
+        let values = ["style": style ?? 1, "active": 1, "team_1_player_1": team1.player1!, "team_1_player_2": team1.player2!, "team_2_player_1": team2.player1!, "team_2_player_2": team2.player2!, "team1_scores": [0, 0, 0, 0, 0], "team2_scores": [0, 0, 0, 0, 0], "time": timeOfChallenge] as [String : Any]
+        createMatchRef.updateChildValues(values, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if let error = error {
+                print("Data could not be saved: \(error).")
+                return
+            }
+            
+            let notificationsRef = Database.database().reference()
+            let childUpdates = ["/\("user_tourneys")/\(team1.player1!)/\(self.id!)/": 1, "/\("user_tourneys")/\(team1.player2!)/\(self.id!)/": 1, "/\("user_tourneys")/\(team2.player1!)/\(self.id!)/": 1, "/\("user_tourneys")/\(team2.player2!)/\(self.id!)/": 1] as [String : Any]
+            notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
+                (error:Error?, ref:DatabaseReference) in
+                
+                if error != nil {
+                    print("Data could not be saved: \(String(describing: error)).")
+                    return
+                }
+                
+                let newMessage = "Round Robin week \(self.active!) of matches has begun!"
+                let title = self.name!
+                let userIds = [team1.player1!, team1.player2!, team2.player1!, team2.player2!]
+                for index in userIds {
+                    Database.database().reference().child("users").child(index).child("deviceId").observeSingleEvent(of: .value, with: {(snapshot) in
+                        if let value = snapshot.value {
+                            let deviceId = value as? String ?? "none"
+                            let pusher = PushNotificationHandler()
+                            pusher.setupPushNotification(deviceId: deviceId, message: newMessage, title: title)
+                        }
+                    })
+                }
+                
+                print("Crazy data 2 saved!")
+                
+                
+            })
+            
+        })
+    }
+    
+    func fetchMatches(week: Int, completion: @escaping ([Match2]?) -> ()) {
+        var matchesWeek = [Match2]()
+        let ref = Database.database().reference().child("tourneys").child(id!).child("matches").child("week\(week)")
+        ref.observeSingleEvent(of: .value, with: { (snapshot) in
+            for child in snapshot.children.allObjects as! [DataSnapshot] {
+                if let value = child.value as? NSDictionary {
+                    let matchT = Match2()
+                    let active = value["active"] as? Int ?? 0
+                    let submitter = value["submitter"] as? Int ?? 0
+                    let winner = value["winner"] as? Int ?? 0
+                    let team_1_player_1 = value["team_1_player_1"] as? String ?? "Player not found"
+                    let team_1_player_2 = value["team_1_player_2"] as? String ?? "Player not found"
+                    let team_2_player_1 = value["team_2_player_1"] as? String ?? "Player not found"
+                    let team_2_player_2 = value["team_2_player_2"] as? String ?? "Player not found"
+                    let team1_scores = value["team1_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+                    let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
+                    let time = value["time"] as? Double ?? Date().timeIntervalSince1970
+                    let style = value["style"] as? Int ?? 0
+                    matchT.active = active
+                    matchT.winner = winner
+                    matchT.submitter = submitter
+                    matchT.team_1_player_1 = team_1_player_1
+                    matchT.team_1_player_2 = team_1_player_2
+                    matchT.team_2_player_1 = team_2_player_1
+                    matchT.team_2_player_2 = team_2_player_2
+                    matchT.team1_scores = team1_scores
+                    matchT.team2_scores = team2_scores
+                    matchT.matchId = child.key
+                    matchT.time = time
+                    matchT.style = style
+                    matchT.doubles = team_1_player_2 == "Player not found" ? false : true
+                    matchesWeek.append(matchT)
+                }
+            }
+            completion(matchesWeek)
+        }, withCancel: nil)
+    }
+    
 }

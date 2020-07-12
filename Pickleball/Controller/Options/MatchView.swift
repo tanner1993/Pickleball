@@ -20,6 +20,7 @@ class MatchView: UIViewController {
     var teams = [Team]()
     var yetToView = [String]()
     var tourneyId = "none"
+    var tourneyType = "none"
     var matchId = "none"
     var tourneyActive = 0
     var confirmMatchScoresWidthAnchor: NSLayoutConstraint?
@@ -252,8 +253,10 @@ class MatchView: UIViewController {
             titleLabel.text = "Confirm Scores"
         case 3:
             titleLabel.text = "Match Complete"
-            let rematchButton = UIBarButtonItem(title: "REMATCH?", style: .plain, target: self, action: #selector(handleRematch))
-            self.navigationItem.rightBarButtonItem = rematchButton
+            if tourneyType == "none" {
+                let rematchButton = UIBarButtonItem(title: "REMATCH?", style: .plain, target: self, action: #selector(handleRematch))
+                self.navigationItem.rightBarButtonItem = rematchButton
+            }
         default:
             print("failed title")
         }

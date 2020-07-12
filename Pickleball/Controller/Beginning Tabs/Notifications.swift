@@ -335,12 +335,13 @@ class Notifications: UITableViewController {
     
     @objc func confirmTourney(sender: UIButton) {
         let whichNotif = sender.tag
-        guard let tourneyId = notifications[whichNotif].tourneyId, let fromId = notifications[whichNotif].fromId, let uid = Auth.auth().currentUser?.uid, let notificationId = notifications[whichNotif].id else {
+        guard let tourneyId = notifications[whichNotif].tourneyId, let fromId = notifications[whichNotif].fromId, let toId = notifications[whichNotif].toId, let uid = Auth.auth().currentUser?.uid, let notificationId = notifications[whichNotif].id else {
             return
         }
         
         self.notifications.remove(at: whichNotif)
         self.tableView.reloadData()
+        self.noNotifications = 1
         for index in shouldDelete1 {
             if index.idT == tourneyId && index.should == true {
                 Database.database().reference().child("notifications").child(notificationId).removeValue()
@@ -349,6 +350,34 @@ class Notifications: UITableViewController {
                 return
             }
         }
+        let tourneyRef = Database.database().reference().child("tourneys").child(tourneyId)
+        tourneyRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            if let value = snapshot.value as? NSDictionary {
+                let active = value["active"] as? Int ?? 0
+                let teams = value["teams"] as? [String: AnyObject] ?? ["team": "teams" as AnyObject]
+                let tourneyType = value["type"] as? String ?? "Ladder"
+                if tourneyType == "Round Robin" && teams.count >= 6 {
+                    Database.database().reference().child("notifications").child(notificationId).removeValue()
+                    Database.database().reference().child("user_notifications").child(toId).child(notificationId).removeValue()
+                    Database.database().reference().child("user_notifications").child(fromId).child(notificationId).removeValue()
+                    let newalert = UIAlertController(title: "Sorry", message: "6 teams have already registered for this tournament", preferredStyle: UIAlertController.Style.alert)
+                    newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+                    self.present(newalert, animated: true, completion: nil)
+                } else if active >= 1 {
+                    Database.database().reference().child("notifications").child(notificationId).removeValue()
+                    Database.database().reference().child("user_notifications").child(toId).child(notificationId).removeValue()
+                    Database.database().reference().child("user_notifications").child(fromId).child(notificationId).removeValue()
+                    let newalert = UIAlertController(title: "Sorry", message: "This tournament has already begun", preferredStyle: UIAlertController.Style.alert)
+                    newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+                    self.present(newalert, animated: true, completion: nil)
+                } else {
+                    self.continueTourneyConfirm(tourneyId: tourneyId, fromId: fromId, uid: uid, notificationId: notificationId)
+                }
+            }
+        }, withCancel: nil)
+    }
+    
+    func continueTourneyConfirm(tourneyId: String, fromId: String, uid: String, notificationId: String) {
         let highestCurrentRank = getHighestCurrentRank(tourneyId: tourneyId)
         print(highestCurrentRank)
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams")

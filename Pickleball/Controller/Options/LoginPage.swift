@@ -83,7 +83,7 @@ extension LoginPage: ASAuthorizationControllerPresentationContextProviding {
     
 }
 
-class LoginPage: UIViewController, LoginButtonDelegate {
+class LoginPage: UIViewController, LoginButtonDelegate, UITableViewDelegate {
     
     fileprivate var currentNonce: String?
 
@@ -481,8 +481,85 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         setupKeyboardObservers()
         facebookLogin.permissions = ["public_profile", "email"]
         facebookLogin.delegate = self
+        checkIfDeveloper()
     }
     
+    func checkIfDeveloper() {
+        let devRef = Database.database().reference().child("developer")
+        devRef.observeSingleEvent(of: .value, with: {(snapshot) in
+            guard let devValue = snapshot.value as? Bool else {
+                return
+            }
+            if devValue {
+                self.showQuickLogin()
+                self.likesList.likeTableView.delegate = self
+                self.fetchUsers()
+            }
+        })
+    }
+    
+    func showQuickLogin() {
+        let labelTap = UITapGestureRecognizer(target: self, action: #selector(openLikes))
+        brandImageView.addGestureRecognizer(labelTap)
+        brandImageView.isUserInteractionEnabled = true
+    }
+    
+    var names = [String]()
+    
+    func fetchUsers() {
+        let rootRef = Database.database().reference()
+        let query = rootRef.child("users").queryOrdered(byChild: "name")
+        query.observe(.value) { (snapshot) in
+            for child in snapshot.children.allObjects as! [DataSnapshot] {
+                if let value = child.value as? NSDictionary {
+                    
+                    let name = value["name"] as? String ?? "No Name"
+                    self.names.append(name)
+                }
+            }
+        }
+    }
+    
+    let infoBackgroundHeight = 440
+    let blackView = UIView()
+    let likesList = LikeList()
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        handleQuickLogin(name: likesList.likes[indexPath.row])
+    }
+    
+    @objc func openLikes() {
+        if let window = UIApplication.shared.keyWindow {
+            blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+            blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu3)))
+            window.addSubview(blackView)
+            window.addSubview(likesList)
+            likesList.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(infoBackgroundHeight))
+            likesList.layer.cornerRadius = 10
+            likesList.layer.masksToBounds = true
+            likesList.likes = names
+            likesList.quickLogin = true
+            //likesList.loginPage = self
+            likesList.likeTableView.reloadData()
+            blackView.frame = window.frame
+            blackView.alpha = 0
+
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                self.blackView.alpha = 1
+             self.likesList.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.infoBackgroundHeight + 140), width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }, completion: nil)
+
+        }
+    }
+    
+    @objc func dismissMenu3() {
+        UIView.animate(withDuration: 0.5, animations: {
+            self.blackView.alpha = 0
+            if let window = UIApplication.shared.keyWindow {
+             self.likesList.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(self.infoBackgroundHeight))
+            }
+        })
+    }
     
 //    func observeUsernamesEmails() {
 //
@@ -533,6 +610,28 @@ class LoginPage: UIViewController, LoginButtonDelegate {
         } else {
             handleRegister()
         }
+    }
+    
+    func handleQuickLogin(name: String) {
+        let nameAbb: String = name.getFirstAndLastInitial.lowercased()
+        let firstName = nameAbb.dropLast(3)
+        let email = "\(firstName)@gmail.com"
+        print(email)
+        let password = "tanner"
+        dismissMenu3()
+                
+                Auth.auth().signIn(withEmail: email, password: password, completion: {(user, error) in
+                    if error != nil {
+                        print(error as Any)
+                        let newalert = UIAlertController(title: "Sorry", message: "The email or password you entered is incorrect", preferredStyle: UIAlertController.Style.alert)
+                        newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+                        self.present(newalert, animated: true, completion: nil)
+                        return
+                    }
+                    
+                    self.dismiss(animated: true, completion: nil)
+                    print("Yay! You've logged in")
+                })
     }
     
     func handleLogin() {

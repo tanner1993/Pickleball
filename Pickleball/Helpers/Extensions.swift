@@ -109,3 +109,30 @@ extension String {
     }
 
 }
+
+extension UIView {
+    public func fillSuperview() {
+        guard let superview = self.superview else { return }
+        activate(
+            leftAnchor.constraint(equalTo: superview.leftAnchor),
+            rightAnchor.constraint(equalTo: superview.rightAnchor),
+            topAnchor.constraint(equalTo: superview.topAnchor),
+            bottomAnchor.constraint(equalTo: superview.bottomAnchor)
+        )
+    }
+    
+    public func activate(_ constraints: NSLayoutConstraint...) {
+        NSLayoutConstraint.activate(constraints)
+    }
+    
+    func addAutoLayoutSubview(_ subview: UIView) {
+        addSubview(subview)
+        subview.translatesAutoresizingMaskIntoConstraints = false
+    }
+}
+
+extension UIStackView {
+    func addArrangedSubviews(_ subviews: [UIView]) {
+        subviews.forEach(addArrangedSubview)
+    }
+}

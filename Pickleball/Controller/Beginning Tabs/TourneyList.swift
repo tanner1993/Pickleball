@@ -426,6 +426,7 @@ class TourneyList: UITableViewController {
             tourneyStandingsPage.tourneyListPage = self
             navigationController?.pushViewController(tourneyStandingsPage, animated: true)
         } else {
+            myTourneys[whichRowSelected].setupRoundRobinWeekChallenges()
             let layout = UICollectionViewFlowLayout()
             let roundRobinPage = RoundRobinStandings(collectionViewLayout: layout)
             roundRobinPage.hidesBottomBarWhenPushed = true

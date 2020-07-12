@@ -12,6 +12,8 @@ import Firebase
 class LikeList: UIView, UITableViewDelegate, UITableViewDataSource {
     
     var likes = [String]()
+    var quickLogin = false
+    //var loginPage = LoginPage()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -37,42 +39,48 @@ class LikeList: UIView, UITableViewDelegate, UITableViewDataSource {
     let cellId = "cellId"
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! SimplePlayerCell
-        let nameRef = Database.database().reference().child("users").child(likes[indexPath.row]).child("name")
-        nameRef.observeSingleEvent(of: .value, with: {(snapshot) in
-            guard let value = snapshot.value else {
-                return
-            }
-            let playerName = value as? String ?? "none"
-            cell.playerUserName.text = playerName
-        })
-        let countyRef = Database.database().reference().child("users").child(likes[indexPath.row]).child("county")
-        countyRef.observeSingleEvent(of: .value, with: {(snapshot) in
-            guard let value = snapshot.value else {
-                return
-            }
-            let playerCounty = value as? String ?? "none"
-            cell.playerLocation.text = "\(playerCounty), Utah"
-        })
-        let skillRef = Database.database().reference().child("users").child(likes[indexPath.row]).child("skill_level")
-        skillRef.observeSingleEvent(of: .value, with: {(snapshot) in
-            guard let value = snapshot.value else {
-                return
-            }
-            let playerSkill = value as? Float ?? 0
-            cell.skillLevel.text = "\(playerSkill)"
-        })
-        let appRef = Database.database().reference().child("users").child(likes[indexPath.row]).child("exp")
-        appRef.observeSingleEvent(of: .value, with: {(snapshot) in
-            guard let value = snapshot.value else {
-                return
-            }
-            let playerExp = value as? Int ?? 0
-            let player = Player()
-            let playerLevel = player.haloLevel(exp: playerExp)
-            cell.appLevel.text = "\(playerLevel)"
-        })
-        return cell
+        if quickLogin {
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! SimplePlayerCell
+            cell.playerUserName.text = likes[indexPath.item]
+            return cell
+        } else {
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath) as! SimplePlayerCell
+            let nameRef = Database.database().reference().child("users").child(likes[indexPath.row]).child("name")
+            nameRef.observeSingleEvent(of: .value, with: {(snapshot) in
+                guard let value = snapshot.value else {
+                    return
+                }
+                let playerName = value as? String ?? "none"
+                cell.playerUserName.text = playerName
+            })
+            let countyRef = Database.database().reference().child("users").child(likes[indexPath.row]).child("county")
+            countyRef.observeSingleEvent(of: .value, with: {(snapshot) in
+                guard let value = snapshot.value else {
+                    return
+                }
+                let playerCounty = value as? String ?? "none"
+                cell.playerLocation.text = "\(playerCounty), Utah"
+            })
+            let skillRef = Database.database().reference().child("users").child(likes[indexPath.row]).child("skill_level")
+            skillRef.observeSingleEvent(of: .value, with: {(snapshot) in
+                guard let value = snapshot.value else {
+                    return
+                }
+                let playerSkill = value as? Float ?? 0
+                cell.skillLevel.text = "\(playerSkill)"
+            })
+            let appRef = Database.database().reference().child("users").child(likes[indexPath.row]).child("exp")
+            appRef.observeSingleEvent(of: .value, with: {(snapshot) in
+                guard let value = snapshot.value else {
+                    return
+                }
+                let playerExp = value as? Int ?? 0
+                let player = Player()
+                let playerLevel = player.haloLevel(exp: playerExp)
+                cell.appLevel.text = "\(playerLevel)"
+            })
+            return cell
+        }
     }
     
     func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
@@ -100,7 +108,7 @@ class LikeList: UIView, UITableViewDelegate, UITableViewDataSource {
         likeTableView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
         likeTableView.topAnchor.constraint(equalTo: likedByLabel.bottomAnchor).isActive = true
         likeTableView.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        likeTableView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        likeTableView.heightAnchor.constraint(equalTo: heightAnchor, constant: -35).isActive = true
     }
     
     let likedByLabel: UILabel = {
