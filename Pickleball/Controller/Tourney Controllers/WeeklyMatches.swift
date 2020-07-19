@@ -18,12 +18,24 @@ class WeeklyMatches: UITableViewController {
     var nameTracker = [String: String]()
     var levelTracker = [String: String]()
     let player = Player()
+    var teams = [Team]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         tableView?.register(FeedMatchCell.self, forCellReuseIdentifier: cellId)
         fetchMatches()
+        setupTitle()
+    }
+    
+    private func setupTitle() {
+        let widthofscreen = Int(view.frame.width)
+        let titleLabel = UILabel(frame: CGRect(x: widthofscreen / 2, y: 0, width: 40, height: 30))
+        titleLabel.text = "Week \(week) Matches"
+        titleLabel.textColor = .white
+        titleLabel.textAlignment = .center
+        titleLabel.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        navigationItem.titleView = titleLabel
     }
     
     func fetchMatches() {
@@ -35,6 +47,25 @@ class WeeklyMatches: UITableViewController {
             self.matches = matchResults
             self.tableView.reloadData()
         })
+    }
+    
+    func findTeamIndices(team1Player1: String, team2Player1: String) -> [Team] {
+        var team1 = Team()
+        var team2 = Team()
+        for team in teams {
+            if team.player1 == team1Player1 {
+                team1 = team
+            } else if team.player1 == team2Player1 {
+                team2 = team
+            }
+        }
+        return [team1, team2]
+    }
+    
+    func showAlert() {
+        let newalert = UIAlertController(title: "Sorry", message: "You are not a part of this match, please select one of your matches", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+        self.present(newalert, animated: true, completion: nil)
     }
 
     // MARK: - Table view data source
@@ -48,10 +79,24 @@ class WeeklyMatches: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let roundRobinMatch = RoundRobinMatch()
-        //roundRobinMatch.tourney = roundRobinTourney
-        //roundRobinMatch.week = sender.tag
-        navigationController?.pushViewController(roundRobinMatch, animated: true)
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        let match = matches[indexPath.row]
+        if ![match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!].contains(uid) {
+            showAlert()
+        } else {
+            let roundRobinMatch = RoundRobinMatch()
+            roundRobinMatch.tourney = tourney
+            roundRobinMatch.week = week
+            roundRobinMatch.weeklyMatches = self
+            roundRobinMatch.whichItem = indexPath.row
+            roundRobinMatch.match = match
+            let matchTeams = findTeamIndices(team1Player1: match.team_1_player_1!, team2Player1: match.team_2_player_1!)
+            roundRobinMatch.team1 = matchTeams[0]
+            roundRobinMatch.team2 = matchTeams[1]
+            navigationController?.pushViewController(roundRobinMatch, animated: true)
+        }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

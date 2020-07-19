@@ -8,6 +8,8 @@
 
 import UIKit
 import FBSDKShareKit
+import Charts
+import Firebase
 
 class MatchViewOrganizer: UIView {
     
@@ -34,6 +36,14 @@ class MatchViewOrganizer: UIView {
     var userPlayer1CenterYAnchor: NSLayoutConstraint?
     var oppPlayer1CenterYAnchor: NSLayoutConstraint?
     var match = Match2()
+    var team1_P1_Exp = 0
+    var team1_P1_Lev = 0
+    var team1_P2_Exp = 0
+    var team1_P2_Lev = 0
+    var team2_P1_Exp = 0
+    var team2_P1_Lev = 0
+    var team2_P2_Exp = 0
+    var team2_P2_Lev = 0
     
     
     let backgroundImage: UIImageView = {
@@ -402,6 +412,119 @@ class MatchViewOrganizer: UIView {
             return label
         }()
     
+    func fillInGameScores() {
+        for index in [game1UserScore, game1OppScore, game2UserScore, game2OppScore, game3UserScore, game3OppScore, game4UserScore, game4OppScore, game5UserScore, game5OppScore] {
+            if index.text == "" {
+                index.text = "0"
+            }
+        }
+    }
+    
+    func updateGameScores(match: Match2) {
+        let scores = [match.team1_scores![0], match.team2_scores![0], match.team1_scores![1], match.team2_scores![1], match.team1_scores![2], match.team2_scores![2]]
+        for (index, element) in [game1UserScore, game1OppScore, game2UserScore, game2OppScore, game3UserScore, game3OppScore].enumerated() {
+            element.text = "\(scores[index])"
+        }
+    }
+    
+    func checkUser(idList: [String]) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if uid == idList[0] || uid == idList[1] {
+            backgroundImage.image = UIImage(named: "match_info_display2.01")
+        } else if uid == idList[2] || uid == idList[3] {
+            backgroundImage.image = UIImage(named: "match_info_display2.02")
+        } else {
+            backgroundImage.image = UIImage(named: "match_info_display2.0")
+        }
+    }
+    
+    func getPlayerNames(match: Match2) {
+        let idList = [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!]
+        checkUser(idList: idList)
+        player.getPlayerNameAndSkill(playerId: idList[0], completion: { (result) in
+            guard let playerResult = result else {
+                print("failed to get result")
+                return
+            }
+            self.userPlayer1.setTitle(playerResult.name!, for: .normal)
+            self.userPlayer1Skill.text = "\(playerResult.skill_level!)"
+            self.userPlayer1Level.text = "\(playerResult.halo_level!)"
+            self.team1_P1_Exp = playerResult.exp!
+            self.team1_P1_Lev = playerResult.halo_level!
+            if self.match.active == 3 && self.match.winner == 1 {
+                if self.winnerConfirmed.text!.count > 5 {
+                    self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
+                } else {
+                    self.winnerConfirmed.text = playerResult.name! + self.winnerConfirmed.text!
+                }
+            }
+        })
+        
+        player.getPlayerNameAndSkill(playerId: idList[2], completion: { (result) in
+            guard let playerResult = result else {
+                print("failed to get result")
+                return
+            }
+            self.oppPlayer1.setTitle(playerResult.name!, for: .normal)
+            self.oppPlayer1Skill.text = "\(playerResult.skill_level!)"
+            self.oppPlayer1Level.text = "\(playerResult.halo_level!)"
+            self.team2_P1_Exp = playerResult.exp!
+            self.team2_P1_Lev = playerResult.halo_level!
+            if self.match.active == 3 && self.match.winner == 2 {
+                if self.winnerConfirmed.text!.count > 5 {
+                    self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
+                } else {
+                    self.winnerConfirmed.text = playerResult.name! + self.winnerConfirmed.text!
+                }
+            }
+        })
+            
+        self.userPlayer2.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        self.userPlayer2.isUserInteractionEnabled = true
+        player.getPlayerNameAndSkill(playerId: idList[1], completion: { (result) in
+            guard let playerResult = result else {
+                print("failed to get result")
+                return
+            }
+            self.userPlayer2.setTitle(playerResult.name!, for: .normal)
+            self.userPlayer2Skill.text = "\(playerResult.skill_level!)"
+            self.userPlayer2Level.text = "\(playerResult.halo_level!)"
+            self.team1_P2_Exp = playerResult.exp!
+            self.team1_P2_Lev = playerResult.halo_level!
+            if self.match.active == 3 && self.match.winner == 1 {
+                if self.winnerConfirmed.text!.count > 5 {
+                    self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
+                } else {
+                    self.winnerConfirmed.text = playerResult.name! + self.winnerConfirmed.text!
+                }
+            }
+        })
+        self.oppPlayer2.setTitle("Guest Player", for: .normal)
+        self.oppPlayer2.setTitleColor(.black, for: .normal)
+        self.oppPlayer2.isUserInteractionEnabled = false
+        self.oppPlayer2.setTitleColor(UIColor.init(r: 88, g: 148, b: 200), for: .normal)
+        self.oppPlayer2.isUserInteractionEnabled = true
+        player.getPlayerNameAndSkill(playerId: idList[3], completion: { (result) in
+            guard let playerResult = result else {
+                print("failed to get result")
+                return
+            }
+            self.oppPlayer2.setTitle(playerResult.name!, for: .normal)
+            self.oppPlayer2Skill.text = "\(playerResult.skill_level!)"
+            self.oppPlayer2Level.text = "\(playerResult.halo_level!)"
+            self.team2_P2_Exp = playerResult.exp!
+            self.team2_P2_Lev = playerResult.halo_level!
+            if self.match.active == 3 && self.match.winner == 2 {
+                if self.winnerConfirmed.text!.count > 5 {
+                    self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
+                } else {
+                    self.winnerConfirmed.text = playerResult.name! + self.winnerConfirmed.text!
+                }
+            }
+        })
+    }
     
     func setupViews() {
         backgroundColor = .white
@@ -842,5 +965,159 @@ class MatchViewOrganizer: UIView {
         let H = h / hib * hia
         return (X, Y, W, H)
     }
+    
+    let pieBackground: UIView = {
+        let cv = UIView()
+        cv.backgroundColor = .white
+        cv.layer.cornerRadius = 10
+        cv.layer.masksToBounds = true
+        return cv
+    }()
+    
+    let haloLevel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 100)
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let haloLevelTitle: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 20)
+        label.text = "You leveled up!"
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let levelUpLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Level Up!"
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Bold", size: 50)
+        label.textColor = UIColor.init(r: 120, g: 207, b: 138)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let haloLevelTitle3: UILabel = {
+        let label = UILabel()
+        label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 18)
+        label.textAlignment = .center
+        return label
+    }()
+    
+    let pieBackroundHeight = 440
+    
+    let pieChart: PieChartView = {
+        let bi = PieChartView()
+        bi.translatesAutoresizingMaskIntoConstraints = false
+        bi.contentMode = .scaleAspectFit
+        bi.isUserInteractionEnabled = true
+        return bi
+    }()
+    
+    let player = Player()
+    let blackView = UIView()
+    
+    func openMenu(newExp: Int, newLevel: Int, oldLevel: Int) {
+        self.haloLevelTitle.text = "You moved up from level \(oldLevel) to level \(newLevel)!"
+        if self.player.levelTitle(level: oldLevel) != self.player.levelTitle(level: newLevel) {
+            self.haloLevelTitle3.text = "You graduated from '\(self.player.levelTitle(level: oldLevel))' to '\(self.player.levelTitle(level: newLevel))'"
+        } else {
+            self.haloLevelTitle3.text = "You're currently '\(self.player.levelTitle(level: newLevel))'"
+        }
+        let bounds = self.player.findExpBounds(exp: newExp)
+        let startExp = bounds[0]
+        let endExp = bounds[1]
+        
+        let currentExp = PieChartDataEntry(value: Double(newExp - startExp), label: nil)
+        let goalExp = PieChartDataEntry(value: Double(endExp - newExp), label: nil)
+        let chartDataSet = PieChartDataSet(entries: [currentExp, goalExp], label: nil)
+        chartDataSet.drawValuesEnabled = false
+        
+        let chartData = PieChartData(dataSet: chartDataSet)
+        let colors = [UIColor.init(r: 120, g: 207, b: 138), UIColor.white]
+        chartDataSet.colors = colors
+        
+        pieChart.data = chartData
+        pieChart.legend.enabled = false
+        pieChart.holeRadiusPercent = 0.93
+        pieChart.transparentCircleColor = UIColor.init(r: 120, g: 207, b: 138)
+        pieChart.transparentCircleRadiusPercent = 0.94
+           if let window = UIApplication.shared.keyWindow {
+               blackView.backgroundColor = UIColor(white: 0, alpha: 0.5)
+               blackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(dismissMenu)))
+               window.addSubview(blackView)
+               window.addSubview(pieBackground)
+               pieBackground.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(pieBackroundHeight))
+               blackView.frame = window.frame
+               blackView.alpha = 0
+               
+               UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+                   self.blackView.alpha = 1
+                self.pieBackground.frame = CGRect(x: 24, y: window.frame.height - CGFloat(self.pieBackroundHeight + 140), width: window.frame.width - 48, height: CGFloat(self.pieBackroundHeight))
+               }, completion: nil)
+            
+            pieBackground.addSubview(pieChart)
+            pieChart.heightAnchor.constraint(equalToConstant: 230).isActive = true
+            pieChart.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            pieChart.widthAnchor.constraint(equalToConstant: 230).isActive = true
+            pieChart.centerYAnchor.constraint(equalTo: pieBackground.centerYAnchor).isActive = true
+            
+//            let whichPlayerAmI = match.whichPlayerAmI()
+//            switch whichPlayerAmI {
+//            case 0:
+//                matchViewOrganizer.userPlayer1Level.text = "\(newLevel)"
+//            case 1:
+//                matchViewOrganizer.userPlayer2Level.text = "\(newLevel)"
+//            case 2:
+//                matchViewOrganizer.oppPlayer1Level.text = "\(newLevel)"
+//            case 3:
+//                matchViewOrganizer.oppPlayer2Level.text = "\(newLevel)"
+//            default:
+//                print("none")
+//            }
+            
+            haloLevel.text = "\(newLevel)"
+            pieBackground.addSubview(haloLevel)
+            haloLevel.heightAnchor.constraint(equalToConstant: 150).isActive = true
+            haloLevel.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            haloLevel.widthAnchor.constraint(equalToConstant: 150).isActive = true
+            haloLevel.centerYAnchor.constraint(equalTo: pieBackground.centerYAnchor).isActive = true
+            
+            pieBackground.addSubview(haloLevelTitle)
+            haloLevelTitle.heightAnchor.constraint(equalToConstant: 60).isActive = true
+            haloLevelTitle.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            haloLevelTitle.widthAnchor.constraint(equalToConstant: frame.width - 64).isActive = true
+            haloLevelTitle.bottomAnchor.constraint(equalTo: pieChart.topAnchor, constant: 15).isActive = true
+            
+            pieBackground.addSubview(levelUpLabel)
+            levelUpLabel.heightAnchor.constraint(equalToConstant: 50).isActive = true
+            levelUpLabel.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            levelUpLabel.widthAnchor.constraint(equalToConstant: frame.width - 64).isActive = true
+            levelUpLabel.bottomAnchor.constraint(equalTo: haloLevelTitle.topAnchor, constant: 0).isActive = true
+            
+            pieBackground.addSubview(haloLevelTitle3)
+            haloLevelTitle3.heightAnchor.constraint(equalToConstant: 80).isActive = true
+            haloLevelTitle3.centerXAnchor.constraint(equalTo: pieBackground.centerXAnchor).isActive = true
+            haloLevelTitle3.widthAnchor.constraint(equalToConstant: frame.width - 64).isActive = true
+            haloLevelTitle3.topAnchor.constraint(equalTo: pieChart.bottomAnchor, constant: -15).isActive = true
+           }
+       }
+       
+       @objc func dismissMenu() {
+           UIView.animate(withDuration: 0.5, animations: {
+               self.blackView.alpha = 0
+               if let window = UIApplication.shared.keyWindow {
+                self.pieBackground.frame = CGRect(x: 24, y: window.frame.height, width: window.frame.width - 48, height: CGFloat(self.pieBackroundHeight))
+               }
+           })
+       }
 
 }

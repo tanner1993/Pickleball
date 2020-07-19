@@ -15,6 +15,7 @@ class Team: NSObject {
     var player2: String?
     var wins: Int?
     var losses: Int?
+    var points: Int?
     var rank: Int?
     var teamId: String?
     

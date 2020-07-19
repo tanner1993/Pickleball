@@ -29,6 +29,8 @@ class Match2: NSObject {
     var court: String?
     var liked: Bool?
     var likes: [String]?
+    var team_1TotalScore: Int?
+    var team_2TotalScore: Int?
     
     func whichPlayerAmI() -> Int {
         guard let uid = Auth.auth().currentUser?.uid else {
@@ -482,6 +484,145 @@ class Match2: NSObject {
                 return 10
             }
         }
+    }
+    
+    func checkRobinMatchScores() -> Bool {
+        if (team1_scores![0] < 11 && team2_scores![0] < 11) || (team1_scores![1] < 11 && team2_scores![1] < 11) || (team1_scores![2] < 11 && team2_scores![2] < 11) {
+            return false
+        }
+        let over11Scores = checkOver11Scores()
+        var team1TotalScore = 0
+        var team2TotalScore = 0
+        for index in 0...2 {
+            switch over11Scores[index] {
+            case 0:
+                team1TotalScore += team1_scores![index]
+                team2TotalScore += team2_scores![index]
+            case 1:
+                team1TotalScore += 11
+                team2TotalScore += 9
+            case 2:
+                team1TotalScore += 9
+                team2TotalScore += 11
+            default:
+                print("failed")
+            }
+        }
+        team_1TotalScore = team1TotalScore
+        team_2TotalScore = team2TotalScore
+        return true
+    }
+    
+    func checkOver11Scores() -> [Int] {
+        var over11Scores = [Int]()
+        var team1Wins = 0
+        for index in 0...2 {
+            if team1_scores![index] > team2_scores![index] {
+                team1Wins += 1
+            }
+            if team1_scores![index] > 11 || team2_scores![index] > 11 {
+                if team1_scores![index] > team2_scores![index] {
+                    over11Scores.append(1)
+                } else {
+                    over11Scores.append(2)
+                }
+            } else {
+                over11Scores.append(0)
+            }
+        }
+        winner = team1Wins > 1 ? 1 : 2
+        return over11Scores
+    }
+    
+    func updateExperience(playerExps: [Int], playerLevs: [Int]) -> [Int] {
+        let player = Player()
+        let team1Level = Int((playerLevs[0] + playerLevs[1])/2)
+        let team2Level = Int((playerLevs[2] + playerLevs[3])/2)
+        let winningTeam = winner!
+        let levelDifference = abs(team1Level - team2Level)
+        let team1ChangeExpFlat = team1Level - team2Level >= 0 ? player.calculateChangeExperienceHigher(levelDiff: levelDifference, winOrLose: winningTeam == 1 ? true : false) : player.calculateChangeExperienceLower(levelDiff: levelDifference, winOrLose: winningTeam == 1 ? true : false)
+        let team2ChangeExpFlat = team2Level - team1Level >= 0 ? player.calculateChangeExperienceHigher(levelDiff: levelDifference, winOrLose: winningTeam == 2 ? true : false) : player.calculateChangeExperienceLower(levelDiff: levelDifference, winOrLose: winningTeam == 2 ? true : false)
+        var team1ChangeExp = Int()
+        var team2ChangeExp = Int()
+        team1ChangeExp = team1ChangeExpFlat
+        team2ChangeExp = team2ChangeExpFlat
+        let eachPlayersExpChange = getEachPlayersExpChange(playerLevs: playerLevs, team1ChangeExp: team1ChangeExp, team2ChangeExp: team2ChangeExp)
+        let eachPlayersNewExp = getEachPlayersNewExp(playerExps: playerExps, eachPlayersExpEchange: eachPlayersExpChange)
+            //levelUpDisplay(previousLev: [team1_P1_Lev, team1_P2_Lev, team2_P1_Lev, team2_P2_Lev], newExp: [eachPlayersNewExp[0], eachPlayersNewExp[1], eachPlayersNewExp[2], eachPlayersNewExp[3]], players: [match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!])
+            //levelUpDisplay(previousLev: [team1_P1_Lev, team2_P1_Lev], newExp: [eachPlayersNewExp[0], eachPlayersNewExp[2]], players: [match.team_1_player_1!, match.team_2_player_1!])
+        
+        let usersRef = Database.database().reference().child("users")
+        var childUpdates = [String: Any]()
+        childUpdates = ["/\(team_1_player_1!)/\("exp")/": eachPlayersNewExp[0], "/\(team_1_player_2!)/\("exp")/": eachPlayersNewExp[1], "/\(team_2_player_1!)/\("exp")/": eachPlayersNewExp[2], "/\(team_2_player_2!)/\("exp")/": eachPlayersNewExp[3]] as [String : Any]
+
+        usersRef.updateChildValues(childUpdates, withCompletionBlock: {
+            (error:Error?, ref:DatabaseReference) in
+            
+            if error != nil {
+                print("Data could not be saved: \(String(describing: error)).")
+                return
+            }
+            
+            print("Crazy data 2 saved!")
+            
+        })
+        return eachPlayersNewExp
+    }
+    
+    func getEachPlayersExpChange(playerLevs: [Int], team1ChangeExp: Int, team2ChangeExp: Int) -> [Int] {
+        var team11ExpChange = Int()
+        var team12ExpChange = Int()
+        var team21ExpChange = Int()
+        var team22ExpChange = Int()
+        if team1ChangeExp <= 0 {
+            team11ExpChange = playerLevs[0] < 21 ? Int(Double(team1ChangeExp) * 0.5) : team1ChangeExp
+            team12ExpChange = playerLevs[1] < 21 ? Int(Double(team1ChangeExp) * 0.6) : team1ChangeExp
+            team21ExpChange = team2ChangeExp
+            team22ExpChange = team2ChangeExp
+        } else {
+            team11ExpChange = team1ChangeExp
+            team12ExpChange = team1ChangeExp
+            team21ExpChange = playerLevs[2] < 21 ? Int(Double(team2ChangeExp) * 0.5) : team2ChangeExp
+            team22ExpChange = playerLevs[3] < 21 ? Int(Double(team2ChangeExp) * 0.5) : team2ChangeExp
+        }
+        return [team11ExpChange, team12ExpChange, team21ExpChange, team22ExpChange]
+    }
+    
+    func getEachPlayersNewExp(playerExps: [Int], eachPlayersExpEchange: [Int]) -> [Int] {
+        var team11Exp = Int()
+        var team12Exp = Int()
+        var team21Exp = Int()
+        var team22Exp = Int()
+        if playerExps[0] > 150 {
+            team11Exp = (playerExps[0] + eachPlayersExpEchange[0]) < 150 ? 150 : (playerExps[0] + eachPlayersExpEchange[0])
+        } else {
+            team11Exp = (eachPlayersExpEchange[0] < 0) ? playerExps[0] : (playerExps[0] + eachPlayersExpEchange[0])
+        }
+        if playerExps[1] > 150 {
+            team12Exp = (playerExps[1] + eachPlayersExpEchange[1]) < 150 ? 150 : (playerExps[1] + eachPlayersExpEchange[1])
+        } else {
+            team12Exp = (eachPlayersExpEchange[1] < 0) ? playerExps[1] : (playerExps[1] + eachPlayersExpEchange[1])
+        }
+        if playerExps[2] > 150 {
+            team21Exp = (playerExps[2] + eachPlayersExpEchange[2]) < 150 ? 150 : (playerExps[2] + eachPlayersExpEchange[2])
+        } else {
+            team21Exp = (eachPlayersExpEchange[2] < 0) ? playerExps[2] : (playerExps[2] + eachPlayersExpEchange[2])
+        }
+        if playerExps[3] > 150 {
+            team22Exp = (playerExps[3] + eachPlayersExpEchange[3]) < 150 ? 150 : (playerExps[3] + eachPlayersExpEchange[3])
+        } else {
+            team22Exp = (eachPlayersExpEchange[3] < 0) ? playerExps[3] : (playerExps[3] + eachPlayersExpEchange[3])
+        }
+        return [team11Exp, team12Exp, team21Exp, team22Exp]
+    }
+    
+    func checkIfMatchReady(confirmerSnap: [Int]) -> Int {
+        for index in 0...3 {
+            if confirmerSnap[index] != 1 {
+                return 0
+            }
+        }
+        return 1
     }
     
 }

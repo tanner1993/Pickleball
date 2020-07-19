@@ -309,7 +309,7 @@ class MatchView: UIViewController {
     }
     
     func fetchMatch() {
-        tourneyFun.fetchMatch(tourneyId: tourneyId, matchId: matchId, completion: { (result) in
+        tourneyFun.fetchMatch(week: "none", tourneyId: tourneyId, matchId: matchId, completion: { (result) in
             guard let matchResult = result else {
                 print("failed to get rresult")
                 return
@@ -335,7 +335,7 @@ class MatchView: UIViewController {
                     self.match.active = 1
                     self.setupActive1Reload()
                 } else if activeResult == 2 {
-                    self.tourneyFun.fetchMatch(tourneyId: self.tourneyId, matchId: self.matchId, completion: { (result) in
+                    self.tourneyFun.fetchMatch(week: "none", tourneyId: self.tourneyId, matchId: self.matchId, completion: { (result) in
                         guard let matchResult = result else {
                             print("failed to get rresult")
                             return

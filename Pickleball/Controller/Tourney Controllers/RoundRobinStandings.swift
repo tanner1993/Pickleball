@@ -25,6 +25,10 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
         setupTitle()
         setupNavBarButtons()
         setupTourneyMenuBar()
+        
+        if roundRobinTourney.yetToView == nil {
+            roundRobinTourney.yetToView = [String]()
+        }
     }
     
     private func setupNavBarButtons() {
@@ -180,7 +184,6 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
                 element.addTarget(self, action: #selector(openWeekMatches), for: .touchUpInside)
                 element.tag = index + 1
             }
-            cell.week1Button.addTarget(self, action: #selector(openWeekMatches), for: .touchUpInside)
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
@@ -204,6 +207,7 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
         let weeklyMatches = WeeklyMatches()
         weeklyMatches.tourney = roundRobinTourney
         weeklyMatches.week = sender.tag
+        weeklyMatches.teams = teams
         navigationController?.pushViewController(weeklyMatches, animated: true)
     }
 

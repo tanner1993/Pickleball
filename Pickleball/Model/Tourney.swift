@@ -82,8 +82,15 @@ class Tourney: NSObject {
         }, withCancel: nil)
     }
     
-    func fetchMatch(tourneyId: String, matchId: String, completion: @escaping (Match2?) -> ()) {
-        let matchReference = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId) : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
+    func fetchMatch(week: String, tourneyId: String, matchId: String, completion: @escaping (Match2?) -> ()) {
+        var matchReference = DatabaseReference()
+        if tourneyId == "none" {
+            matchReference = Database.database().reference().child("matches").child(matchId)
+        } else if type ?? "Ladder" == "Round Robin" {
+            matchReference = Database.database().reference().child("tourneys").child(id!).child("matches").child(week).child(matchId)
+        } else {
+            matchReference = Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId)
+        }
         
         matchReference.observeSingleEvent(of: .value, with: {(snapshot) in
             if let value = snapshot.value as? NSDictionary {
@@ -128,6 +135,19 @@ class Tourney: NSObject {
     
     func watchMatch(tourneyId: String, matchId: String, completion: @escaping (Int?) -> ()) {
         let matchReference = tourneyId == "none" ? Database.database().reference().child("matches").child(matchId).child("active") : Database.database().reference().child("tourneys").child(tourneyId).child("matches").child(matchId).child("active")
+        
+        matchReference.observe(.value, with: {(snapshot) in
+            print(snapshot)
+            if let value = snapshot.value as? Int {
+                let active = value
+                completion(active)
+            }
+            
+        }, withCancel: nil)
+    }
+    
+    func watchRobinMatch(week: String, matchId: String, completion: @escaping (Int?) -> ()) {
+        let matchReference = Database.database().reference().child("tourneys").child(id!).child("matches").child(week).child(matchId).child("active")
         
         matchReference.observe(.value, with: {(snapshot) in
             print(snapshot)
@@ -237,43 +257,28 @@ class Tourney: NSObject {
     
     func setupRoundRobinWeekChallenges() {
         let currentTime = Double(Date().timeIntervalSince1970)
-        if currentTime > start_date! {
+        if currentTime > start_date! && active == 0 {
             Database.database().reference().child("tourneys").child(id!).child("active").setValue((active! + 1))
-            let newStartDate = start_date! + (7 * 86400)
-            Database.database().reference().child("tourneys").child(id!).child("start_date").setValue(newStartDate)
-            switch active {
-            case 0:
-                active = 1
-                createRoundRobinMatch(team1Ind: 1, team2Ind: 2)
-                createRoundRobinMatch(team1Ind: 3, team2Ind: 4)
-                createRoundRobinMatch(team1Ind: 5, team2Ind: 6)
-            case 1:
-                active = 2
-                createRoundRobinMatch(team1Ind: 1, team2Ind: 3)
-                createRoundRobinMatch(team1Ind: 2, team2Ind: 5)
-                createRoundRobinMatch(team1Ind: 4, team2Ind: 6)
-            case 2:
-                active = 3
-                createRoundRobinMatch(team1Ind: 1, team2Ind: 4)
-                createRoundRobinMatch(team1Ind: 2, team2Ind: 6)
-                createRoundRobinMatch(team1Ind: 3, team2Ind: 5)
-            case 3:
-                active = 4
-                createRoundRobinMatch(team1Ind: 1, team2Ind: 5)
-                createRoundRobinMatch(team1Ind: 2, team2Ind: 4)
-                createRoundRobinMatch(team1Ind: 3, team2Ind: 6)
-            case 4:
-                active = 5
-                createRoundRobinMatch(team1Ind: 1, team2Ind: 6)
-                createRoundRobinMatch(team1Ind: 2, team2Ind: 3)
-                createRoundRobinMatch(team1Ind: 4, team2Ind: 5)
-            case 5:
-                active = 6
-                print("complete")
-            default:
-                print("failed")
-
-            }
+            active = 1
+            createRoundRobinMatch(team1Ind: 1, team2Ind: 2)
+            createRoundRobinMatch(team1Ind: 3, team2Ind: 4)
+            createRoundRobinMatch(team1Ind: 5, team2Ind: 6)
+            active = 2
+            createRoundRobinMatch(team1Ind: 1, team2Ind: 3)
+            createRoundRobinMatch(team1Ind: 2, team2Ind: 5)
+            createRoundRobinMatch(team1Ind: 4, team2Ind: 6)
+            active = 3
+            createRoundRobinMatch(team1Ind: 1, team2Ind: 4)
+            createRoundRobinMatch(team1Ind: 2, team2Ind: 6)
+            createRoundRobinMatch(team1Ind: 3, team2Ind: 5)
+            active = 4
+            createRoundRobinMatch(team1Ind: 1, team2Ind: 5)
+            createRoundRobinMatch(team1Ind: 2, team2Ind: 4)
+            createRoundRobinMatch(team1Ind: 3, team2Ind: 6)
+            active = 5
+            createRoundRobinMatch(team1Ind: 1, team2Ind: 6)
+            createRoundRobinMatch(team1Ind: 2, team2Ind: 3)
+            createRoundRobinMatch(team1Ind: 4, team2Ind: 5)
         }
         
     }
