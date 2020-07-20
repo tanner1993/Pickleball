@@ -210,7 +210,8 @@ class TeamRoundCell: FeedCell {
         didSet {
             wins.text = "W: \(team?.wins ?? -1)"
             losses.text = "L: \(team?.losses ?? -1)"
-            teamRank.text = "\(team?.rank ?? -1)"
+            //teamRank.text = "\(team?.rank ?? -1)"
+            pointsWon.text = "Points: \(team?.points ?? 0)"
         }
     }
     
@@ -280,17 +281,15 @@ class TeamRoundCell: FeedCell {
     let pointsWon: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.textColor = UIColor.init(r: 32, g: 140, b: 21)
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 28)
-        label.textAlignment = .left
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 22)
+        label.textAlignment = .center
         return label
     }()
     
     let pointsLost: UILabel = {
         let label = UILabel()
-        label.textColor = UIColor.init(r: 252, g: 16, b: 13)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = UIFont(name: "HelveticaNeue-Light", size: 28)
+        label.font = UIFont(name: "HelveticaNeue-Light", size: 22)
         label.textAlignment = .left
         return label
     }()
@@ -336,7 +335,7 @@ class TeamRoundCell: FeedCell {
         player2.heightAnchor.constraint(equalToConstant: CGFloat(player2Loc.H)).isActive = true
         player2.widthAnchor.constraint(equalToConstant: CGFloat(player2Loc.W)).isActive = true
         
-        let winsLoc = calculateButtonPosition(x: 1000, y: 95.5, w: 266, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
+        let winsLoc = calculateButtonPosition(x: 856, y: 95.5, w: 185, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
         
         addSubview(wins)
         wins.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(winsLoc.Y)).isActive = true
@@ -344,7 +343,7 @@ class TeamRoundCell: FeedCell {
         wins.heightAnchor.constraint(equalToConstant: CGFloat(winsLoc.H)).isActive = true
         wins.widthAnchor.constraint(equalToConstant: CGFloat(winsLoc.W)).isActive = true
         
-        let lossesLoc = calculateButtonPosition(x: 1000, y: 235.5, w: 266, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
+        let lossesLoc = calculateButtonPosition(x: 1053.5, y: 95.5, w: 185, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
         
         addSubview(losses)
         losses.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(lossesLoc.Y)).isActive = true
@@ -352,7 +351,7 @@ class TeamRoundCell: FeedCell {
         losses.heightAnchor.constraint(equalToConstant: CGFloat(lossesLoc.H)).isActive = true
         losses.widthAnchor.constraint(equalToConstant: CGFloat(lossesLoc.W)).isActive = true
         
-        let pointsLoc = calculateButtonPosition(x: 900, y: 235.5, w: 466, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
+        let pointsLoc = calculateButtonPosition(x: 954.5, y: 235.5, w: 382, h: 130, wib: 1242, hib: 332, wia: Float(frame.width), hia: Float(frame.height))
         
         addSubview(pointsWon)
         pointsWon.centerYAnchor.constraint(equalTo: backgroundImage.topAnchor, constant: CGFloat(pointsLoc.Y)).isActive = true

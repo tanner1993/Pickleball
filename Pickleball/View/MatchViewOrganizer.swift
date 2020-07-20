@@ -35,7 +35,6 @@ class MatchViewOrganizer: UIView {
     var confirmCheck3CenterYAnchor: NSLayoutConstraint?
     var userPlayer1CenterYAnchor: NSLayoutConstraint?
     var oppPlayer1CenterYAnchor: NSLayoutConstraint?
-    var match = Match2()
     var team1_P1_Exp = 0
     var team1_P1_Lev = 0
     var team1_P2_Exp = 0
@@ -453,7 +452,7 @@ class MatchViewOrganizer: UIView {
             self.userPlayer1Level.text = "\(playerResult.halo_level!)"
             self.team1_P1_Exp = playerResult.exp!
             self.team1_P1_Lev = playerResult.halo_level!
-            if self.match.active == 3 && self.match.winner == 1 {
+            if match.active == 3 && match.winner == 1 {
                 if self.winnerConfirmed.text!.count > 5 {
                     self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
                 } else {
@@ -472,7 +471,7 @@ class MatchViewOrganizer: UIView {
             self.oppPlayer1Level.text = "\(playerResult.halo_level!)"
             self.team2_P1_Exp = playerResult.exp!
             self.team2_P1_Lev = playerResult.halo_level!
-            if self.match.active == 3 && self.match.winner == 2 {
+            if match.active == 3 && match.winner == 2 {
                 if self.winnerConfirmed.text!.count > 5 {
                     self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
                 } else {
@@ -493,7 +492,7 @@ class MatchViewOrganizer: UIView {
             self.userPlayer2Level.text = "\(playerResult.halo_level!)"
             self.team1_P2_Exp = playerResult.exp!
             self.team1_P2_Lev = playerResult.halo_level!
-            if self.match.active == 3 && self.match.winner == 1 {
+            if match.active == 3 && match.winner == 1 {
                 if self.winnerConfirmed.text!.count > 5 {
                     self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
                 } else {
@@ -516,7 +515,7 @@ class MatchViewOrganizer: UIView {
             self.oppPlayer2Level.text = "\(playerResult.halo_level!)"
             self.team2_P2_Exp = playerResult.exp!
             self.team2_P2_Lev = playerResult.halo_level!
-            if self.match.active == 3 && self.match.winner == 2 {
+            if match.active == 3 && match.winner == 2 {
                 if self.winnerConfirmed.text!.count > 5 {
                     self.winnerConfirmed.text = playerResult.name! + " and " + self.winnerConfirmed.text!
                 } else {

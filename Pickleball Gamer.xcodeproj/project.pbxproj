@@ -54,6 +54,7 @@
 		7760977B240EF21100AD30F5 /* CreateMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977A240EF21100AD30F5 /* CreateMatch.swift */; };
 		7760977D241000C400AD30F5 /* MatchNotificationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977C241000C400AD30F5 /* MatchNotificationCell.swift */; };
 		7760977F2410534D00AD30F5 /* MatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7760977E2410534D00AD30F5 /* MatchView.swift */; };
+		776B105224C5549D00C4868D /* CreateRoundRobinTourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776B105124C5549D00C4868D /* CreateRoundRobinTourney.swift */; };
 		777590BB249874B700EA3E7E /* LikeList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777590BA249874B700EA3E7E /* LikeList.swift */; };
 		777590BD249930E700EA3E7E /* SimplePlayerCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777590BC249930E700EA3E7E /* SimplePlayerCell.swift */; };
 		77931F8423C65C8A00724247 /* CreateTourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77931F8323C65C8A00724247 /* CreateTourney.swift */; };
@@ -120,6 +121,7 @@
 		7760977A240EF21100AD30F5 /* CreateMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateMatch.swift; sourceTree = "<group>"; };
 		7760977C241000C400AD30F5 /* MatchNotificationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchNotificationCell.swift; sourceTree = "<group>"; };
 		7760977E2410534D00AD30F5 /* MatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatchView.swift; sourceTree = "<group>"; };
+		776B105124C5549D00C4868D /* CreateRoundRobinTourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateRoundRobinTourney.swift; sourceTree = "<group>"; };
 		777590BA249874B700EA3E7E /* LikeList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LikeList.swift; sourceTree = "<group>"; };
 		777590BC249930E700EA3E7E /* SimplePlayerCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimplePlayerCell.swift; sourceTree = "<group>"; };
 		77931F8323C65C8A00724247 /* CreateTourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateTourney.swift; sourceTree = "<group>"; };
@@ -200,6 +202,7 @@
 				7760977E2410534D00AD30F5 /* MatchView.swift */,
 				77549E1D24746D8C0043FD44 /* TourneyInfo.swift */,
 				7745A2D92476F77A00FC1FBF /* OpponentsList.swift */,
+				776B105124C5549D00C4868D /* CreateRoundRobinTourney.swift */,
 			);
 			path = Options;
 			sourceTree = "<group>";
@@ -495,6 +498,7 @@
 				7727354823CD4996004BEC33 /* FindFriends.swift in Sources */,
 				77549E202475E3180043FD44 /* ProfileView.swift in Sources */,
 				7739865B23BBEC4700195253 /* MainMenu.swift in Sources */,
+				776B105224C5549D00C4868D /* CreateRoundRobinTourney.swift in Sources */,
 				7745A2E0247C978700FC1FBF /* PieBackgroundPopup.swift in Sources */,
 				7745A2DC2477205A00FC1FBF /* PlayerChallengeCell.swift in Sources */,
 				7745A2DE2478965700FC1FBF /* SelectCourtInfo.swift in Sources */,

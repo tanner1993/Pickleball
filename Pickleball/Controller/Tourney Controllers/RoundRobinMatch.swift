@@ -53,11 +53,7 @@ class RoundRobinMatch: UIViewController {
                             print("failed to get rresult")
                             return
                         }
-                        self.match.team1_scores = matchResult.team1_scores
-                        self.match.team2_scores = matchResult.team2_scores
-                        self.match.submitter = matchResult.submitter
-                        self.match.winner = matchResult.winner
-                        self.match.active = 2
+                        self.match = matchResult
                         self.setupActive2Reload()
                     })
                 } else if activeResult == 3 {
@@ -279,8 +275,8 @@ class RoundRobinMatch: UIViewController {
                 return
             }
             self.match.sendTourneyNotifications(uid: uid, tourneyId: self.tourney.id!, tourneyYetToViewMatch: self.tourney.yetToView!)
-            self.team1.updateTeamWins(tourneyId: self.tourney.id!, winner: self.match.winner!)
-            self.team2.updateTeamWins(tourneyId: self.tourney.id!, winner: self.match.winner!)
+            self.team1.updateTeamRobinWins(tourneyId: self.tourney.id!, winner: self.match.winner == 1 ? true : false, pointsGained: self.match.team_1TotalScore!)
+            self.team2.updateTeamRobinWins(tourneyId: self.tourney.id!, winner: self.match.winner == 1 ? false : true, pointsGained: self.match.team_2TotalScore!)
             self.match.sendMatchPushNotifications(uid: uid, userPlayer1: self.matchViewOrganizer.userPlayer1.titleLabel?.text ?? "none", userPlayer2: self.matchViewOrganizer.userPlayer2.titleLabel?.text ?? "none", oppPlayer1: self.matchViewOrganizer.oppPlayer1.titleLabel?.text ?? "none", oppPlayer2: self.matchViewOrganizer.oppPlayer2.titleLabel?.text ?? "none", message: "confirmed the match scores", title: "Match Scores Confirmed")
             
             

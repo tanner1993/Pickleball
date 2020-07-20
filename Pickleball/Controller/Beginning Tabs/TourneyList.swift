@@ -108,7 +108,22 @@ class TourneyList: UITableViewController {
     }
     
     @objc func handleCreateNewTourney() {
+        let newalert = UIAlertController(title: "Create Tourney", message: "What type of Tourney do you want to create", preferredStyle: UIAlertController.Style.alert)
+        newalert.addAction(UIAlertAction(title: "Cancel", style: UIAlertAction.Style.default, handler: nil))
+        newalert.addAction(UIAlertAction(title: "Ladder", style: UIAlertAction.Style.default, handler: handleLadder))
+        newalert.addAction(UIAlertAction(title: "Round Robin", style: UIAlertAction.Style.default, handler: handleRoundRobin))
+        self.present(newalert, animated: true, completion: nil)
+    }
+    
+    func handleLadder(action: UIAlertAction) {
         let createTourney = CreateTourney()
+        createTourney.tourneyList = self
+        createTourney.modalPresentationStyle = .fullScreen
+        present(createTourney, animated: true, completion: nil)
+    }
+    
+    func handleRoundRobin(action: UIAlertAction) {
+        let createTourney = CreateRoundRobinTourney()
         createTourney.tourneyList = self
         createTourney.modalPresentationStyle = .fullScreen
         present(createTourney, animated: true, completion: nil)
@@ -158,14 +173,16 @@ class TourneyList: UITableViewController {
                             let player1Id = index.value["player1"] as? String ?? "Player not found"
                             let player2Id = index.value["player2"] as? String ?? "Player not found"
                             let rank = index.value["rank"] as? Int ?? 100
-                            let wins = index.value["wins"] as? Int ?? -1
-                            let losses = index.value["losses"] as? Int ?? -1
+                            let wins = index.value["wins"] as? Int ?? 0
+                            let losses = index.value["losses"] as? Int ?? 0
+                            let points = index.value["points"] as? Int ?? 0
                             team.player2 = player2Id
                             team.player1 = player1Id
                             team.rank = rank
                             team.wins = wins
                             team.losses = losses
                             team.teamId = index.key
+                            team.points = points
                             teams3.append(team)
                         }
                         tourney.teams = teams3
@@ -431,9 +448,10 @@ class TourneyList: UITableViewController {
             let roundRobinPage = RoundRobinStandings(collectionViewLayout: layout)
             roundRobinPage.hidesBottomBarWhenPushed = true
             roundRobinPage.roundRobinTourney = myTourneys[whichRowSelected]
+            roundRobinPage.tourneyListIndex = whichRowSelected
             let teams = myTourneys[whichRowSelected].teams ?? [Team]()
             let sortedTeams = teams.sorted { p1, p2 in
-                return (p1.rank!) < (p2.rank!)
+                return (p1.points!, -p1.rank!) > (p2.points!, -p2.rank!)
             }
             roundRobinPage.teams = sortedTeams
             roundRobinPage.tourneyListPage = self
@@ -456,6 +474,12 @@ class TourneyList: UITableViewController {
         myTourneys[whichOne].notifBubble = 0
         let yettooooview = myTourneys[whichOne].yetToView!
         myTourneys[whichOne].yetToView?.remove(at: yettooooview.firstIndex(of: uid)!)
+        tableView.reloadData()
+    }
+    
+    func changeTourneyYetToView(yetToViewNew: [String], whichOne: Int) {
+        myTourneys[whichOne].notifBubble = 0
+        myTourneys[whichOne].yetToView = yetToViewNew
         tableView.reloadData()
     }
     

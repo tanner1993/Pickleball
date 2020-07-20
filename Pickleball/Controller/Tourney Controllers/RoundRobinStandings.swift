@@ -18,6 +18,7 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
     let cellId = "cellId"
     let cellId2 = "cellId2"
     var teams = [Team]()
+    var tourneyListIndex = -1
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +29,29 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
         
         if roundRobinTourney.yetToView == nil {
             roundRobinTourney.yetToView = [String]()
+        }
+        makeBubble()
+    }
+    
+    func makeBubble() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if roundRobinTourney.yetToView?.contains(uid) ?? false {
+            notifBadge.isHidden = false
+        }
+    }
+    
+    func destroyBubble() {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            return
+        }
+        if roundRobinTourney.yetToView?.contains(uid) ?? false {
+            notifBadge.isHidden = true
+            let yetToView = roundRobinTourney.yetToView!
+            roundRobinTourney.yetToView?.remove(at: (yetToView.firstIndex(of: uid)!))
+            Database.database().reference().child("tourneys").child(roundRobinTourney.id!).child("yet_to_view").setValue(roundRobinTourney.yetToView!)
+            tourneyListPage?.changeTourneyYetToView(yetToViewNew: roundRobinTourney.yetToView!, whichOne: tourneyListIndex)
         }
     }
     
@@ -64,24 +88,21 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
     }
 
     @objc func handleRefreshList() {
-//        let currentItem = collectionView.indexPathsForVisibleItems[0].item
-//        if currentItem == 0 {
-//            observeTourneyTeams()
-//        } else if currentItem == 1 {
-//            matches.removeAll()
-//            allMatches.removeAll()
-//            observeTourneyTeams()
-//            observeAllTourneyMatches()
-//        } else if currentItem == 2 {
-//            matches.removeAll()
-//            allMatches.removeAll()
-//            observeTourneyTeams()
-//            observeAllTourneyMatches()
-//        }
-//        
-//        if thisTourney.active ?? 0 >= 2 {
-//            observeTourneyInfo2()
-//        }
+        let currentItem = collectionView.indexPathsForVisibleItems[0].item
+        if currentItem == 0 {
+            observeTourneyTeams()
+        }
+    }
+    
+    func observeTourneyTeams() {
+        roundRobinTourney.observeTourneyTeams(rank: false, completion:{ (result) in
+            guard let teamResults = result else {
+                print("failed to get rresult")
+                return
+            }
+            self.teams = teamResults
+            self.collectionView.reloadData()
+        })
     }
     
     @objc func handleEnterTourney() {
@@ -139,6 +160,19 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
         return mb
     }()
     
+    let notifBadge: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        label.backgroundColor = .red
+        label.text = "1"
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+    
     private func setupTourneyMenuBar() {
         
         view.addSubview(menusBar)
@@ -147,11 +181,11 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
         menusBar.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
         menusBar.heightAnchor.constraint(equalToConstant: 35).isActive = true
         
-//        view.addSubview(notifBadge)
-//        notifBadge.leftAnchor.constraint(equalTo: view.centerXAnchor, constant: 38).isActive = true
-//        notifBadge.topAnchor.constraint(equalTo: menusBar.topAnchor, constant: 1).isActive = true
-//        notifBadge.widthAnchor.constraint(equalToConstant: 16).isActive = true
-//        notifBadge.heightAnchor.constraint(equalToConstant: 16).isActive = true
+        view.addSubview(notifBadge)
+        notifBadge.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -25).isActive = true
+        notifBadge.topAnchor.constraint(equalTo: menusBar.topAnchor, constant: 1).isActive = true
+        notifBadge.widthAnchor.constraint(equalToConstant: 16).isActive = true
+        notifBadge.heightAnchor.constraint(equalToConstant: 16).isActive = true
     }
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -184,11 +218,14 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
                 element.addTarget(self, action: #selector(openWeekMatches), for: .touchUpInside)
                 element.tag = index + 1
             }
+            cell.tourneyId = roundRobinTourney.id!
+            destroyBubble()
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! FeedCell
             cell.teams = teams
             //cell.delegate = self
+            cell.type = roundRobinTourney.type!
             cell.active = roundRobinTourney.active ?? 0
             cell.tourneyIdentifier = roundRobinTourney.id
             cell.style = roundRobinTourney.style!

@@ -82,6 +82,7 @@ class WeeklyMatches: UITableViewController {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
+        tableView.deselectRow(at: indexPath, animated: false)
         let match = matches[indexPath.row]
         if ![match.team_1_player_1!, match.team_1_player_2!, match.team_2_player_1!, match.team_2_player_2!].contains(uid) {
             showAlert()

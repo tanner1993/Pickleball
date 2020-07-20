@@ -53,9 +53,9 @@ class Tourney: NSObject {
         }, withCancel: nil)
     }
     
-    func observeTourneyTeams(tourneyId: String, completion: @escaping ([Team]?) -> ()) {
+    func observeTourneyTeams(rank: Bool, completion: @escaping ([Team]?) -> ()) {
         var teams = [Team]()
-        let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams").queryOrdered(byChild: "rank")
+        let ref = Database.database().reference().child("tourneys").child(id!).child("teams")
         ref.observeSingleEvent(of: .value, with: { (snapshot) in
             if let value = snapshot.value as? [String: AnyObject] {
                 for index in value {
@@ -65,18 +65,27 @@ class Tourney: NSObject {
                     let rank = index.value["rank"] as? Int ?? 100
                     let wins = index.value["wins"] as? Int ?? -1
                     let losses = index.value["losses"] as? Int ?? -1
+                    let points = index.value["points"] as? Int ?? 0
                     team.player2 = player2Id
                     team.player1 = player1Id
                     team.rank = rank
                     team.wins = wins
                     team.losses = losses
                     team.teamId = index.key
+                    team.points = points
                     teams.append(team)
                 }
-                let sortedTeams = teams.sorted { p1, p2 in
-                    return (p1.rank!) < (p2.rank!)
+                if rank {
+                    let sortedTeams = teams.sorted { p1, p2 in
+                        return (p1.rank!) < (p2.rank!)
+                    }
+                    completion(sortedTeams)
+                } else {
+                    let sortedTeams = teams.sorted { p1, p2 in
+                        return (p1.points!, -p1.rank!) > (p2.points!, -p2.rank!)
+                    }
+                    completion(sortedTeams)
                 }
-                completion(sortedTeams)
             }
 
         }, withCancel: nil)
@@ -111,6 +120,8 @@ class Tourney: NSObject {
                 let time = value["time"] as? Double ?? Date().timeIntervalSince1970
                 let forfeit = value["forfeit"] as? Int ?? 0
                 let timeOfScores = value["timeOfScores"] as? Double ?? Date().timeIntervalSince1970
+                let team_1TotalScore = value["team_1TotalScore"] as? Int ?? 0
+                let team_2TotalScore = value["team_2TotalScore"] as? Int ?? 0
                 //self.setupCorrectBottom(active: active, submitter: submitter, confirmers: team1_scores, team2: team2_scores, idList: idList, startTime: time, forfeit: forfeit)
                 matchT.active = active
                 matchT.winner = winner
@@ -127,6 +138,8 @@ class Tourney: NSObject {
                 matchT.style = style
                 matchT.doubles = team_1_player_2 == "Player not found" ? false : true
                 matchT.timeOfScores = timeOfScores
+                matchT.team_1TotalScore = team_1TotalScore
+                matchT.team_2TotalScore = team_2TotalScore
                 completion(matchT)
             }
             
@@ -347,6 +360,8 @@ class Tourney: NSObject {
                     let team2_scores = value["team2_scores"] as? [Int] ?? [1, 1, 1, 1, 1]
                     let time = value["time"] as? Double ?? Date().timeIntervalSince1970
                     let style = value["style"] as? Int ?? 0
+                    let team_1TotalScore = value["team_1TotalScore"] as? Int ?? 0
+                    let team_2TotalScore = value["team_2TotalScore"] as? Int ?? 0
                     matchT.active = active
                     matchT.winner = winner
                     matchT.submitter = submitter
@@ -360,6 +375,8 @@ class Tourney: NSObject {
                     matchT.time = time
                     matchT.style = style
                     matchT.doubles = team_1_player_2 == "Player not found" ? false : true
+                    matchT.team_1TotalScore = team_1TotalScore
+                    matchT.team_2TotalScore = team_2TotalScore
                     matchesWeek.append(matchT)
                 }
             }

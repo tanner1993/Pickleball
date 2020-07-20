@@ -16,7 +16,8 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     var tourneyName = String()
     var style = Int()
     var nameTracker = [String: String]()
-    
+    var type = "Ladder"
+    var collectionViewCell = UICollectionViewCell()
     var activityIndicatorView: UIActivityIndicatorView!
     
     var teams = [Team]() {
@@ -50,6 +51,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
 
     
     let cellId = "cellId"
+    let cellId2 = "cellId2"
     let cellIdNone = "cellIdNone"
     var noNotifications = 0
     
@@ -69,6 +71,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
         collectionView.heightAnchor.constraint(equalToConstant: frame.height).isActive = true
         collectionView.widthAnchor.constraint(equalToConstant: frame.width).isActive = true
         collectionView.register(TeamCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView.register(TeamRoundCell.self, forCellWithReuseIdentifier: cellId2)
         collectionView.register(EmptyCell.self, forCellWithReuseIdentifier: cellIdNone)
     }
     
@@ -97,11 +100,53 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
                 cell.emptyLabel.textAlignment = .center
                 return cell
             }
-        } else {
+        } else if type == "Ladder" {
             activityIndicatorView.stopAnimating()
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! TeamCell
             let uid = Auth.auth().currentUser?.uid
             cell.team = teams[indexPath.item]
+            if cell.team?.player1 == uid || cell.team?.player2 == uid {
+                //cell.backgroundColor = .gray
+                cell.backgroundImage.image = UIImage(named: "team_cell_bg2_you")
+                myTeamId = indexPath.item
+            } else {
+                //cell.backgroundColor = UIColor.white
+                cell.backgroundImage.image = UIImage(named: "team_cell_bg2")
+            }
+
+            if nameTracker[cell.team?.player1 ?? "nope"] == nil {
+                let player1ref = Database.database().reference().child("users").child(cell.team?.player1 ?? "nope").child("name")
+                player1ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let playerName = value as? String ?? "noName"
+                        cell.player1.text = self.getFirstAndLastInitial(name: playerName)
+                        self.nameTracker[cell.team?.player1 ?? "nope"] = self.getFirstAndLastInitial(name: playerName)
+                    }
+                })
+            } else {
+                cell.player1.text = nameTracker[cell.team?.player1 ?? "nope"]
+            }
+
+            if nameTracker[cell.team?.player1 ?? "nope"] == nil {
+                let player2ref = Database.database().reference().child("users").child(cell.team?.player2 ?? "nope").child("name")
+                player2ref.observeSingleEvent(of: .value, with: {(snapshot) in
+                    if let value = snapshot.value {
+                        let playerName = value as? String ?? "noName"
+                        cell.player2.text = self.getFirstAndLastInitial(name: playerName)
+                        self.nameTracker[cell.team?.player2 ?? "nope"] = self.getFirstAndLastInitial(name: playerName)
+                    }
+                })
+            } else {
+                cell.player2.text = nameTracker[cell.team?.player2 ?? "nope"]
+            }
+
+            return cell
+        } else {
+            activityIndicatorView.stopAnimating()
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId2, for: indexPath) as! TeamRoundCell
+            let uid = Auth.auth().currentUser?.uid
+            cell.team = teams[indexPath.item]
+            cell.teamRank.text = "\(indexPath.item + 1)"
             if cell.team?.player1 == uid || cell.team?.player2 == uid {
                 //cell.backgroundColor = .gray
                 cell.backgroundImage.image = UIImage(named: "team_cell_bg2_you")

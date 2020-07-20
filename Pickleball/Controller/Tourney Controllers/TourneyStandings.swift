@@ -179,11 +179,7 @@ class TourneyStandings: UICollectionViewController, UICollectionViewDelegateFlow
     }
     
     func observeTourneyTeams() {
-        
-        guard let tourneyId = thisTourney.id else {
-            return
-        }
-        thisTourney.observeTourneyTeams(tourneyId: tourneyId, completion:{ (result) in
+        thisTourney.observeTourneyTeams(rank: true, completion:{ (result) in
             guard let teamResults = result else {
                 print("failed to get rresult")
                 return
