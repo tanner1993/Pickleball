@@ -107,11 +107,11 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
             cell.team = teams[indexPath.item]
             if cell.team?.player1 == uid || cell.team?.player2 == uid {
                 //cell.backgroundColor = .gray
-                cell.backgroundImage.image = UIImage(named: "team_cell_bg2_you")
+                cell.backgroundImage.image = UIImage(named: "team_cell_bg2_ladder_you")
                 myTeamId = indexPath.item
             } else {
                 //cell.backgroundColor = UIColor.white
-                cell.backgroundImage.image = UIImage(named: "team_cell_bg2")
+                cell.backgroundImage.image = UIImage(named: "team_cell_bg2_ladder")
             }
 
             if nameTracker[cell.team?.player1 ?? "nope"] == nil {

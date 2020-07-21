@@ -33,11 +33,14 @@ class CreateTourney: UIViewController, UICollectionViewDelegate, UICollectionVie
         for index in 1...31 {
             days.append(index)
         }
+        textFields[1].text = "Ladder"
+        textFields[1].isUserInteractionEnabled = false
+        dropDownButtons[0].isUserInteractionEnabled = false
     }
     
     func populateFields() {
         textFields[0].text = tourneyInfo.name
-        textFields[1].text = tourneyInfo.type
+        //textFields[1].text = tourneyInfo.type
         textFields[2].text = "\(tourneyInfo.skill_level ?? 0)"
         textFields[3].text = tourneyInfo.sex
         textFields[4].text = tourneyInfo.age_group

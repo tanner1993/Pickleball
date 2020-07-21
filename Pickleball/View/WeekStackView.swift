@@ -185,6 +185,7 @@ class WeekStackView: UICollectionViewCell {
         }
         var opponent1 = ""
         var opponent2 = ""
+        labels[week-1].text = ""
         let buttons = [week1Button, week2Button, week3Button, week4Button, week5Button]
         if uid == match.team_1_player_1 || uid == match.team_1_player_2 {
             opponent1 = match.team_2_player_1!

@@ -39,7 +39,7 @@ class Team: NSObject {
     
     func updateTeamRobinWins(tourneyId: String, winner: Bool, pointsGained: Int) {
         let ref = Database.database().reference().child("tourneys").child(tourneyId).child("teams").child(teamId!)
-        let valuesTeam1 = ["wins": winner ? wins! + 1 : wins!, "losses": winner ? losses! + 1 : losses!, "points": points! + pointsGained] as [String : Any]
+        let valuesTeam1 = ["wins": winner ? wins! + 1 : wins!, "losses": winner ? losses! : losses! + 1, "points": points! + pointsGained] as [String : Any]
         let childUpdates = valuesTeam1
         ref.updateChildValues(childUpdates, withCompletionBlock: {
             (error:Error?, ref:DatabaseReference) in

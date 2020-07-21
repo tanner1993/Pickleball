@@ -575,15 +575,15 @@ class Match2: NSObject {
         var team21ExpChange = Int()
         var team22ExpChange = Int()
         if team1ChangeExp <= 0 {
-            team11ExpChange = playerLevs[0] < 21 ? Int(Double(team1ChangeExp) * 0.5) : team1ChangeExp
-            team12ExpChange = playerLevs[1] < 21 ? Int(Double(team1ChangeExp) * 0.6) : team1ChangeExp
+            team11ExpChange = playerLevs[0] < 21 ? Int(Double(team1ChangeExp) * 0.25) : team1ChangeExp
+            team12ExpChange = playerLevs[1] < 21 ? Int(Double(team1ChangeExp) * 0.25) : team1ChangeExp
             team21ExpChange = team2ChangeExp
             team22ExpChange = team2ChangeExp
         } else {
             team11ExpChange = team1ChangeExp
             team12ExpChange = team1ChangeExp
-            team21ExpChange = playerLevs[2] < 21 ? Int(Double(team2ChangeExp) * 0.5) : team2ChangeExp
-            team22ExpChange = playerLevs[3] < 21 ? Int(Double(team2ChangeExp) * 0.5) : team2ChangeExp
+            team21ExpChange = playerLevs[2] < 21 ? Int(Double(team2ChangeExp) * 0.25) : team2ChangeExp
+            team22ExpChange = playerLevs[3] < 21 ? Int(Double(team2ChangeExp) * 0.25) : team2ChangeExp
         }
         return [team11ExpChange, team12ExpChange, team21ExpChange, team22ExpChange]
     }
