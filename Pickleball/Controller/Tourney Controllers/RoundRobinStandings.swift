@@ -55,18 +55,18 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
         }
     }
     
-    private func setupNavBarButtons() {
+    func setupNavBarButtons() {
         guard let uid = Auth.auth().currentUser?.uid else {
             return
         }
-        if tourneyOpenInvites.contains(uid) != true {
+        if roundRobinTourney.invites?.contains(uid) != true {
             if teams.count >= 6 {
                 
             } else {
                 navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Register", style: .plain, target: self, action: #selector(handleEnterTourney))
             }
-        } else if tourneyOpenInvites.contains(uid) && roundRobinTourney.active ?? 1 == 0 {
-            
+        } else if roundRobinTourney.invites?.contains(uid) == true && roundRobinTourney.active ?? 1 == 0 {
+            navigationItem.rightBarButtonItem = nil
         }
         if roundRobinTourney.active ?? 1 > 0 {
             navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Refresh", style: .plain, target: self, action: #selector(handleRefreshList))
@@ -228,7 +228,6 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
             cell.type = roundRobinTourney.type!
             cell.active = roundRobinTourney.active ?? 0
             cell.tourneyIdentifier = roundRobinTourney.id
-            cell.style = roundRobinTourney.style!
             cell.tourneyName = roundRobinTourney.name!
             return cell
         }
@@ -241,11 +240,17 @@ class RoundRobinStandings: UICollectionViewController, UICollectionViewDelegateF
     //MARK: - Targets
     
     @objc func openWeekMatches(sender: UIButton) {
-        let weeklyMatches = WeeklyMatches()
-        weeklyMatches.tourney = roundRobinTourney
-        weeklyMatches.week = sender.tag
-        weeklyMatches.teams = teams
-        navigationController?.pushViewController(weeklyMatches, animated: true)
+        if roundRobinTourney.active == 0 {
+            let newalert = UIAlertController(title: "Not yet!", message: "Once the tourney begins you will find your matches here!", preferredStyle: UIAlertController.Style.alert)
+            newalert.addAction(UIAlertAction(title: "Return", style: UIAlertAction.Style.default, handler: nil))
+            self.present(newalert, animated: true, completion: nil)
+        } else {
+            let weeklyMatches = WeeklyMatches()
+            weeklyMatches.tourney = roundRobinTourney
+            weeklyMatches.week = sender.tag
+            weeklyMatches.teams = teams
+            navigationController?.pushViewController(weeklyMatches, animated: true)
+        }
     }
 
 }

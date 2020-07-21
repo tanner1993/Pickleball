@@ -107,6 +107,18 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                     tourney.yetToView = tourneyYetToView
                 }
                 
+                if let invites = value["invites"] as? [String] {
+                    tourney.invites = invites
+                } else {
+                    tourney.invites = ["none"]
+                }
+                
+                if let simpleInvites = value["simpleInvites"] as? [String] {
+                    tourney.simpleInvites = simpleInvites
+                } else {
+                    tourney.simpleInvites = ["none"]
+                }
+                
                 tourney.name = name
                 tourney.type = type
                 tourney.skill_level = skillLevel
@@ -276,16 +288,41 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let layout = UICollectionViewFlowLayout()
-        let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
-        tourneyStandingsPage.hidesBottomBarWhenPushed = true
-        tourneyStandingsPage.thisTourney = searchResults[indexPath.row]
-        let teams = searchResults[indexPath.row].teams ?? [Team]()
-        let sortedTeams = teams.sorted { p1, p2 in
-            return (p1.rank!) < (p2.rank!)
+//        let layout = UICollectionViewFlowLayout()
+//        let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
+//        tourneyStandingsPage.hidesBottomBarWhenPushed = true
+//        tourneyStandingsPage.thisTourney = searchResults[indexPath.row]
+//        let teams = searchResults[indexPath.row].teams ?? [Team]()
+//        let sortedTeams = teams.sorted { p1, p2 in
+//            return (p1.rank!) < (p2.rank!)
+//        }
+//        tourneyStandingsPage.teams = sortedTeams
+//        navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+        let whichRowSelected = indexPath.item
+        if searchResults[whichRowSelected].type == "Ladder" {
+            let layout = UICollectionViewFlowLayout()
+            let tourneyStandingsPage = TourneyStandings(collectionViewLayout: layout)
+            tourneyStandingsPage.hidesBottomBarWhenPushed = true
+            tourneyStandingsPage.thisTourney = searchResults[whichRowSelected]
+            let teams = searchResults[whichRowSelected].teams ?? [Team]()
+            let sortedTeams = teams.sorted { p1, p2 in
+                return (p1.rank!) < (p2.rank!)
+            }
+            tourneyStandingsPage.teams = sortedTeams
+            navigationController?.pushViewController(tourneyStandingsPage, animated: true)
+        } else {
+            searchResults[whichRowSelected].setupRoundRobinWeekChallenges()
+            let layout = UICollectionViewFlowLayout()
+            let roundRobinPage = RoundRobinStandings(collectionViewLayout: layout)
+            roundRobinPage.hidesBottomBarWhenPushed = true
+            roundRobinPage.roundRobinTourney = searchResults[whichRowSelected]
+            let teams = searchResults[whichRowSelected].teams ?? [Team]()
+            let sortedTeams = teams.sorted { p1, p2 in
+                return (p1.points ?? 0, -p1.rank!) > (p2.points ?? 0, -p2.rank!)
+            }
+            roundRobinPage.teams = sortedTeams
+            navigationController?.pushViewController(roundRobinPage, animated: true)
         }
-        tourneyStandingsPage.teams = sortedTeams
-        navigationController?.pushViewController(tourneyStandingsPage, animated: true)
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
@@ -522,7 +559,17 @@ class TourneySearch: UITableViewController, UICollectionViewDelegate, UICollecti
                 if let tourneyYetToView = value["yet_to_view"] as? [String] {
                     tourney.yetToView = tourneyYetToView
                 }
+                if let invites = value["invites"] as? [String] {
+                    tourney.invites = invites
+                } else {
+                    tourney.invites = ["none"]
+                }
                 
+                if let simpleInvites = value["simpleInvites"] as? [String] {
+                    tourney.simpleInvites = simpleInvites
+                } else {
+                    tourney.simpleInvites = ["none"]
+                }
                 tourney.name = name
                 tourney.type = type
                 tourney.skill_level = skillLevel

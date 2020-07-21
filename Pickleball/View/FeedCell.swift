@@ -30,7 +30,7 @@ class FeedCell: BaseCell, UICollectionViewDataSource, UICollectionViewDelegate, 
     var tourneyIdentifier: String?
     var active = 0 {
         didSet {
-            if active >= 2 {
+            if active >= 2 && type == "Ladder" {
                 collectionView.contentInset = UIEdgeInsets(top: 320, left: 0, bottom: 0, right: 0)
                 collectionView.scrollIndicatorInsets = UIEdgeInsets(top: 320, left: 0, bottom: 0, right: 0)
             }

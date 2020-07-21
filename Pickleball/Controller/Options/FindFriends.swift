@@ -430,6 +430,8 @@ class FindFriends: UICollectionViewController, UICollectionViewDelegateFlowLayou
             let notificationId = notificationRef.key!
             self.tourneyOpenInvites.append(uid)
             self.tourneyOpenInvites.append(toId)
+            self.roundRobinStandings.roundRobinTourney.invites = self.tourneyOpenInvites
+            self.roundRobinStandings.setupNavBarButtons()
             let childUpdates = ["/\("user_notifications")/\(uid)/\(notificationId)/": 0, "/\("user_notifications")/\(toId)/\(notificationId)/": 1, "/\("tourneys")/\(self.tourneyId)/\("invites")/": self.tourneyOpenInvites] as [String : Any]
             notificationsRef.updateChildValues(childUpdates, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in

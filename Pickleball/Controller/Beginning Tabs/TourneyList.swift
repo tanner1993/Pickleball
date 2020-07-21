@@ -399,19 +399,36 @@ class TourneyList: UITableViewController {
     
     @objc func handleEdit(sender: UIButton) {
         let tourneyIndex = sender.tag
-        let createTourney = CreateTourney()
-        createTourney.sender = true
-        createTourney.tourneyList = self
-        createTourney.tourneyIndex = tourneyIndex
-        createTourney.tourneyInfo = myTourneys[tourneyIndex]
-        let indexPath = IndexPath(row: sender.tag, section: 0)
-        let shareContent = SharePhoto()
-        shareContent.image = tableView.cellForRow(at: indexPath)?.takeScreenshot()
-        shareContent.isUserGenerated = true
-        let sharePhotoContent = SharePhotoContent()
-        sharePhotoContent.photos = [shareContent]
-        createTourney.shareButton.shareContent = sharePhotoContent
-        present(createTourney, animated: true, completion: nil)
+        let tourneySelected = myTourneys[tourneyIndex]
+        if tourneySelected.type == "Ladder" {
+            let createTourney = CreateTourney()
+            createTourney.sender = true
+            createTourney.tourneyList = self
+            createTourney.tourneyIndex = tourneyIndex
+            createTourney.tourneyInfo = myTourneys[tourneyIndex]
+            let indexPath = IndexPath(row: sender.tag, section: 0)
+            let shareContent = SharePhoto()
+            shareContent.image = tableView.cellForRow(at: indexPath)?.takeScreenshot()
+            shareContent.isUserGenerated = true
+            let sharePhotoContent = SharePhotoContent()
+            sharePhotoContent.photos = [shareContent]
+            createTourney.shareButton.shareContent = sharePhotoContent
+            present(createTourney, animated: true, completion: nil)
+        } else {
+            let createTourney = CreateRoundRobinTourney()
+            createTourney.sender = true
+            createTourney.tourneyList = self
+            createTourney.tourneyIndex = tourneyIndex
+            createTourney.tourneyInfo = myTourneys[tourneyIndex]
+            let indexPath = IndexPath(row: sender.tag, section: 0)
+            let shareContent = SharePhoto()
+            shareContent.image = tableView.cellForRow(at: indexPath)?.takeScreenshot()
+            shareContent.isUserGenerated = true
+            let sharePhotoContent = SharePhotoContent()
+            sharePhotoContent.photos = [shareContent]
+            createTourney.shareButton.shareContent = sharePhotoContent
+            present(createTourney, animated: true, completion: nil)
+        }
     }
     
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -576,12 +593,13 @@ class TourneyCell: UITableViewCell {
             attributedCounty.append(boldCountyString)
             county.attributedText = attributedCounty
             
-            guard let endTime = tourney?.end_date else {
+            guard let endTime = tourney?.start_date else {
                 return
             }
+            let adjustedEndTime = endTime + (86400*35)
             let normalTime2 = "End Date: "
             let calendar2 = Calendar.current
-            let startDater2 = Date(timeIntervalSince1970: endTime)
+            let startDater2 = Date(timeIntervalSince1970: adjustedEndTime)
             let components2 = calendar2.dateComponents([Calendar.Component.day, Calendar.Component.month, Calendar.Component.year], from: startDater2)
             let monthInt2 = components2.month!
             let monthAbb2 = months[monthInt2 - 1].prefix(3)

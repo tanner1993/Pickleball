@@ -270,7 +270,7 @@ class Tourney: NSObject {
     
     func setupRoundRobinWeekChallenges() {
         let currentTime = Double(Date().timeIntervalSince1970)
-        if currentTime > start_date! && active == 0 {
+        if currentTime > start_date! && active == 0 && teams?.count == 6 {
             Database.database().reference().child("tourneys").child(id!).child("active").setValue((active! + 1))
             active = 1
             createRoundRobinMatch(team1Ind: 1, team2Ind: 2)

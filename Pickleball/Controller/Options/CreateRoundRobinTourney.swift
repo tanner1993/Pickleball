@@ -10,7 +10,7 @@ import UIKit
 import Firebase
 import FBSDKShareKit
 
-class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
 
     var textFields = [UITextField]()
         var dropDownButtons = [UIButton]()
@@ -32,11 +32,14 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
             for index in 1...31 {
                 days.append(index)
             }
+            textFields[1].text = "Round Robin"
+            textFields[1].isUserInteractionEnabled = false
+            dropDownButtons[0].isUserInteractionEnabled = false
         }
         
         func populateFields() {
             textFields[0].text = tourneyInfo.name
-            textFields[1].text = tourneyInfo.type
+            //textFields[1].text = tourneyInfo.type
             textFields[2].text = "\(tourneyInfo.skill_level ?? 0)"
             textFields[3].text = tourneyInfo.sex
             textFields[4].text = tourneyInfo.age_group
@@ -242,6 +245,7 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
             let newDate = calendar.date(from: components)
             
             let startdate = Double((newDate?.timeIntervalSince1970)!)
+            let adjustedStartDate = startdate - (7*3600)
     
             let publicBool = privatePublicControl.selectedSegmentIndex == 0 ? true : false
             
@@ -250,7 +254,7 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
             }
             let ref = Database.database().reference().child("tourneys")
             let tourneyref = sender == false ? ref.childByAutoId() : ref.child(tourneyInfo.id!)
-            let values = ["active": 0, "name": name, "skill_level": skillLevel, "type": type, "sex": sex, "age_group": ageGroup, "start_date": startdate, "creator": uid, "state": state, "county": county, "public": publicBool] as [String : Any]
+            let values = ["active": 0, "name": name, "skill_level": skillLevel, "type": type, "sex": sex, "age_group": ageGroup, "start_date": adjustedStartDate, "creator": uid, "state": state, "county": county, "public": publicBool] as [String : Any]
             tourneyref.updateChildValues(values, withCompletionBlock: {
                 (error:Error?, ref:DatabaseReference) in
                 
@@ -649,36 +653,11 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
                 shareButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
                 shareButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 25).isActive = true
                 
-                if tourneyInfo.active == 0 {
-                    changeActive.setTitle("End Registration", for: .normal)
-                } else if tourneyInfo.active == 1 {
-                    changeActive.setTitle("Start Semifinals", for: .normal)
-                } else {
-                    changeActive.setTitle("Semis has started", for: .normal)
-                    changeActive.isUserInteractionEnabled = false
-                }
-                scrollView.addSubview(changeActive)
-                changeActive.topAnchor.constraint(equalTo: createTourneyLabel.bottomAnchor, constant: 10).isActive = true
-                changeActive.heightAnchor.constraint(equalToConstant: 40).isActive = true
-                
-                if tourneyInfo.active == 1 {
-                    scrollView.addSubview(reopenRegistration)
-                    reopenRegistration.rightAnchor.constraint(equalTo: view.centerXAnchor, constant: -2).isActive = true
-                    reopenRegistration.topAnchor.constraint(equalTo: createTourneyLabel.bottomAnchor, constant: 10).isActive = true
-                    reopenRegistration.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 4).isActive = true
-                    reopenRegistration.heightAnchor.constraint(equalToConstant: 40).isActive = true
-                    
-                    changeActive.leftAnchor.constraint(equalTo: view.centerXAnchor, constant: 2).isActive = true
-                    changeActive.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -4).isActive = true
-                } else {
-                    changeActive.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-                    changeActive.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -80).isActive = true
-                }
             }
             
             scrollView.addSubview(privatePublicControl)
             privatePublicControl.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-            privatePublicControl.topAnchor.constraint(equalTo: sender ? changeActive.bottomAnchor : createTourneyLabel.bottomAnchor, constant: 10).isActive = true
+            privatePublicControl.topAnchor.constraint(equalTo: createTourneyLabel.bottomAnchor, constant: 10).isActive = true
             privatePublicControl.widthAnchor.constraint(equalTo: view.widthAnchor, constant: -80).isActive = true
             privatePublicControl.heightAnchor.constraint(equalToConstant: 40).isActive = true
             
@@ -692,13 +671,13 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
             inputsContainerView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
             inputsContainerView.topAnchor.constraint(equalTo: inputContainer2.bottomAnchor, constant: 20).isActive = true
             inputsContainerView.widthAnchor.constraint(equalToConstant: view.frame.width - 24).isActive = true
-            inputsContainerView.heightAnchor.constraint(equalToConstant: 100).isActive = true
+            inputsContainerView.heightAnchor.constraint(equalToConstant: 50).isActive = true
             
             inputsContainerView.addSubview(birthdateLabel)
             birthdateLabel.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 12).isActive = true
             birthdateLabel.topAnchor.constraint(equalTo: inputsContainerView.topAnchor).isActive = true
             birthdateLabel.rightAnchor.constraint(equalTo: inputsContainerView.leftAnchor, constant: 110).isActive = true
-            birthdateLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/2).isActive = true
+            birthdateLabel.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor).isActive = true
             
             inputsContainerView.addSubview(monthTextField)
             monthTextField.leftAnchor.constraint(equalTo: birthdateLabel.rightAnchor, constant: 0).isActive = true
@@ -709,7 +688,7 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
             } else {
                 monthTextField.widthAnchor.constraint(equalToConstant: 125).isActive = true
             }
-            monthTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/2).isActive = true
+            monthTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor).isActive = true
             
             inputsContainerView.addSubview(monthDropDown)
             monthDropDown.leftAnchor.constraint(equalTo: birthdateLabel.rightAnchor, constant: 0).isActive = true
@@ -719,7 +698,7 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
             } else {
                 monthDropDown.widthAnchor.constraint(equalToConstant: 125).isActive = true
             }
-            monthDropDown.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/2).isActive = true
+            monthDropDown.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor).isActive = true
             
             inputsContainerView.addSubview(dayTextField)
             dayTextField.leftAnchor.constraint(equalTo: monthTextField.rightAnchor, constant: 0).isActive = true
@@ -731,7 +710,7 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
             } else {
                 dayTextField.widthAnchor.constraint(equalToConstant: 55).isActive = true
             }
-            dayTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/2).isActive = true
+            dayTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor).isActive = true
             
             inputsContainerView.addSubview(dayDropDown)
             dayDropDown.leftAnchor.constraint(equalTo: monthTextField.rightAnchor, constant: 0).isActive = true
@@ -741,19 +720,19 @@ class CreateRoundRobinTourney: UIViewController, UICollectionViewDataSource, UIC
             } else {
                 dayDropDown.widthAnchor.constraint(equalToConstant: 55).isActive = true
             }
-            dayDropDown.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/2).isActive = true
+            dayDropDown.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor).isActive = true
             
             inputsContainerView.addSubview(yearTextField)
             yearTextField.leftAnchor.constraint(equalTo: dayTextField.rightAnchor, constant: 0).isActive = true
             yearTextField.topAnchor.constraint(equalTo: birthdateLabel.topAnchor).isActive = true
             yearTextField.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: -2).isActive = true
-            yearTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/2).isActive = true
+            yearTextField.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor).isActive = true
             
             inputsContainerView.addSubview(yearDropDown)
             yearDropDown.leftAnchor.constraint(equalTo: dayTextField.rightAnchor, constant: 0).isActive = true
             yearDropDown.topAnchor.constraint(equalTo: birthdateLabel.topAnchor).isActive = true
             yearDropDown.rightAnchor.constraint(equalTo: inputsContainerView.rightAnchor, constant: -2).isActive = true
-            yearDropDown.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor, multiplier: 1/2).isActive = true
+            yearDropDown.heightAnchor.constraint(equalTo: inputsContainerView.heightAnchor).isActive = true
             
             inputsContainerView.addSubview(birthdateSeparatorView)
             birthdateSeparatorView.leftAnchor.constraint(equalTo: inputsContainerView.leftAnchor).isActive = true
